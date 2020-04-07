@@ -1,0 +1,15 @@
+{
+	"editor.codeActionsOnSave": {
+		// "source.organizeImports",
+		"source.fixAll.eslint": true
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
+	},
+	"files.exclude": {
+		"node_modules": true,
+		"**/*.js": {
+			"when": "$(basename).ts"
+		}
+	}
+}

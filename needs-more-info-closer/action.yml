@@ -1,0 +1,22 @@
+name: Needs More Info Closer
+description: Close issues that are marked a needs more info label and were last interacted with by a contributor or bot
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  label:
+    description: Label signifying an issue that needs more info
+    required: true
+  closeDays:
+    description: Days to wait before closing the issue
+    required: true
+  closeComment:
+    description: Comment to add upon closing the issue
+  pingDays:
+    description: Days to wait before pinging the assignee
+    required: true
+  pingComment:
+    description: Comment to add when pinging assignee. ${assignee} and ${author} are replaced.
+runs:
+  using: 'node12'
+  main: 'index.js'

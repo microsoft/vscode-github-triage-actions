@@ -1,0 +1,49 @@
+{
+  "name": "vscode-github-triage-actions",
+  "version": "1.0.0",
+  "description": "GitHub Actions used by VS Code for triaging issues",
+  "scripts": {
+    "test": "mocha -r ts-node/register **/*.test.ts",
+    "build": "tsc",
+    "lint": "eslint -c .eslintrc --fix --ext .ts .",
+    "watch-typecheck": "tsc --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/microsoft/vscode-github-triage-actions.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/microsoft/vscode-github-triage-actions/issues"
+  },
+  "homepage": "https://github.com/microsoft/vscode-github-triage-actions#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.3",
+    "@actions/github": "^2.1.1",
+    "axios": "^0.19.2"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.23.0",
+    "@typescript-eslint/parser": "^2.23.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "2.0.2",
+    "ts-node": "^8.6.2",
+    "eslint": "^6.8.0",
+    "@types/chai": "^4.2.10",
+    "@types/mocha": "^7.0.2",
+    "@zeit/ncc": "^0.21.1",
+    "chai": "^4.2.0",
+    "husky": "^4.2.3",
+    "mocha": "^7.1.0",
+    "nock": "^12.0.2",
+    "typescript": "^3.8.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run build && git add \"**/*.js\""
+    }
+  }
+}

@@ -1,0 +1,9 @@
+name: Queryer
+description: Runs a query based on the comment given
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+runs:
+  using: 'node12'
+  main: 'index.js'

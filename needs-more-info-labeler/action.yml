@@ -1,0 +1,25 @@
+name: 'Needs More Info Labeler'
+description: Tag issues that don't contain important info
+inputs:
+  token:
+    description: 'GitHub token with issue, comment, and label read/write permissions'
+    default: ${{ github.token }}
+  label:
+    description: The label assign to issues that need more info (Defaults to `needs-more-info`)
+    default: needs-more-info
+  matcher:
+    description: If the issue body (excluding comments) does not match this regex, the label is applied.
+    required: true
+  comment:
+    description: Comment to post to issues needing more info
+    required: true
+  tags:
+    description: If this tag is present in the issue (even in comments), dont flag
+  bots:
+    description: List of names of the bots that may interact with this issue. If an issue is updated to contain the info and only bots have interacted with it, the label will be removed.
+    required: true
+  flag-team:
+    description: When defined, issues creasted by those with write acccess to the repo will be flagged needs more info as well
+runs:
+  using: 'node12'
+  main: 'index.js'

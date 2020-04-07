@@ -1,0 +1,12 @@
+name: Commands
+description: Respond to commands given in the form of either labels or comments by contributors or authorized community members
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  config-path:
+    description: Name of .json file (no extension) in .github/ directory of repo holding configuration for this action
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'

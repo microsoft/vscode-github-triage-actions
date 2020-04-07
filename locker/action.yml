@@ -1,0 +1,17 @@
+name: Locker
+description: Lock closed issues and PRs after some time has passed
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  daysSinceClose:
+    description: Days to wait since closing before locking the item
+    required: true
+  daysSinceUpdate:
+    description: days to wait since the last interaction before locking the item
+    required: true
+  ignoredLabel:
+    description: items with this label will not be automatically locked
+runs:
+  using: 'node12'
+  main: 'index.js'

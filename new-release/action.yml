@@ -1,0 +1,21 @@
+name: New Release
+description: Identify issues with a version tag matching the latest vscode release
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  days:
+    description: time ago for releases to count as new releases
+    required: true
+  label:
+    description: name of label to apply
+    required: true
+  labelColor:
+    description: color of label to apply
+    required: true
+  labelDescription:
+    description: description of label to apply
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'
