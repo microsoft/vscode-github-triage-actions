@@ -212,7 +212,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		debug(`Setting milestone for ${this.issueData.number} to ${milestoneId}`)
 		await this.octokit.issues.update({
 			...this.params,
-			...this.issueData,
+			issue_number: this.issueData.number,
 			milestone: milestoneId,
 		})
 	}
