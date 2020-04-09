@@ -1,0 +1,17 @@
+name: 'Regex Labeler'
+description: Close issues that do or don't match particular Regex's
+inputs:
+  token:
+    description: 'GitHub token with issue, comment, and label read/write permissions'
+    default: ${{ github.token }}
+  mustMatch:
+    description: If the issue body (excluding comments) does not match this regex, the action is performed
+  mustNotMatch:
+    description: If the issue body (excluding comments) matches regex, the action is performed
+  comment:
+    description: Comment to post to issues that don't fit the criteria
+  label:
+    description: Label to apply to isses that don't fit the criteria
+runs:
+  using: 'node12'
+  main: 'index.js'

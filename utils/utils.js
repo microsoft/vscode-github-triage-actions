@@ -8,7 +8,7 @@ const core = require("@actions/core");
 const github_1 = require("@actions/github");
 const axios_1 = require("axios");
 const octokit_1 = require("../api/octokit");
-exports.getInput = (name) => core.getInput(name);
+exports.getInput = (name) => core.getInput(name) || undefined;
 exports.getRequiredInput = (name) => core.getInput(name, { required: true });
 exports.loadLatestRelease = async (quality) => (await axios_1.default.get(`https://vscode-update.azurewebsites.net/api/update/darwin/${quality}/latest`)).data;
 exports.daysAgoToTimestamp = (days) => +new Date(Date.now() - days * 24 * 60 * 60 * 1000);

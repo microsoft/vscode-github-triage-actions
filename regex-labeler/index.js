@@ -8,9 +8,9 @@ const core = require("@actions/core");
 const github_1 = require("@actions/github");
 const octokit_1 = require("../api/octokit");
 const utils_1 = require("../utils/utils");
-const NeedsMoreInfoLabeler_1 = require("./NeedsMoreInfoLabeler");
+const RegexLabeler_1 = require("./RegexLabeler");
 const main = async () => {
-    await new NeedsMoreInfoLabeler_1.NeedsMoreInfoLabeler(new octokit_1.OctoKitIssue(utils_1.getRequiredInput('token'), github_1.context.repo, { number: github_1.context.issue.number }), utils_1.getRequiredInput('label'), utils_1.getRequiredInput('comment'), utils_1.getRequiredInput('matcher'), utils_1.getInput('tags'), utils_1.getRequiredInput('bots').split('|'), !!utils_1.getInput('flag-team')).run();
+    await new RegexLabeler_1.RegexFlagger(new octokit_1.OctoKitIssue(utils_1.getRequiredInput('token'), github_1.context.repo, { number: github_1.context.issue.number }), utils_1.getInput('label'), utils_1.getInput('comment'), utils_1.getInput('mustMatch'), utils_1.getInput('mustNotMatch')).run();
 };
 main()
     .then(utils_1.logRateLimit)

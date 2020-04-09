@@ -7,17 +7,15 @@ import * as core from '@actions/core'
 import { context } from '@actions/github'
 import { OctoKitIssue } from '../api/octokit'
 import { getInput, getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
-import { NeedsMoreInfoLabeler } from './NeedsMoreInfoLabeler'
+import { RegexFlagger } from './RegexLabeler'
 
 const main = async () => {
-	await new NeedsMoreInfoLabeler(
+	await new RegexFlagger(
 		new OctoKitIssue(getRequiredInput('token'), context.repo, { number: context.issue.number }),
-		getRequiredInput('label'),
-		getRequiredInput('comment'),
-		getRequiredInput('matcher'),
-		getInput('tags'),
-		getRequiredInput('bots').split('|'),
-		!!getInput('flag-team'),
+		getInput('label'),
+		getInput('comment'),
+		getInput('mustMatch'),
+		getInput('mustNotMatch'),
 	).run()
 }
 
