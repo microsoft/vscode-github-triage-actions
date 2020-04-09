@@ -27,8 +27,22 @@ describe('NeedsMoreInfoLabeler', () => {
 	})
 
 	it('Flags issues that match mustNotMatch', async () => {
-		const issue = new TestbedIssue({}, { issue: { body: 'hello' } })
-		await new RegexFlagger(issue, undefined, undefined, undefined, 'hello').run()
+		const issue = new TestbedIssue(
+			{},
+			{
+				issue: {
+					body:
+						'We have written the needed data into your clipboard because it was too large to send. Please paste.',
+				},
+			},
+		)
+		await new RegexFlagger(
+			issue,
+			undefined,
+			undefined,
+			undefined,
+			'^We have written the needed data into your clipboard because it was too large to send\\. Please paste\\.$',
+		).run()
 		expect(issue.issueConfig.issue.open).to.be.false
 	})
 })
