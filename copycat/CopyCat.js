@@ -17,3 +17,4 @@ class CopyCat {
     }
 }
 exports.CopyCat = CopyCat;
+//# sourceMappingURL=CopyCat.js.map

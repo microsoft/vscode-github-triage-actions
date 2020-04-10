@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub, GitHubIssue } from '../api/api'
-import { loadLatestRelease, logErrorToIssue } from '../utils/utils'
+import { loadLatestRelease } from '../utils/utils'
 
 export class AuthorVerifiedQueryer {
 	constructor(
@@ -75,7 +75,6 @@ export class AuthorVerifiedLabeler {
 						closingInfo.hash,
 					)
 				} catch (e) {
-					await logErrorToIssue('Performing fallback mechanism for error:' + e.message, false)
 					const message: string = e.message
 					if (message.includes(`Not a valid commit name ${closingInfo.hash}`)) {
 						// Closing commit in seprate repo. Fall back to close date.

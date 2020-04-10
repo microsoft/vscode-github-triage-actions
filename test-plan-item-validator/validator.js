@@ -177,3 +177,4 @@ function rtrimSpaceAndEOL(haystack) {
     }
     return haystack.substring(0, offset);
 }
+//# sourceMappingURL=validator.js.map

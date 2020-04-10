@@ -9,8 +9,9 @@ const github_1 = require("@actions/github");
 const octokit_1 = require("../api/octokit");
 const utils_1 = require("../utils/utils");
 const Commands_1 = require("./Commands");
+const token = utils_1.getRequiredInput('token');
 const main = async () => {
-    const octokit = new octokit_1.OctoKitIssue(utils_1.getRequiredInput('token'), github_1.context.repo, {
+    const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, {
         number: github_1.context.issue.number,
     });
     const commands = await octokit.readConfig(utils_1.getRequiredInput('config-path'));
@@ -23,8 +24,9 @@ const main = async () => {
     await new Commands_1.Commands(octokit, commands, action).run();
 };
 main()
-    .then(utils_1.logRateLimit)
+    .then(() => utils_1.logRateLimit(token))
     .catch(async (error) => {
     core.setFailed(error.message);
-    await utils_1.logErrorToIssue(error.message, true);
+    await utils_1.logErrorToIssue(error.message, true, token);
 });
+//# sourceMappingURL=index.js.map

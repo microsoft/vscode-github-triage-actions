@@ -5,7 +5,7 @@
 
 import * as core from '@actions/core'
 import { context } from '@actions/github'
-import { logErrorToIssue, logRateLimit } from '../utils/utils'
+import { logErrorToIssue, logRateLimit, getRequiredInput } from '../utils/utils'
 
 const main = async () => {
 	// Get the JSON webhook payload for the event that triggered the workflow
@@ -14,8 +14,8 @@ const main = async () => {
 }
 
 main()
-	.then(logRateLimit)
+	.then(() => logRateLimit(getRequiredInput('token')))
 	.catch(async (error) => {
 		core.setFailed(error.message)
-		await logErrorToIssue(error.message, true)
+		await logErrorToIssue(error.message, true, getRequiredInput('token'))
 	})

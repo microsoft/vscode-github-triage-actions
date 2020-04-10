@@ -9,12 +9,13 @@ import { OctoKit, OctoKitIssue } from '../api/octokit'
 import { getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
 import { AuthorVerifiedLabeler, AuthorVerifiedQueryer } from './AuthorVerified'
 
+const token = getRequiredInput('token')
+
 const main = async () => {
 	if (context.eventName === 'repository_dispatch' && context.payload.action !== 'trigger_author_verified') {
 		return
 	}
 
-	const token = getRequiredInput('token')
 	const requestVerificationComment = getRequiredInput('requestVerificationComment')
 	const pendingReleaseLabel = getRequiredInput('pendingReleaseLabel')
 	const authorVerificationRequestedLabel = getRequiredInput('authorVerificationRequestedLabel')
@@ -42,8 +43,8 @@ const main = async () => {
 }
 
 main()
-	.then(logRateLimit)
+	.then(() => logRateLimit(token))
 	.catch(async (error) => {
 		core.setFailed(error.message)
-		await logErrorToIssue(error.message, true)
+		await logErrorToIssue(error.message, true, token)
 	})

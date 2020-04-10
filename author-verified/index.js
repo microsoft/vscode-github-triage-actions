@@ -9,11 +9,11 @@ const github_1 = require("@actions/github");
 const octokit_1 = require("../api/octokit");
 const utils_1 = require("../utils/utils");
 const AuthorVerified_1 = require("./AuthorVerified");
+const token = utils_1.getRequiredInput('token');
 const main = async () => {
     if (github_1.context.eventName === 'repository_dispatch' && github_1.context.payload.action !== 'trigger_author_verified') {
         return;
     }
-    const token = utils_1.getRequiredInput('token');
     const requestVerificationComment = utils_1.getRequiredInput('requestVerificationComment');
     const pendingReleaseLabel = utils_1.getRequiredInput('pendingReleaseLabel');
     const authorVerificationRequestedLabel = utils_1.getRequiredInput('authorVerificationRequestedLabel');
@@ -28,8 +28,9 @@ const main = async () => {
     }
 };
 main()
-    .then(utils_1.logRateLimit)
+    .then(() => utils_1.logRateLimit(token))
     .catch(async (error) => {
     core.setFailed(error.message);
-    await utils_1.logErrorToIssue(error.message, true);
+    await utils_1.logErrorToIssue(error.message, true, token);
 });
+//# sourceMappingURL=index.js.map

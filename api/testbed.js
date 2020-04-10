@@ -118,3 +118,4 @@ class TestbedIssue extends Testbed {
     }
 }
 exports.TestbedIssue = TestbedIssue;
+//# sourceMappingURL=testbed.js.map

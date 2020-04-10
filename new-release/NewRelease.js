@@ -37,3 +37,4 @@ class NewRelease {
     }
 }
 exports.NewRelease = NewRelease;
+//# sourceMappingURL=NewRelease.js.map

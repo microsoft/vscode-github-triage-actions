@@ -14,12 +14,12 @@ import {
 	FeatureRequestOnMilestone,
 } from './FeatureRequest'
 
+const token = getRequiredInput('token')
+
 const main = async () => {
 	if (context.eventName === 'repository_dispatch' && context.payload.action !== 'trigger_feature_request') {
 		return
 	}
-
-	const token = getRequiredInput('token')
 
 	const config: FeatureRequestConfig = {
 		milestones: {
@@ -67,8 +67,8 @@ const main = async () => {
 }
 
 main()
-	.then(logRateLimit)
+	.then(() => logRateLimit(token))
 	.catch(async (error) => {
 		core.setFailed(error.message)
-		await logErrorToIssue(error, true)
+		await logErrorToIssue(error, true, token)
 	})

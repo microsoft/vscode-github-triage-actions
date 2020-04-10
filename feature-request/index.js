@@ -9,11 +9,11 @@ const github_1 = require("@actions/github");
 const octokit_1 = require("../api/octokit");
 const utils_1 = require("../utils/utils");
 const FeatureRequest_1 = require("./FeatureRequest");
+const token = utils_1.getRequiredInput('token');
 const main = async () => {
     if (github_1.context.eventName === 'repository_dispatch' && github_1.context.payload.action !== 'trigger_feature_request') {
         return;
     }
-    const token = utils_1.getRequiredInput('token');
     const config = {
         milestones: {
             candidateID: +utils_1.getRequiredInput('candidateMilestoneID'),
@@ -49,8 +49,9 @@ const main = async () => {
     }
 };
 main()
-    .then(utils_1.logRateLimit)
+    .then(() => utils_1.logRateLimit(token))
     .catch(async (error) => {
     core.setFailed(error.message);
-    await utils_1.logErrorToIssue(error, true);
+    await utils_1.logErrorToIssue(error, true, token);
 });
+//# sourceMappingURL=index.js.map

@@ -20,8 +20,8 @@ const main = async () => {
 }
 
 main()
-	.then(logRateLimit)
+	.then(() => logRateLimit(getRequiredInput('token')))
 	.catch(async (error) => {
 		core.setFailed(error.message)
-		await logErrorToIssue(error.message, true)
+		await logErrorToIssue(error.message, true, getRequiredInput('token'))
 	})

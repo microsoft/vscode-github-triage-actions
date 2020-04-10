@@ -9,17 +9,19 @@ import { OctoKitIssue } from '../api/octokit'
 import { getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
 import { CopyCat } from './CopyCat'
 
+const token = getRequiredInput('token')
+
 const main = async () => {
 	await new CopyCat(
-		new OctoKitIssue(getRequiredInput('token'), context.repo, { number: context.issue.number }),
+		new OctoKitIssue(token, context.repo, { number: context.issue.number }),
 		getRequiredInput('owner'),
 		getRequiredInput('repo'),
 	).run()
 }
 
 main()
-	.then(logRateLimit)
+	.then(() => logRateLimit(token))
 	.catch(async (error) => {
 		core.setFailed(error.message)
-		await logErrorToIssue(error.message, true)
+		await logErrorToIssue(error.message, true, token)
 	})

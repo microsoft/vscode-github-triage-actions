@@ -61,7 +61,6 @@ class AuthorVerifiedLabeler {
                     releaseContainsCommit = await this.github.releaseContainsCommit(latestRelease.version, closingInfo.hash);
                 }
                 catch (e) {
-                    await utils_1.logErrorToIssue('Performing fallback mechanism for error:' + e.message, false);
                     const message = e.message;
                     if (message.includes(`Not a valid commit name ${closingInfo.hash}`)) {
                         // Closing commit in seprate repo. Fall back to close date.
@@ -93,3 +92,4 @@ class AuthorVerifiedLabeler {
     }
 }
 exports.AuthorVerifiedLabeler = AuthorVerifiedLabeler;
+//# sourceMappingURL=AuthorVerified.js.map

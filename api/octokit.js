@@ -26,22 +26,19 @@ class OctoKit {
         });
         let pageNum = 0;
         const timeout = async () => {
-            if (pageNum == 0) {
+            if (pageNum < 2) {
                 /* pass */
             }
-            else if (pageNum == 1) {
-                await new Promise((resolve) => setTimeout(resolve, 5000));
-            }
-            else if (pageNum == 2) {
-                await new Promise((resolve) => setTimeout(resolve, 15000));
+            else if (pageNum < 4) {
+                await new Promise((resolve) => setTimeout(resolve, 3000));
             }
             else {
-                await new Promise((resolve) => setTimeout(resolve, 60000));
+                await new Promise((resolve) => setTimeout(resolve, 30000));
             }
         };
         for await (const pageResponse of this.octokit.paginate.iterator(options)) {
             await timeout();
-            await utils_1.logRateLimit();
+            await utils_1.logRateLimit(this.token);
             const page = pageResponse.data;
             console.log(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`);
             yield page.map((issue) => new OctoKitIssue(this.token, this.params, this.octokitIssueToIssue(issue)));
@@ -269,3 +266,4 @@ function isIssue(object) {
         'milestoneId' in object;
     return isIssue;
 }
+//# sourceMappingURL=octokit.js.map

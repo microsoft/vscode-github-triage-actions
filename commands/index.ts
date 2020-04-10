@@ -9,8 +9,10 @@ import { OctoKitIssue } from '../api/octokit'
 import { getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
 import { Commands } from './Commands'
 
+const token = getRequiredInput('token')
+
 const main = async () => {
-	const octokit = new OctoKitIssue(getRequiredInput('token'), context.repo, {
+	const octokit = new OctoKitIssue(token, context.repo, {
 		number: context.issue.number,
 	})
 
@@ -28,8 +30,8 @@ const main = async () => {
 }
 
 main()
-	.then(logRateLimit)
+	.then(() => logRateLimit(token))
 	.catch(async (error) => {
 		core.setFailed(error.message)
-		await logErrorToIssue(error.message, true)
+		await logErrorToIssue(error.message, true, token)
 	})
