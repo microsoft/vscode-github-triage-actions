@@ -1,0 +1,23 @@
+name: English Please
+description: Identify and request translations for issues in languages besides english
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  nonEnglishLabel:
+    description: Label to add when issues are not written in english
+    required: true
+  needsMoreInfoLabel:
+    description: Optional label to add for triggering the 'needs more info' bot to close issues that are not translated
+  translatorRequestedLabelPrefix:
+    description: Labels will be created as needed like "translator-requested-zh" to allow community members to assist in translating issues
+    required: true
+  translatorRequestedLabelColor:
+    description: Labels will be created as needed like "translator-requested-zh" to allow community members to assist in translating issues
+    required: true
+  cognitiveServicesAPIKey:
+    description: API key for the text translator cognitive service to use when detecting issue language and responding to the issue author in their language
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'

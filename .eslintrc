@@ -30,11 +30,7 @@
 				"checksVoidReturn": false
 			}
 		],
-		"prettier/prettier": "error",
-		"quotes": [
-			"error",
-			"single"
-		]
+		"prettier/prettier": "error"
 	},
 	"env": {
 		"jest": true,

@@ -9,9 +9,12 @@ const github_1 = require("@actions/github");
 const child_process_1 = require("child_process");
 const utils_1 = require("../utils/utils");
 class OctoKit {
-    constructor(token, params) {
+    constructor(token, params, options = { readonly: false }) {
         this.token = token;
         this.params = params;
+        this.options = options;
+        // when in readonly mode, record labels just-created so at to not throw unneccesary errors
+        this.mockLabels = new Set();
         this.writeAccessCache = {};
         this.octokit = new github_1.GitHub(token);
     }
@@ -46,7 +49,8 @@ class OctoKit {
     }
     async createIssue(owner, repo, title, body) {
         core_1.debug(`Creating issue \`${title}\` on ${owner}/${repo}`);
-        await this.octokit.issues.create({ owner, repo, title, body });
+        if (!this.options.readonly)
+            await this.octokit.issues.create({ owner, repo, title, body });
     }
     octokitIssueToIssue(issue) {
         var _a, _b, _c, _d, _e, _f;
@@ -86,19 +90,23 @@ class OctoKit {
         }
         catch (err) {
             if (err.status === 404) {
-                return false;
+                return this.options.readonly && this.mockLabels.has(name);
             }
             throw err;
         }
     }
     async createLabel(name, color, description) {
         core_1.debug('Creating label ' + name);
-        await this.octokit.issues.createLabel({ ...this.params, color, description, name });
+        if (!this.options.readonly)
+            await this.octokit.issues.createLabel({ ...this.params, color, description, name });
+        else
+            this.mockLabels.add(name);
     }
     async deleteLabel(name) {
         core_1.debug('Deleting label ' + name);
         try {
-            await this.octokit.issues.deleteLabel({ ...this.params, name });
+            if (!this.options.readonly)
+                await this.octokit.issues.deleteLabel({ ...this.params, name });
         }
         catch (err) {
             if (err.status === 404) {
@@ -128,22 +136,24 @@ class OctoKit {
 }
 exports.OctoKit = OctoKit;
 class OctoKitIssue extends OctoKit {
-    constructor(token, params, issueData) {
-        super(token, params);
+    constructor(token, params, issueData, options = { readonly: false }) {
+        super(token, params, options);
         this.params = params;
         this.issueData = issueData;
     }
     async closeIssue() {
         core_1.debug('Closing issue ' + this.issueData.number);
-        await this.octokit.issues.update({
-            ...this.params,
-            issue_number: this.issueData.number,
-            state: 'closed',
-        });
+        if (!this.options.readonly)
+            await this.octokit.issues.update({
+                ...this.params,
+                issue_number: this.issueData.number,
+                state: 'closed',
+            });
     }
     async lockIssue() {
         core_1.debug('Locking issue ' + this.issueData.number);
-        await this.octokit.issues.lock({ ...this.params, issue_number: this.issueData.number });
+        if (!this.options.readonly)
+            await this.octokit.issues.lock({ ...this.params, issue_number: this.issueData.number });
     }
     async getIssue() {
         if (isIssue(this.issueData)) {
@@ -160,27 +170,30 @@ class OctoKitIssue extends OctoKit {
     }
     async postComment(body) {
         core_1.debug(`Posting comment ${body} on ${this.issueData.number}`);
-        await this.octokit.issues.createComment({
-            ...this.params,
-            issue_number: this.issueData.number,
-            body,
-        });
+        if (!this.options.readonly)
+            await this.octokit.issues.createComment({
+                ...this.params,
+                issue_number: this.issueData.number,
+                body,
+            });
     }
     async deleteComment(id) {
         core_1.debug(`Deleting comment ${id} on ${this.issueData.number}`);
-        await this.octokit.issues.deleteComment({
-            owner: this.params.owner,
-            repo: this.params.repo,
-            comment_id: id,
-        });
+        if (!this.options.readonly)
+            await this.octokit.issues.deleteComment({
+                owner: this.params.owner,
+                repo: this.params.repo,
+                comment_id: id,
+            });
     }
     async setMilestone(milestoneId) {
         core_1.debug(`Setting milestone for ${this.issueData.number} to ${milestoneId}`);
-        await this.octokit.issues.update({
-            ...this.params,
-            issue_number: this.issueData.number,
-            milestone: milestoneId,
-        });
+        if (!this.options.readonly)
+            await this.octokit.issues.update({
+                ...this.params,
+                issue_number: this.issueData.number,
+                milestone: milestoneId,
+            });
     }
     async *getComments(last) {
         core_1.debug('Fetching comments for ' + this.issueData.number);
@@ -204,20 +217,22 @@ class OctoKitIssue extends OctoKit {
         if (!(await this.repoHasLabel(name))) {
             throw Error(`Action could not execute becuase label ${name} is not defined.`);
         }
-        await this.octokit.issues.addLabels({
-            ...this.params,
-            issue_number: this.issueData.number,
-            labels: [name],
-        });
+        if (!this.options.readonly)
+            await this.octokit.issues.addLabels({
+                ...this.params,
+                issue_number: this.issueData.number,
+                labels: [name],
+            });
     }
     async removeLabel(name) {
         core_1.debug(`Removing label ${name} from ${this.issueData.number}`);
         try {
-            await this.octokit.issues.removeLabel({
-                ...this.params,
-                issue_number: this.issueData.number,
-                name,
-            });
+            if (!this.options.readonly)
+                await this.octokit.issues.removeLabel({
+                    ...this.params,
+                    issue_number: this.issueData.number,
+                    name,
+                });
         }
         catch (err) {
             if (err.status === 404) {
