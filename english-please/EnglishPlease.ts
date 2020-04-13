@@ -12,7 +12,7 @@ const emojiChars = /[\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u
 export class EnglishPleaseLabler {
 	constructor(private issue: GitHubIssue, private englishPleaseLabel: string) {}
 
-	async run() {
+	async run(): Promise<boolean> {
 		const issue = await this.issue.getIssue()
 		const { body, title } = normalizeIssue(issue)
 		const translationChunk = `${title} ${body}`
@@ -21,7 +21,9 @@ export class EnglishPleaseLabler {
 
 		if (nonenglishChunk.length / translationChunk.length > 0.05) {
 			await this.issue.addLabel(this.englishPleaseLabel)
+			return true
 		}
+		return false
 	}
 }
 

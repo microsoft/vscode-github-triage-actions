@@ -28,10 +28,8 @@ const main = async () => {
 	)
 
 	if (context.payload.action === 'opened') {
-		await englishPleaseLabler.run()
-		const issueData = await issue.getIssue()
-		console.log('got new issue data', JSON.stringify(issueData, null, 2))
-		if (issueData.labels.includes(nonEnglishLabel)) {
+		const isNonEnglish = await englishPleaseLabler.run()
+		if (isNonEnglish) {
 			await languageSpecificLabeler.run()
 		}
 	} else if (context.payload.action === 'edited' || context.payload.label?.name === nonEnglishLabel) {
