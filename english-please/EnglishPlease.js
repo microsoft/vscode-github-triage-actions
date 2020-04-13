@@ -17,7 +17,7 @@ class EnglishPleaseLabler {
         const { body, title } = utils_1.normalizeIssue(issue);
         const translationChunk = `${title} ${body}`;
         const nonenglishChunk = translationChunk.replace(usKeyboardChars, '').replace(emojiChars, '');
-        if (nonenglishChunk.length / translationChunk.length < 0.05) {
+        if (nonenglishChunk.length / translationChunk.length > 0.05) {
             await this.issue.addLabel(this.englishPleaseLabel);
         }
     }
