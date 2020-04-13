@@ -1,7 +1,11 @@
 import axios from 'axios'
 import { GitHubIssue } from '../api/api'
 import { normalizeIssue } from '../utils/utils'
-import { commonNames as _commonNames, knownTranslations as _knownTranslations } from './translation-data.json'
+import {
+	commonNames as _commonNames,
+	knownTranslations as _knownTranslations,
+	baseString,
+} from './translation-data.json'
 
 const commonNames: { [langCode: string]: string | undefined } = _commonNames
 const knownTranslations: { [langCode: string]: string | undefined } & { en: string } = _knownTranslations
@@ -89,7 +93,7 @@ export class LanguageSpecificLabeler {
 
 			const targetLanguageComment =
 				knownTranslations[language] ??
-				(await this.translate(knownTranslations['en'], language)) ??
+				(await this.translate(baseString, language)) ??
 				'ERR_TRANSLATION_FAILED'
 
 			const englishComment = knownTranslations['en']

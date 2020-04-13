@@ -28,10 +28,7 @@ const main = async () => {
 	)
 
 	if (context.payload.action === 'opened') {
-		const isNonEnglish = await englishPleaseLabler.run()
-		if (isNonEnglish) {
-			await languageSpecificLabeler.run()
-		}
+		await englishPleaseLabler.run()
 	} else if (context.payload.action === 'edited' || context.payload.label?.name === nonEnglishLabel) {
 		await languageSpecificLabeler.run()
 	}

@@ -19,10 +19,7 @@ const main = async () => {
     // uses azure cognitive services text translator api to detect specific language and post comment in that language
     const languageSpecificLabeler = new EnglishPlease_1.LanguageSpecificLabeler(issue, translatorRequestedLabelPrefix, translatorRequestedLabelColor, nonEnglishLabel, needsMoreInfoLabel, cognitiveServicesAPIKey);
     if (github_1.context.payload.action === 'opened') {
-        const isNonEnglish = await englishPleaseLabler.run();
-        if (isNonEnglish) {
-            await languageSpecificLabeler.run();
-        }
+        await englishPleaseLabler.run();
     }
     else if (github_1.context.payload.action === 'edited' || ((_a = github_1.context.payload.label) === null || _a === void 0 ? void 0 : _a.name) === nonEnglishLabel) {
         await languageSpecificLabeler.run();
