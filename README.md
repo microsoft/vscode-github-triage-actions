@@ -23,7 +23,7 @@ Additionally, in `./api`, we have a wrapper around the Octokit instance that can
 
 ### Code Layout
 
-The `api` directory contains `api.ts`, which provides an interface for inteacting with github issues. This is implemented both by `octokit.ts` and `testbed.ts`. Octokit will talk to github, testbed mimics GitHub locally, to help with writing unit tests.
+The `api` directory contains `api.ts`, which provides an interface for interacting with github issues. This is implemented both by `octokit.ts` and `testbed.ts`. Octokit will talk to github, testbed mimics GitHub locally, to help with writing unit tests.
 
 The `utils` directory contains various commands to help with interacting with GitHub/other services, which do not have a corresponding mocked version. Thus when using these in code that will be unit tested, it is a good idea to manually mock the calls, using `nock` or similar.
 
@@ -31,6 +31,7 @@ The rest of the directories contain three files:
 - `index.ts`: This file is the entry point for actions. It should be the only file in the directory to use Action-specific code, such as any imports from `@actions/`. In most cases it should simply gatehr any required config data, create an `octokit` instance (see `api` section above) and invoke the command. By keeping Action specific code seprate from the rest of the logic, it is easy to extend these commands to run via Apps, or even via webhooks to Azure Funtions or similar.
 - `Command.ts`: This file contains the core logic for the command. The commands should operate on the Github interface in `api`, so that they may be run against either GitHub proper or the Testbed.
 - `Command.test.ts`: This file contains tests for the command. Tests should invoke the command using a `Testbed` instance, and preferably verify the command works by querying through the `Github` interface, though there are some convenience commands implemened directly on `Testbed` for ease of testing.
+- `cpi.ts`: This is not present in every directory, but when present allows for running the action via command line, by running `node action/cli.js` with appropriate flags.
 
 ## Action Descriptions
 
@@ -97,6 +98,40 @@ inputs:
 Action that simply logs the `context` it recieves. Useful for testing.
 
 No input.
+
+### English Please
+Action that identifies issues that are not in English and requests the author to translate them. It additionally labels the issues with a label like `translation-required-russian`, allowing community members to filter for issues they may be able to help translate.
+
+It can also add `needs more info` type labels, to allow the `needs-more-info` action to close non-english issues that do not receive translations after a set time.
+
+Automatic language detection simply checks for non-latin characters. Issues in foreign languages with latin script must be flagged manually, by applying the `nonEnglishLabel`.
+
+In our experience, automatic translation services are unable to effectively translate technical language, so rather than automatically translating the issue, this Action flags the issue as being in a particular language and lea es a comment requesting the original issue author to either translate the issue themselves if they are able to, or wait for a community member to translate.
+
+This Action uses the [Azure Translator Text](https://docs.microsoft.com/en-us/azure/cognitive-services/translator/translator-info-overview) API to identify languages and translate the comment requesting translation to the issue's language.
+
+If you are able to provide a manual translation of the comment, you can help us out by leaving an issue or file a PR against the file `./english-please/translation-data.json`. Thanks!
+
+```yml
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  nonEnglishLabel:
+    description: Label to add when issues are not written in english
+    required: true
+  needsMoreInfoLabel:
+    description: Optional label to add for triggering the 'needs more info' bot to close issues that are not translated
+  translatorRequestedLabelPrefix:
+    description: Labels will be created as needed like "translator-requested-zh" to allow community members to assist in translating issues
+    required: true
+  translatorRequestedLabelColor:
+    description: Labels will be created as needed like "translator-requested-zh" to allow community members to assist in translating issues
+    required: true
+  cognitiveServicesAPIKey:
+    description: API key for the text translator cognitive service to use when detecting issue language and responding to the issue author in their language
+    required: true
+```
 
 ### Feature Request
 Manage feature requests according to the VS Code [feature request specification](https://github.com/microsoft/vscode/wiki/Issues-Triaging#managing-feature-requests)
