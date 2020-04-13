@@ -93,7 +93,7 @@ export class LanguageSpecificLabeler {
 			const englishComment = knownTranslations['en']
 
 			await this.issue.postComment(
-				`${targetLanguageComment}\n---\n${englishComment}\n<!-- translation_requested_comment -->`,
+				`${targetLanguageComment}\n\n---\n${englishComment}\n<!-- translation_requested_comment -->`,
 			)
 		}
 	}

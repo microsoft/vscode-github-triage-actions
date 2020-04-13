@@ -74,6 +74,6 @@
 		"zh-Hant": "chinese-traditional"
 	},
 	"knownTranslations": {
-		"en": "Thanks for creating this issue!\n\nHowever, as the description is not in English, it is hard for us to work on it. If you are able to, please edit this issue to be in English.\n\nUnfortunately, automatic translation services are not able to handle the technical language needed to effectively communicate about software issues, so we recommend finding a human translator who is familiar with our technology to help translate.\n\nOtherwise, we have flagged this as needing translation and a community member may be able to help translate it."
+		"en": "Thanks for creating this issue!\n\nHowever, as the description is not in English, it is hard for us to work on it. If you are able to, please edit this issue to be in English.\n\nUnfortunately, automatic translation services are not able to handle the technical language needed to effectively communicate about software issues, so we recommend finding a human translator who is familiar with our technology to help translate.\n\nOtherwise, this issue has been marked as needing translation and a community member may be able to help translate it."
 	}
 }

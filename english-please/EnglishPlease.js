@@ -76,7 +76,7 @@ class LanguageSpecificLabeler {
                 await this.issue.addLabel(this.needsMoreInfoLabel);
             const targetLanguageComment = (_b = (_a = knownTranslations[language]) !== null && _a !== void 0 ? _a : (await this.translate(knownTranslations['en'], language))) !== null && _b !== void 0 ? _b : 'ERR_TRANSLATION_FAILED';
             const englishComment = knownTranslations['en'];
-            await this.issue.postComment(`${targetLanguageComment}\n---\n${englishComment}\n<!-- translation_requested_comment -->`);
+            await this.issue.postComment(`${targetLanguageComment}\n\n---\n${englishComment}\n<!-- translation_requested_comment -->`);
         }
     }
 }
