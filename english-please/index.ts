@@ -27,7 +27,7 @@ const main = async () => {
 		cognitiveServicesAPIKey,
 	)
 
-	if (context.payload.action === 'created') {
+	if (context.payload.action === 'opened') {
 		await englishPleaseLabler.run()
 		if ((await issue.getIssue()).labels.includes(nonEnglishLabel)) {
 			await languageSpecificLabeler.run()
