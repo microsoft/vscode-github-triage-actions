@@ -87,7 +87,7 @@ function parseHeader(body: string): string {
 	if (matches && matches.length) {
 		return body.substring(0, matches.index)
 	}
-	throw new Error('Test plan item should have header')
+	throw new Error('Test plan item should have header . (Must match /(\\r\\n|\\n)----*(\\r\\n|\\n)/)')
 }
 
 function parseComplexity(body: string): number {
