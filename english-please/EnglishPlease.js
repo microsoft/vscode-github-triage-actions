@@ -55,11 +55,11 @@ class LanguageSpecificLabeler {
         return (_c = (_b = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0].translations) === null || _b === void 0 ? void 0 : _b[0].text) !== null && _c !== void 0 ? _c : undefined;
     }
     async run() {
-        var _a, _b;
+        var _a, _b, _c;
         const issue = await this.issue.getIssue();
         const { body, title } = utils_1.normalizeIssue(issue);
         const translationChunk = `${title} ${body}`;
-        const language = await this.detectLanguage(translationChunk);
+        const language = (_a = (await this.detectLanguage(translationChunk))) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         if (!language || language === 'en') {
             const languagelabel = issue.labels.find((label) => label.startsWith(this.translatorRequestedLabelPrefix));
             if (languagelabel)
@@ -76,7 +76,7 @@ class LanguageSpecificLabeler {
             await this.issue.addLabel(label);
             if (this.needsMoreInfoLabel)
                 await this.issue.addLabel(this.needsMoreInfoLabel);
-            const targetLanguageComment = (_b = (_a = knownTranslations[language]) !== null && _a !== void 0 ? _a : (await this.translate(translation_data_json_1.baseString, language))) !== null && _b !== void 0 ? _b : 'ERR_TRANSLATION_FAILED';
+            const targetLanguageComment = (_c = (_b = knownTranslations[language]) !== null && _b !== void 0 ? _b : (await this.translate(translation_data_json_1.baseString, language))) !== null && _c !== void 0 ? _c : 'ERR_TRANSLATION_FAILED';
             const englishComment = knownTranslations['en'];
             await this.issue.postComment(`${targetLanguageComment}\n\n---\n${englishComment}\n<!-- translation_requested_comment -->`);
         }

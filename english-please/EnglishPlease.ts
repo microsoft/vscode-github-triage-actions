@@ -74,7 +74,8 @@ export class LanguageSpecificLabeler {
 		const { body, title } = normalizeIssue(issue)
 		const translationChunk = `${title} ${body}`
 
-		const language = await this.detectLanguage(translationChunk)
+		const language = (await this.detectLanguage(translationChunk))?.toLowerCase()
+
 		if (!language || language === 'en') {
 			const languagelabel = issue.labels.find((label) =>
 				label.startsWith(this.translatorRequestedLabelPrefix),
