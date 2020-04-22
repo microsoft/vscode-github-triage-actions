@@ -1,6 +1,5 @@
 {
 	"editor.codeActionsOnSave": {
-		// "source.organizeImports",
 		"source.fixAll.eslint": true
 	},
 	"[typescript]": {
