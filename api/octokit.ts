@@ -166,6 +166,17 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		super(token, params, options)
 	}
 
+	async addAssignee(assignee: string): Promise<void> {
+		debug('Adding assignee ' + assignee + ' to ' + this.issueData.number)
+		if (!this.options.readonly) {
+			await this.octokit.issues.addAssignees({
+				...this.params,
+				issue_number: this.issueData.number,
+				assignees: [assignee],
+			})
+		}
+	}
+
 	async closeIssue(): Promise<void> {
 		debug('Closing issue ' + this.issueData.number)
 		if (!this.options.readonly)

@@ -141,6 +141,16 @@ class OctoKitIssue extends OctoKit {
         this.params = params;
         this.issueData = issueData;
     }
+    async addAssignee(assignee) {
+        core_1.debug('Adding assignee ' + assignee + ' to ' + this.issueData.number);
+        if (!this.options.readonly) {
+            await this.octokit.issues.addAssignees({
+                ...this.params,
+                issue_number: this.issueData.number,
+                assignees: [assignee],
+            });
+        }
+    }
     async closeIssue() {
         core_1.debug('Closing issue ' + this.issueData.number);
         if (!this.options.readonly)

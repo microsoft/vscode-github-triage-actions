@@ -5,10 +5,15 @@
 
 import { GitHubIssue, Issue, User } from '../api/api'
 
-export type Command = { name: string } & ({ type: 'comment'; allowUsers: string[] } | { type: 'label' }) & {
-		action?: 'close'
-	} & Partial<{ comment: string; addLabel: string; removeLabel: string }> &
-	Partial<{ requireLabel: string; disallowLabel: string }>
+/* eslint-disable */
+// confusing when eslint formats
+export type Command =
+	& { name: string }
+	& ({ type: 'comment'; allowUsers: string[] } | { type: 'label' })
+	& { action?: 'close' }
+	& Partial<{ comment: string; addLabel: string; removeLabel: string }>
+	& Partial<{ requireLabel: string; disallowLabel: string }>
+/* eslint-enable */
 
 export class Commands {
 	constructor(
@@ -43,6 +48,41 @@ export class Commands {
 		console.log(`Running command ${command.name}:`)
 
 		const tasks = []
+
+		if ('comment' in this.action && (command.name === 'label' || command.name === 'assign')) {
+			const args: string[] = []
+			let argList = (
+				this.action.comment.match(
+					new RegExp(String.raw`(?:\\|/)${command.name}(.*)(?:\r)?(?:\n|$)`),
+				)?.[1] ?? ''
+			).trim()
+			while (argList) {
+				if (argList[0] === '"') {
+					const endIndex = argList.indexOf('"', 1)
+					if (endIndex === -1)
+						throw Error('Unable to parse arglist. Could not find matching double quote')
+					args.push(argList.slice(1, endIndex))
+					argList = argList.slice(endIndex + 1).trim()
+				} else {
+					const endIndex = argList.indexOf(' ', 1)
+					if (endIndex === -1) {
+						args.push(argList)
+						argList = ''
+					} else {
+						args.push(argList.slice(0, endIndex))
+						argList = argList.slice(endIndex + 1).trim()
+					}
+				}
+			}
+
+			if (command.name === 'label') {
+				tasks.push(...args.map((arg) => this.github.addLabel(arg)))
+			}
+
+			if (command.name === 'assign') {
+				tasks.push(...args.map((arg) => this.github.addAssignee(arg[0] === '@' ? arg.slice(1) : arg)))
+			}
+		}
 
 		if (command.action === 'close') {
 			tasks.push(this.github.closeIssue())

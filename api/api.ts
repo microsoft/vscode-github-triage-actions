@@ -34,6 +34,8 @@ export interface GitHubIssue extends GitHub {
 	addLabel(label: string): Promise<void>
 	removeLabel(label: string): Promise<void>
 
+	addAssignee(assignee: string): Promise<void>
+
 	getClosingInfo(): Promise<{ hash: string | undefined; timestamp: number } | undefined>
 }
 

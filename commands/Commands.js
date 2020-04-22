@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+/* eslint-enable */
 class Commands {
     constructor(github, config, action) {
         this.github = github;
@@ -29,10 +30,41 @@ class Commands {
         }
     }
     async perform(command, issue) {
+        var _a, _b;
         if (!(await this.matches(command, issue)))
             return;
         console.log(`Running command ${command.name}:`);
         const tasks = [];
+        if ('comment' in this.action && (command.name === 'label' || command.name === 'assign')) {
+            const args = [];
+            let argList = ((_b = (_a = this.action.comment.match(new RegExp(String.raw `(?:\\|/)${command.name}(.*)(?:\r)?(?:\n|$)`))) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : '').trim();
+            while (argList) {
+                if (argList[0] === '"') {
+                    const endIndex = argList.indexOf('"', 1);
+                    if (endIndex === -1)
+                        throw Error('Unable to parse arglist. Could not find matching double quote');
+                    args.push(argList.slice(1, endIndex));
+                    argList = argList.slice(endIndex + 1).trim();
+                }
+                else {
+                    const endIndex = argList.indexOf(' ', 1);
+                    if (endIndex === -1) {
+                        args.push(argList);
+                        argList = '';
+                    }
+                    else {
+                        args.push(argList.slice(0, endIndex));
+                        argList = argList.slice(endIndex + 1).trim();
+                    }
+                }
+            }
+            if (command.name === 'label') {
+                tasks.push(...args.map((arg) => this.github.addLabel(arg)));
+            }
+            if (command.name === 'assign') {
+                tasks.push(...args.map((arg) => this.github.addAssignee(arg[0] === '@' ? arg.slice(1) : arg)));
+            }
+        }
         if (command.action === 'close') {
             tasks.push(this.github.closeIssue());
         }

@@ -78,6 +78,9 @@ class TestbedIssue extends Testbed {
         };
         this.issueConfig = issueConfig;
     }
+    async addAssignee(assignee) {
+        this.issueConfig.issue.assignee = assignee;
+    }
     async setMilestone(milestoneId) {
         this.issueConfig.issue.milestoneId = milestoneId;
     }

@@ -164,6 +164,27 @@ describe('Commands', () => {
 			}).run()
 			expect((await testbed.getIssue()).open).to.equal(false)
 		})
+
+		it('adds labels to issues with /label comment', async () => {
+			const testbed = new TestbedIssue({ writers: ['JacksonKearl'] })
+			const commands: Command[] = [{ type: 'comment', allowUsers: [], name: 'label' }]
+			await new Commands(testbed, commands, {
+				comment: '/label hello "hello world"',
+				user: { name: 'JacksonKearl' },
+			}).run()
+			expect((await testbed.getIssue()).labels).to.include('hello')
+			expect((await testbed.getIssue()).labels).to.include('hello world')
+		})
+
+		it('adds assignees to issues with /assign comment', async () => {
+			const testbed = new TestbedIssue({ writers: ['JacksonKearl'] })
+			const commands: Command[] = [{ type: 'comment', allowUsers: [], name: 'assign' }]
+			await new Commands(testbed, commands, {
+				comment: '/assign Jackso \r\n',
+				user: { name: 'JacksonKearl' },
+			}).run()
+			expect((await testbed.getIssue()).assignee).to.equal('Jackso')
+		})
 	})
 
 	describe('Labels', () => {
