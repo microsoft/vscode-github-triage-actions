@@ -68,6 +68,12 @@ export type Command =
 	{ requireLabel?: string; disallowLabel?: string }
 ```
 
+Commands of type `comment` and name `label` or `assign` are special-cased to label or assign their arguments:
+```
+\label bug "needs more info"
+\assign JacksonKearl
+```
+
 ```yml
 inputs:
   token:
