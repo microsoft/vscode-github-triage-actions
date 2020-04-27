@@ -32,12 +32,12 @@ def refine_label(label, issue_data):
     elif label == "workbench":
         return apply_classifier(workbench_classifier, issue_data)
     else:
-        return label
+        return [label]
 
 
 def get_top_labels(issue_data):
     return [
-        refine_label(label, issue_data)
+        *refine_label(label, issue_data)
         for label in apply_classifier(area_classifier, issue_data)
     ]
 
