@@ -56,7 +56,10 @@ def predict(text_clf, target_names, text, min_prob):
     probs = text_clf.predict_proba([text])[0]
     best = sorted(enumerate(probs), key=lambda p: -p[1])
     print("threshold", min_prob)
-    print("estimated", [(target_names[i], p) for i, p in best[:5]])
+    print(
+        "estimated",
+        [(target_names[i], str(int(round(p, 2) * 100)) + "%") for i, p in best[:5]],
+    )
 
     return [target_names[i] for i, p in best if p > min_prob]
 
