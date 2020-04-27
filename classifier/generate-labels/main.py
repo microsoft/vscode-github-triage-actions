@@ -26,7 +26,7 @@ editor_classifier = loadClassifier("editor")
 workbench_classifier = loadClassifier("workbench")
 
 
-def refine_label(label):
+def refine_label(label, issue_data):
     if label == "editor":
         return apply_classifier(editor_classifier, issue_data)
     elif label == "workbench":
@@ -37,7 +37,8 @@ def refine_label(label):
 
 def get_top_labels(issue_data):
     return [
-        refine_label(label) for label in apply_classifier(area_classifier, issue_data)
+        refine_label(label, issue_data)
+        for label in apply_classifier(area_classifier, issue_data)
     ]
 
 
@@ -68,7 +69,7 @@ def predict(text_clf, target_names, text, min_prob):
     return [target_names[i] for i, p in best if p > min_prob]
 
 
-if __name__ == "__main__":
+def main():
     results = []
     with open(os.path.join(base_path, "issue_data.json")) as f:
         issue_data = json.load(f)
@@ -85,3 +86,7 @@ if __name__ == "__main__":
         print(issue["number"], ": ", issue["labels"])
     with open(os.path.join(base_path, "issue_labels.json"), "w") as f:
         json.dump(results, f)
+
+
+if __name__ == "__main__":
+    main()
