@@ -18,6 +18,7 @@ const main = async () => {
         for (const issue of page) {
             const issueData = await issue.getIssue();
             const cleansed = utils_1.normalizeIssue(issueData);
+            console.log(cleansed);
             data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
         }
     }
