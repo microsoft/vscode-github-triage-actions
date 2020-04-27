@@ -6,7 +6,7 @@ import { OctoKit, OctoKitIssue } from '../../api/octokit'
 import { getRequiredInput, logErrorToIssue, logRateLimit, getInput } from '../../utils/utils'
 
 const token = getRequiredInput('token')
-const allowLabels = getRequiredInput('allowLabels').split('|')
+const allowLabels = (getInput('allowLabels') || '').split('|')
 const createLabels = !!getInput('__createLabels')
 
 type ClassifierConfig = {

@@ -7,7 +7,7 @@ const github_1 = require("@actions/github");
 const octokit_1 = require("../../api/octokit");
 const utils_1 = require("../../utils/utils");
 const token = utils_1.getRequiredInput('token');
-const allowLabels = utils_1.getRequiredInput('allowLabels').split('|');
+const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
 const createLabels = !!utils_1.getInput('__createLabels');
 const main = async () => {
     const github = new octokit_1.OctoKit(token, github_1.context.repo);
