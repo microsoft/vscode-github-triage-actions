@@ -3,10 +3,11 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../../api/octokit'
-import { getRequiredInput, logErrorToIssue, logRateLimit } from '../../utils/utils'
+import { getRequiredInput, logErrorToIssue, logRateLimit, getInput } from '../../utils/utils'
 
 const token = getRequiredInput('token')
 const allowLabels = getRequiredInput('allowLabels').split('|')
+const createLabels = !!getInput('__createLabels')
 
 type ClassifierConfig = {
 	[area: string]: { assignLabel?: boolean; comment?: string; assign?: [string] }
@@ -29,6 +30,12 @@ const main = async () => {
 			issueData.labels.some((label) => !allowLabels.includes(label))
 		) {
 			continue
+		}
+
+		if (createLabels) {
+			if (!(await github.repoHasLabel(label))) {
+				await github.createLabel(label, 'f1d9ff', '')
+			}
 		}
 
 		const labelConfig = config[label]

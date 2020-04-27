@@ -2,7 +2,7 @@
 root = true
 
 # Tab indentation
-[*]
+[{*.ts}]
 indent_style = tab
 trim_trailing_whitespace = true
 

@@ -8,6 +8,7 @@ const octokit_1 = require("../../api/octokit");
 const utils_1 = require("../../utils/utils");
 const token = utils_1.getRequiredInput('token');
 const allowLabels = utils_1.getRequiredInput('allowLabels').split('|');
+const createLabels = !!utils_1.getInput('__createLabels');
 const main = async () => {
     const github = new octokit_1.OctoKit(token, github_1.context.repo);
     const config = await github.readConfig(utils_1.getRequiredInput('config-path'));
@@ -21,6 +22,11 @@ const main = async () => {
             issueData.numComments ||
             issueData.labels.some((label) => !allowLabels.includes(label))) {
             continue;
+        }
+        if (createLabels) {
+            if (!(await github.repoHasLabel(label))) {
+                await github.createLabel(label, 'f1d9ff', '');
+            }
         }
         const labelConfig = config[label];
         await Promise.all([

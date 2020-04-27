@@ -26,16 +26,19 @@ editor_classifier = loadClassifier("editor")
 workbench_classifier = loadClassifier("workbench")
 
 
+def refine_label(label):
+    if label == "editor":
+        return apply_classifier(editor_classifier, issue_data)
+    elif label == "workbench":
+        return apply_classifier(workbench_classifier, issue_data)
+    else:
+        return label
+
+
 def get_top_labels(issue_data):
-    area_labels = apply_classifier(area_classifier, issue_data)
-
-    if area_labels == "editor":
-        area_labels = apply_classifier(editor_classifier, issue_data)
-
-    elif area_labels == "workbench":
-        area_labels = apply_classifier(workbench_classifier, issue_data)
-
-    return area_labels
+    return [
+        refine_label(label) for label in apply_classifier(area_classifier, issue_data)
+    ]
 
 
 def get_label_config(config):
