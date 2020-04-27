@@ -55,6 +55,8 @@ def apply_classifier(classifier, text):
 def predict(text_clf, target_names, text, min_prob):
     probs = text_clf.predict_proba([text])[0]
     best = sorted(enumerate(probs), key=lambda p: -p[1])
+    print("threshold", min_prob)
+    print("estimated", [(target_names[i], p) for i, p in best[:5]])
 
     return [target_names[i] for i, p in best if p > min_prob]
 
