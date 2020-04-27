@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = require("@actions/core");
 const fs_1 = require("fs");
+const path_1 = require("path");
 const github_1 = require("@actions/github");
 const octokit_1 = require("../../api/octokit");
 const utils_1 = require("../../utils/utils");
@@ -21,7 +22,7 @@ const main = async () => {
         }
     }
     console.log('Got issues', JSON.stringify(data, null, 2));
-    fs_1.writeFileSync(__dirname + '../issue_data.json', JSON.stringify(data));
+    fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
 };
 main()
     .then(() => utils_1.logRateLimit(token))

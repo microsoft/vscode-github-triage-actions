@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import { writeFileSync } from 'fs'
+import { join } from 'path'
 import { context } from '@actions/github'
 import { OctoKit } from '../../api/octokit'
 import {
@@ -28,7 +29,7 @@ const main = async () => {
 		}
 	}
 	console.log('Got issues', JSON.stringify(data, null, 2))
-	writeFileSync(__dirname + '../issue_data.json', JSON.stringify(data))
+	writeFileSync(join(__dirname, '../issue_data.json'), JSON.stringify(data))
 }
 
 main()
