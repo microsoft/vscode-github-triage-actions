@@ -73,6 +73,6 @@ if __name__ == "__main__":
 
     print("Generated labels: ")
     for issue in results:
-        print(str(issue["number"]) + ": " + issue["labels"])
+        print(issue["number"], ": ", issue["labels"])
     with open(os.path.join(base_path, "issue_labels.json"), "w") as f:
         json.dump(results, f)
