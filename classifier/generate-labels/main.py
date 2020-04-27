@@ -36,10 +36,11 @@ def refine_label(label, issue_data):
 
 
 def get_top_labels(issue_data):
-    return [
-        *refine_label(label, issue_data)
-        for label in apply_classifier(area_classifier, issue_data)
-    ]
+    labels = []
+    for label in apply_classifier(area_classifier, issue_data):
+        labels += refine_label(label, issue_data)
+
+    return labels
 
 
 def get_label_config(config):
