@@ -1,0 +1,15 @@
+name: "Classifier: Fetch Issues"
+description: Collect the issues which need to be labeled and write them to a file for later processing
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  from:
+    description: Start point of collected issues (minutes ago)
+    required: true
+  until:
+    description: End point of collected issues (minutes ago)
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'

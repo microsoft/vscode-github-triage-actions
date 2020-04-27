@@ -14,19 +14,26 @@ exports.normalizeIssue = (issue) => {
     const { body, title } = issue;
     const isBug = body.includes('bug_report_template') || /Issue Type:.*Bug.*/.test(body);
     const isFeatureRequest = body.includes('feature_request_template') || /Issue Type:.*Feature Request.*/.test(body);
-    const cleanse = (str) => str
-        .toLowerCase()
-        .replace(/<!--.*?-->/gu, '')
-        .replace(/.* version: .*/gu, '')
-        .replace(/issue type: .*/gu, '')
-        .replace(/<details>(.|\s)*?<\/details>/gu, '')
-        .replace(/vs ?code/gu, '')
-        .replace(/we have written.*please paste./gu, '')
-        .replace(/steps to reproduce:/gu, '')
-        .replace(/does this issue occur when all extensions are disabled.*/gu, '')
-        .replace(/```(.|\s)*?```/gu, '')
-        .replace(/!?\[.*?\]\(.*?\)/gu, '')
-        .replace(/\s+/gu, ' ');
+    const cleanse = (str) => {
+        let out = str
+            .toLowerCase()
+            .replace(/<!--.*-->/gu, '')
+            .replace(/.* version: .*/gu, '')
+            .replace(/issue type: .*/gu, '')
+            .replace(/vs ?code/gu, '')
+            .replace(/we have written.*please paste./gu, '')
+            .replace(/steps to reproduce:/gu, '')
+            .replace(/does this issue occur when all extensions are disabled.*/gu, '')
+            .replace(/!?\[[^\]]*\]\([^)]*\)/gu, '')
+            .replace(/\s+/gu, ' ')
+            .replace(/```[^`]*?```/gu, '');
+        while (out.includes(`<details>`) &&
+            out.includes('</details>') &&
+            out.indexOf(`</details>`) > out.indexOf(`<details>`)) {
+            out = out.slice(0, out.indexOf('<details>')) + out.slice(out.indexOf(`</details>`) + 10);
+        }
+        return out;
+    };
     return {
         body: cleanse(body),
         title: cleanse(title),

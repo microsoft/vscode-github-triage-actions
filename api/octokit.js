@@ -18,6 +18,7 @@ class OctoKit {
         this.writeAccessCache = {};
         this.octokit = new github_1.GitHub(token);
     }
+    // TODO: just iterate over the issues in a page here instead of making caller do it
     async *query(query) {
         const q = query.q + ` repo:${this.params.owner}/${this.params.repo}`;
         console.log(`Querying for ${q}:`);

@@ -1,0 +1,30 @@
+{
+    "min_prob": 0.27,
+    "target_names": [
+        "workbench-actions",
+        "workbench-cli",
+        "workbench-diagnostics",
+        "workbench-dnd",
+        "workbench-editor-grid",
+        "workbench-editors",
+        "workbench-electron",
+        "workbench-feedback",
+        "workbench-history",
+        "workbench-hot-exit",
+        "workbench-launch",
+        "workbench-link",
+        "workbench-multiroot",
+        "workbench-notifications",
+        "workbench-os-integration",
+        "workbench-rapid-render",
+        "workbench-run-as-admin",
+        "workbench-state",
+        "workbench-status",
+        "workbench-tabs",
+        "workbench-touchbar",
+        "workbench-views",
+        "workbench-welcome",
+        "workbench-window",
+        "workbench-zen"
+    ]
+}

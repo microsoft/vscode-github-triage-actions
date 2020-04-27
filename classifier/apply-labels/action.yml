@@ -1,5 +1,5 @@
-name: Queryer
-description: Runs a query based on the comment given
+name: "Classifier: Apply Labels"
+description: Applies labels generated from the python script back to thier respective issues
 inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions

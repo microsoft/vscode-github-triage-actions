@@ -5,6 +5,7 @@
 	"[typescript]": {
 		"editor.defaultFormatter": "dbaeumer.vscode-eslint"
 	},
+	"eslint.format.enable": true,
 	"files.exclude": {
 		"node_modules": true,
 		"**/*.js": {
@@ -13,5 +14,7 @@
 		"**/*.js.map": {
 			"when": "$(basename)"
 		}
-	}
+	},
+	"python.pythonPath": "/usr/local/bin/python3",
+	"python.formatting.provider": "black"
 }
