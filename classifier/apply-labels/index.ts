@@ -9,7 +9,7 @@ const token = getRequiredInput('token')
 const allowLabels = getRequiredInput('allowLabels').split('|')
 
 type ClassifierConfig = {
-	[area: string]: { skipLabeling?: boolean; comment?: string; assign?: [string] }
+	[area: string]: { assignLabel?: boolean; comment?: string; assign?: [string] }
 }
 
 const main = async () => {
@@ -33,7 +33,7 @@ const main = async () => {
 
 		const labelConfig = config[label]
 		await Promise.all<any>([
-			labelConfig?.skipLabeling ? Promise.resolve() : issue.addLabel(label),
+			labelConfig?.assignLabel === false ? Promise.resolve() : issue.addLabel(label),
 			labelConfig?.comment ? issue.postComment(labelConfig.comment) : Promise.resolve(),
 			...(labelConfig?.assign ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee)) : []),
 		])

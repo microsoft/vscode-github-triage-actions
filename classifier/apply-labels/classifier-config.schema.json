@@ -9,8 +9,8 @@
 	"additionalProperties": {
 		"type": "object",
 		"properties": {
-			"skipLabeling": {
-				"description": "If true, this label will not be autoimatically applied to issues",
+			"assignLabel": {
+				"description": "If false, this label will not be autoimatically applied to issues. Default true.",
 				"type": "boolean"
 			},
 			"comment": {
