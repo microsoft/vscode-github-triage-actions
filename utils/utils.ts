@@ -99,7 +99,10 @@ Issue: ${ping ? `${context.repo.owner}/${context.repo.repo}#` : ''}${context.iss
 Repo: ${context.repo.owner}/${context.repo.repo}
 
 <!-- Context:
-${JSON.stringify(context, null, 2).replace(/<!--/gu, '<@--').replace(/-->/gu, '--@>')}
+${JSON.stringify(context, null, 2)
+	.replace(/<!--/gu, '<@--')
+	.replace(/-->/gu, '--@>')
+	.replace(/\/|\\/, 'slash-')}
 -->
 `)
 }
