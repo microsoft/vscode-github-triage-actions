@@ -165,6 +165,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		options: { readonly: boolean } = { readonly: false },
 	) {
 		super(token, params, options)
+		console.log('running bot on issue', issueData.number)
 	}
 
 	async addAssignee(assignee: string): Promise<void> {
