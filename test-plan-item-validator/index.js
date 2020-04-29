@@ -16,6 +16,6 @@ main()
     .then(() => utils_1.logRateLimit(utils_1.getRequiredInput('token')))
     .catch(async (error) => {
     core.setFailed(error.message);
-    await utils_1.logErrorToIssue(error.message, true, utils_1.getRequiredInput('token'));
+    await utils_1.logErrorToIssue(error, true, utils_1.getRequiredInput('token'));
 });
 //# sourceMappingURL=index.js.map

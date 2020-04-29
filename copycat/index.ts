@@ -23,5 +23,5 @@ main()
 	.then(() => logRateLimit(token))
 	.catch(async (error) => {
 		core.setFailed(error.message)
-		await logErrorToIssue(error.message, true, token)
+		await logErrorToIssue(error, true, token)
 	})

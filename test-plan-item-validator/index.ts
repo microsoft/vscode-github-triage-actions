@@ -22,5 +22,5 @@ main()
 	.then(() => logRateLimit(getRequiredInput('token')))
 	.catch(async (error) => {
 		core.setFailed(error.message)
-		await logErrorToIssue(error.message, true, getRequiredInput('token'))
+		await logErrorToIssue(error, true, getRequiredInput('token'))
 	})
