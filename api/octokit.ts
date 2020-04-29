@@ -134,15 +134,19 @@ export class OctoKit implements GitHub {
 	async readConfig(path: string): Promise<any> {
 		debug('Reading config at ' + path)
 		const repoPath = `.github/${path}.json`
-		const data = (await this.octokit.repos.getContents({ ...this.params, path: repoPath })).data
+		try {
+			const data = (await this.octokit.repos.getContents({ ...this.params, path: repoPath })).data
 
-		if ('type' in data && data.type === 'file') {
-			if (data.encoding === 'base64' && data.content) {
-				return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'))
+			if ('type' in data && data.type === 'file') {
+				if (data.encoding === 'base64' && data.content) {
+					return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'))
+				}
+				throw Error(`Could not read contents "${data.content}" in encoding "${data.encoding}"`)
 			}
-			throw Error(`Could not read contents "${data.content}" in encoding "${data.encoding}"`)
+			throw Error('Found directory at config path when expecting file' + JSON.stringify(data))
+		} catch {
+			throw Error('Error with config file at ' + repoPath)
 		}
-		throw Error('Found directory at config path when expecting file' + JSON.stringify(data))
 	}
 
 	async releaseContainsCommit(release: string, commit: string): Promise<boolean> {
