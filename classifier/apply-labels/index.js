@@ -17,10 +17,12 @@ const main = async () => {
     console.log('labelings:', labelings);
     for (const labeling of labelings) {
         const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined;
+        if (!label) {
+            continue;
+        }
         const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
         const issueData = await issue.getIssue();
-        if (!label ||
-            issueData.assignee ||
+        if (issueData.assignee ||
             issueData.numComments ||
             issueData.labels.some((label) => !allowLabels.includes(label))) {
             continue;

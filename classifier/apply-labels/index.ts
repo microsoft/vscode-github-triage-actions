@@ -25,10 +25,13 @@ const main = async () => {
 
 	for (const labeling of labelings) {
 		const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined
+		if (!label) {
+			continue
+		}
+
 		const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
 		const issueData = await issue.getIssue()
 		if (
-			!label ||
 			issueData.assignee ||
 			issueData.numComments ||
 			issueData.labels.some((label) => !allowLabels.includes(label))
