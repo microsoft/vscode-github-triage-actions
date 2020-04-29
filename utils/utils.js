@@ -76,7 +76,7 @@ Repo: ${github_1.context.repo.owner}/${github_1.context.repo.repo}
 ${JSON.stringify(github_1.context, null, 2)
         .replace(/<!--/gu, '<@--')
         .replace(/-->/gu, '--@>')
-        .replace(/\/|\\/, 'slash-')}
+        .replace(/\/|\\/gu, 'slash-')}
 -->
 `);
 };
