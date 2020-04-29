@@ -32,8 +32,12 @@ const main = async () => {
 			continue
 		}
 
+		console.log(`adding label ${label} to issue ${issueData.number}`)
+
 		if (createLabels) {
+			console.log(`create labels enabled`)
 			if (!(await github.repoHasLabel(label))) {
+				console.log(`creating label`)
 				await github.createLabel(label, 'f1d9ff', '')
 			}
 		}
