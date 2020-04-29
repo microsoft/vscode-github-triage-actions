@@ -19,7 +19,7 @@ const main = async () => {
 	const labelings: { number: number; labels: string[] }[] = JSON.parse(
 		readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 	)
-	console.log(labelings)
+	console.log('labelings:', labelings)
 
 	for (const labeling of labelings) {
 		const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined
