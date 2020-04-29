@@ -10,6 +10,7 @@ const token = utils_1.getRequiredInput('token');
 const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
 const createLabels = !!utils_1.getInput('__createLabels');
 const main = async () => {
+    console.log('hello');
     const github = new octokit_1.OctoKit(token, github_1.context.repo);
     const config = await github.readConfig(utils_1.getRequiredInput('config-path'));
     const labelings = JSON.parse(fs_1.readFileSync(path_1.join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));

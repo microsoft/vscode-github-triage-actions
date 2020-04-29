@@ -14,6 +14,8 @@ type ClassifierConfig = {
 }
 
 const main = async () => {
+	console.log('hello')
+
 	const github = new OctoKit(token, context.repo)
 	const config: ClassifierConfig = await github.readConfig(getRequiredInput('config-path'))
 	const labelings: { number: number; labels: string[] }[] = JSON.parse(
