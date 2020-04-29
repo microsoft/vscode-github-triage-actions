@@ -13,6 +13,7 @@ const main = async () => {
     const github = new octokit_1.OctoKit(token, github_1.context.repo);
     const config = await github.readConfig(utils_1.getRequiredInput('config-path'));
     const labelings = JSON.parse(fs_1.readFileSync(path_1.join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
+    console.log(labelings);
     for (const labeling of labelings) {
         const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined;
         const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });

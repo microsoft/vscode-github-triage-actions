@@ -19,6 +19,8 @@ const main = async () => {
 	const labelings: { number: number; labels: string[] }[] = JSON.parse(
 		readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 	)
+	console.log(labelings)
+
 	for (const labeling of labelings) {
 		const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined
 		const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
