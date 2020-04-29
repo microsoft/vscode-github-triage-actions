@@ -2,14 +2,14 @@ import * as core from '@actions/core'
 import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { context } from '@actions/github'
-import { OctoKit } from '../../api/octokit'
+import { OctoKit } from '../../../api/octokit'
 import {
 	getRequiredInput,
 	logErrorToIssue,
 	logRateLimit,
 	daysAgoToHumanReadbleDate,
 	normalizeIssue,
-} from '../../utils/utils'
+} from '../../../utils/utils'
 
 const minToDay = 0.0007
 const token = getRequiredInput('token')

@@ -2,8 +2,8 @@ import * as core from '@actions/core'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { context } from '@actions/github'
-import { OctoKit, OctoKitIssue } from '../../api/octokit'
-import { getRequiredInput, logErrorToIssue, logRateLimit, getInput } from '../../utils/utils'
+import { OctoKit, OctoKitIssue } from '../../../api/octokit'
+import { getRequiredInput, logErrorToIssue, logRateLimit, getInput } from '../../../utils/utils'
 
 const token = getRequiredInput('token')
 const allowLabels = (getInput('allowLabels') || '').split('|')
