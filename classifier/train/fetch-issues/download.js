@@ -93,7 +93,12 @@ exports.download = async (token, repo, endCursor) => {
     console.log('Last issue:', issues[issues.length - 1].number);
     endCursor = pageInfo.endCursor;
     if (pageInfo.hasNextPage) {
-        setTimeout(() => exports.download(token, repo, endCursor), 1000);
+        return new Promise((resolve) => {
+            setTimeout(async () => {
+                await exports.download(token, repo, endCursor);
+                resolve();
+            }, 1000);
+        });
     }
 };
 const extractLabelEvents = (_issue) => {

@@ -167,7 +167,12 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 
 	endCursor = pageInfo.endCursor
 	if (pageInfo.hasNextPage) {
-		setTimeout(() => download(token, repo, endCursor), 1000)
+		return new Promise((resolve) => {
+			setTimeout(async () => {
+				await download(token, repo, endCursor)
+				resolve()
+			}, 1000)
+		})
 	}
 }
 

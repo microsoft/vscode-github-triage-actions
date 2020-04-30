@@ -6,7 +6,7 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
 
-import { getRequiredInput, logErrorToIssue } from '../../../utils/utils'
+import { logErrorToIssue, getRequiredInput } from '../../../utils/utils'
 import { download } from './download'
 import { createDataDirectories } from './createDataDir'
 
@@ -14,8 +14,8 @@ const token = getRequiredInput('token')
 
 const run = async () => {
 	await download(token, context.repo)
-	await createDataDirectories('category')
-	await createDataDirectories('assignee')
+	await new Promise((resolve) => setTimeout(resolve, 1000))
+	await createDataDirectories('category', { excludeBots: false, excludeDuplicates: true })
 }
 
 run().catch(async (error) => {

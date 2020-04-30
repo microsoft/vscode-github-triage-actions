@@ -46,10 +46,7 @@ if not (DATA_DIR == "assignee" or DATA_DIR == "category"):
 def new_text_clf():
     return Pipeline(
         [
-            (
-                "vect",
-                StemmedCountVectorizer(ngram_range=(1, 1), max_df=0.8, min_df=10),
-            ),
+            ("vect", StemmedCountVectorizer(ngram_range=(1, 1), max_df=1, min_df=1),),
             ("tfidf", TfidfTransformer(use_idf=True)),
             (
                 "clf",
@@ -168,13 +165,15 @@ def calc_score(
 
 
 def write_model_to_file(category, target_names, best_min_prob, text_clf):
-    with open(os.path.join(BASE_PATH, category + "-model-config.json", "w")) as outfile:
+    with open(
+        os.path.join(BASE_PATH, "..", category + "-model-config.json"), "w"
+    ) as outfile:
         json.dump(
             {"min_prob": best_min_prob, "target_names": target_names},
             outfile,
             indent=4,
         )
-    joblib.dump(text_clf, os.path.join(BASE_PATH, category + "-model.pickle"))
+    joblib.dump(text_clf, os.path.join(BASE_PATH, "..", category + "-model.pickle"))
 
 
 def find_best(

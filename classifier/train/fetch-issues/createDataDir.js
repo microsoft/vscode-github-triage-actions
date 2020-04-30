@@ -166,7 +166,7 @@ const classifications = [
         labelToCategory: {},
     },
 ];
-exports.createDataDirectories = async (dataDir) => {
+exports.createDataDirectories = async (dataDir, options) => {
     const dumpFile = path.join(__dirname, 'issues.json');
     const issues = fs
         .readFileSync(dumpFile, { encoding: 'utf8' })
@@ -191,11 +191,17 @@ exports.createDataDirectories = async (dataDir) => {
             const isNotBotLabeled = !!issue.labelEvents.find((event) => event.type === 'added' &&
                 event.label === category &&
                 !['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor));
-            if (category && isNotBotLabeled && isNotDuplicate) {
+            if (category &&
+                (!(options === null || options === void 0 ? void 0 : options.excludeDuplicates) || isNotDuplicate) &&
+                (!(options === null || options === void 0 ? void 0 : options.excludeBots) || isNotBotLabeled)) {
                 if (!seen[category]) {
                     seen[category] = true;
-                    fs.mkdirSync(path.join(dataDir, name, 'train', category));
-                    fs.mkdirSync(path.join(dataDir, name, 'test', category));
+                    fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {
+                        recursive: true,
+                    });
+                    fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'test', category), {
+                        recursive: true,
+                    });
                     await new Promise((resolve) => setTimeout(resolve, 100)); // ?
                 }
                 const filepath = path.join(__dirname, '..', dataDir, name, (issue.createdAt > utils_1.daysAgoToTimestamp(30) ? Math.random() < 0.5 : Math.random() < 0.8)

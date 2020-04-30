@@ -12,8 +12,8 @@ const createDataDir_1 = require("./createDataDir");
 const token = utils_1.getRequiredInput('token');
 const run = async () => {
     await download_1.download(token, github_1.context.repo);
-    await createDataDir_1.createDataDirectories('category');
-    await createDataDir_1.createDataDirectories('assignee');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await createDataDir_1.createDataDirectories('category', { excludeBots: false, excludeDuplicates: true });
 };
 run().catch(async (error) => {
     core.setFailed(error.message);

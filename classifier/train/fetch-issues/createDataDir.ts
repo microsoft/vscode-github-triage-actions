@@ -176,7 +176,10 @@ const classifications: Classification[] = [
 	},
 ]
 
-export const createDataDirectories = async (dataDir: 'assignee' | 'category') => {
+export const createDataDirectories = async (
+	dataDir: 'assignee' | 'category',
+	options: { excludeBots?: boolean; excludeDuplicates?: boolean },
+) => {
 	const dumpFile = path.join(__dirname, 'issues.json')
 	const issues: JSONOutputLine[] = fs
 		.readFileSync(dumpFile, { encoding: 'utf8' })
@@ -212,11 +215,20 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 					!['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor),
 			)
 
-			if (category && isNotBotLabeled && isNotDuplicate) {
+			if (
+				category &&
+				(!options?.excludeDuplicates || isNotDuplicate) &&
+				(!options?.excludeBots || isNotBotLabeled)
+			) {
 				if (!seen[category]) {
 					seen[category] = true
-					fs.mkdirSync(path.join(dataDir, name, 'train', category))
-					fs.mkdirSync(path.join(dataDir, name, 'test', category))
+					fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {
+						recursive: true,
+					})
+					fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'test', category), {
+						recursive: true,
+					})
+
 					await new Promise((resolve) => setTimeout(resolve, 100)) // ?
 				}
 
