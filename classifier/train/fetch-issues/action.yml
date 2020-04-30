@@ -1,0 +1,9 @@
+name: "Trainer: Fetch Issues"
+description: Download all issues and associated labeling data
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+runs:
+  using: 'node12'
+  main: 'index.js'

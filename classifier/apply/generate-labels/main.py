@@ -16,12 +16,10 @@ print("running with base_path:", base_path)
 
 
 def loadClassifier(classification):
-    with open(
-        os.path.join(base_path, "models/" + classification + "/config.json")
-    ) as infile:
+    with open(os.path.join(base_path, classification + "-model-config.json")) as infile:
         classifier = json.load(infile)
         classifier["text_clf"] = joblib.load(
-            os.path.join(base_path, "models/" + classification + "/text_clf.pickle")
+            os.path.join(base_path, classification + "-model.pickle")
         )
         return classifier
 

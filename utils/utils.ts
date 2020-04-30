@@ -12,9 +12,10 @@ import { Issue } from '../api/api'
 export const getInput = (name: string) => core.getInput(name) || undefined
 export const getRequiredInput = (name: string) => core.getInput(name, { required: true })
 
-export const normalizeIssue = (
-	issue: Issue,
-): { body: string; title: string; issueType: 'bug' | 'feature_request' | 'unknown' } => {
+export const normalizeIssue = (issue: {
+	body: string
+	title: string
+}): { body: string; title: string; issueType: 'bug' | 'feature_request' | 'unknown' } => {
 	const { body, title } = issue
 
 	const isBug = body.includes('bug_report_template') || /Issue Type:.*Bug.*/.test(body)

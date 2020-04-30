@@ -10,10 +10,13 @@ const path_1 = require("path");
 const github_1 = require("@actions/github");
 const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../utils/utils");
+const blobStorage_1 = require("../../blobStorage");
 const minToDay = 0.0007;
 const token = utils_1.getRequiredInput('token');
 const from = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('from') * minToDay);
 const until = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('until') * minToDay);
+const blobContainer = utils_1.getRequiredInput('blobContainerName');
+const blobStorageKey = utils_1.getRequiredInput('blobStoragekey');
 const main = async () => {
     const github = new octokit_1.OctoKit(token, github_1.context.repo);
     const query = `created:>${from} updated:<${until} is:open`;
@@ -27,6 +30,12 @@ const main = async () => {
     }
     console.log('Got issues', JSON.stringify(data, null, 2));
     fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
+    await blobStorage_1.downloadBlob('area-model.pickle', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlob('area-model-config.json', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlob('editor-model.pickle', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlob('editor-model-config.json', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlob('workbench-model.pickle', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlob('workbench-model-config.json', blobContainer, blobStorageKey);
 };
 main()
     .then(() => utils_1.logRateLimit(token))

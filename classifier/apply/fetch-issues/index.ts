@@ -15,11 +15,15 @@ import {
 	daysAgoToHumanReadbleDate,
 	normalizeIssue,
 } from '../../../utils/utils'
+import { downloadBlob } from '../../blobStorage'
 
 const minToDay = 0.0007
 const token = getRequiredInput('token')
 const from = daysAgoToHumanReadbleDate(+getRequiredInput('from') * minToDay)
 const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay)
+
+const blobContainer = getRequiredInput('blobContainerName')
+const blobStorageKey = getRequiredInput('blobStoragekey')
 
 const main = async () => {
 	const github = new OctoKit(token, context.repo)
@@ -35,6 +39,15 @@ const main = async () => {
 	}
 	console.log('Got issues', JSON.stringify(data, null, 2))
 	writeFileSync(join(__dirname, '../issue_data.json'), JSON.stringify(data))
+
+	await downloadBlob('area-model.pickle', blobContainer, blobStorageKey)
+	await downloadBlob('area-model-config.json', blobContainer, blobStorageKey)
+
+	await downloadBlob('editor-model.pickle', blobContainer, blobStorageKey)
+	await downloadBlob('editor-model-config.json', blobContainer, blobStorageKey)
+
+	await downloadBlob('workbench-model.pickle', blobContainer, blobStorageKey)
+	await downloadBlob('workbench-model-config.json', blobContainer, blobStorageKey)
 }
 
 main()
