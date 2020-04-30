@@ -266,6 +266,9 @@ def run_category(category):
     test = load_test(category)
     train = load_train(category)
 
+    print('train categories', train.target_names)
+    print('test categories', test.target_names)
+
     text_clf = new_text_clf().fit(train.data, train.target)
     initial_prediction = text_clf.predict(test.data)
 
