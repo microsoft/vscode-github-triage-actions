@@ -207,7 +207,7 @@ exports.createDataDirectories = async (dataDir) => {
                     });
                     await new Promise((resolve) => setTimeout(resolve, 100)); // ?
                 }
-                const filepath = path.join(__dirname, '..', dataDir, name, Math.random() < 0.5 ? 'train' : 'test', category);
+                const filepath = path.join(__dirname, '..', dataDir, name, Math.random() < 0.8 ? 'train' : 'test', category);
                 const { title, body } = utils_1.normalizeIssue(issue);
                 const filename = `${issue.number}.txt`;
                 const content = `${title}\n\n${body}`;

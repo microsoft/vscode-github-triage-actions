@@ -239,7 +239,7 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 					'..',
 					dataDir,
 					name,
-					Math.random() < 0.5 ? 'train' : 'test',
+					Math.random() < 0.8 ? 'train' : 'test',
 					category,
 				)
 

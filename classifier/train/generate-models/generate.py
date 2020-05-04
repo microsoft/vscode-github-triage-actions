@@ -23,12 +23,12 @@ import os
 sys.path.insert(0, ".")
 from utils import StemmedCountVectorizer  # noqa
 
-CUTOFF_EXPLORATION_RATE = 10
+CUTOFF_EXPLORATION_RATE = 100
 PROB_EXPLORATION_RATE = 3
 
 SKIP_WEIGHT = 0
 CORRECT_WEIGHT = [1]
-INCORRECT_WEIGHT = -2
+INCORRECT_WEIGHT = -1.75
 
 MAX_OPTIONS = 1
 
