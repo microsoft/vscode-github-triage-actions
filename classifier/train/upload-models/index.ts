@@ -12,14 +12,29 @@ const blobContainer = getRequiredInput('blobContainerName')
 const blobStorageKey = getRequiredInput('blobStoragekey')
 
 const main = async () => {
+	console.log('uploading area-model.pickle')
 	await uploadBlob('area-model.pickle', blobContainer, blobStorageKey)
+	console.log('done')
+
+	console.log('uploading area-model-config.json')
 	await uploadBlob('area-model-config.json', blobContainer, blobStorageKey)
+	console.log('done')
 
+	console.log('uploading editor-model.pickle')
 	await uploadBlob('editor-model.pickle', blobContainer, blobStorageKey)
-	await uploadBlob('editor-model-config.json', blobContainer, blobStorageKey)
+	console.log('done')
 
+	console.log('uploading editor-model-config.json')
+	await uploadBlob('editor-model-config.json', blobContainer, blobStorageKey)
+	console.log('done')
+
+	console.log('uploading workbench-model.pickle')
 	await uploadBlob('workbench-model.pickle', blobContainer, blobStorageKey)
+	console.log('done')
+
+	console.log('uploading workbench-model-config.json')
 	await uploadBlob('workbench-model-config.json', blobContainer, blobStorageKey)
+	console.log('done')
 }
 
 main().catch(async (error) => {

@@ -54,6 +54,96 @@ inputs:
     required: true
 ```
 
+### Classifier
+
+The full classifier workflow is a 2-part process (Train, Apply), with each part consisting of several individual Actions.
+
+#### Train
+
+In this part, the full issue data for the repository is downloaaded and ML models are applied to it. These models then get uploaded to Azure Storage, to be later consumed by the Labeling part. This action should run periodically (approximately monthly) to keep the models from going stale.
+
+##### fetch-issues
+Download all issues and associated labeling data
+
+```yml
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+```
+
+##### generate-models
+This is a Python Action, invoked like:
+
+```yml
+run: python ./actions/classifier/train/generate-models/generate.py category
+```
+
+##### upload-models
+Upload models to blob storage
+
+```yml
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  blobContainerName:
+    description: Name of Azure Storage container
+    required: true
+  blobStorageKey:
+    description: Access string for blob storage account
+    required: true
+```
+
+#### Apply
+
+In this part, the models generated in the Training phase get aapplied to issues. To save on bandwidth and compute, this is dont in batches. Every half hour, the issues in the past period are passed through the models and assigned a label.
+
+##### fetch-issues
+Collect the issues which need to be labeled and write them to a file for later processing
+
+```yml
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  from:
+    description: Start point of collected issues (minutes ago)
+    required: true
+  until:
+    description: End point of collected issues (minutes ago)
+    required: true
+  blobContainerName:
+    description: Name of Azure Storage container
+    required: true
+  blobStorageKey:
+    description: Access string for blob storage account
+    required: true
+```
+
+##### generate-labels
+This is a Python Action, invoked like:
+
+```yml
+run: python ./actions/classifier/apply/generate-labels/main.py
+```
+
+##### apply-labels
+Applies labels generated from the python script back to thier respective issues
+
+```yml
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  config-path:
+    description: The PATH of a .github/PATH.json in the repo that describes what should be done per feature area
+    required: true
+  allowLabels:
+    description: "Pipe (|) separated list of labels such that the bot should act even if those labels are already present (use for bot-applied labels/etc.)"
+    default: ''
+```
+
 ### Commands
 Respond to commands given in the form of either labels or comments by select groups of people.
 

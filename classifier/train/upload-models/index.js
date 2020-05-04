@@ -11,12 +11,24 @@ const token = utils_1.getRequiredInput('token');
 const blobContainer = utils_1.getRequiredInput('blobContainerName');
 const blobStorageKey = utils_1.getRequiredInput('blobStoragekey');
 const main = async () => {
+    console.log('uploading area-model.pickle');
     await blobStorage_1.uploadBlob('area-model.pickle', blobContainer, blobStorageKey);
+    console.log('done');
+    console.log('uploading area-model-config.json');
     await blobStorage_1.uploadBlob('area-model-config.json', blobContainer, blobStorageKey);
+    console.log('done');
+    console.log('uploading editor-model.pickle');
     await blobStorage_1.uploadBlob('editor-model.pickle', blobContainer, blobStorageKey);
+    console.log('done');
+    console.log('uploading editor-model-config.json');
     await blobStorage_1.uploadBlob('editor-model-config.json', blobContainer, blobStorageKey);
+    console.log('done');
+    console.log('uploading workbench-model.pickle');
     await blobStorage_1.uploadBlob('workbench-model.pickle', blobContainer, blobStorageKey);
+    console.log('done');
+    console.log('uploading workbench-model-config.json');
     await blobStorage_1.uploadBlob('workbench-model-config.json', blobContainer, blobStorageKey);
+    console.log('done');
 };
 main().catch(async (error) => {
     core.setFailed(error.message);
