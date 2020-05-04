@@ -201,7 +201,16 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 			const categories = issue.labels
 				.map((label) => label)
 				.map((label) => labelToCategoryFn(label) || label)
-			let category = dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories)
+
+			const category =
+				(dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories)) ??
+				(['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) =>
+					issue.labels.includes(otherLabel),
+				)
+					? name === 'area' && Math.random() < 0.2
+						? '__OTHER__'
+						: undefined
+					: undefined)
 
 			const isDuplicate = issue.labels.includes('*duplicate')
 
@@ -212,7 +221,7 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 					!['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor),
 			)
 
-			if (category && !isDuplicate && isHumanLabeled) {
+			if (category && !isDuplicate && (isHumanLabeled || category === '__OTHER__')) {
 				if (!seen[category]) {
 					seen[category] = true
 					fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {

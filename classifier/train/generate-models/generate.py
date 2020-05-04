@@ -23,12 +23,12 @@ import os
 sys.path.insert(0, ".")
 from utils import StemmedCountVectorizer  # noqa
 
-CUTOFF_EXPLORATION_RATE = 3
+CUTOFF_EXPLORATION_RATE = 10
 PROB_EXPLORATION_RATE = 3
 
 SKIP_WEIGHT = 0
 CORRECT_WEIGHT = [1]
-INCORRECT_WEIGHT = -1
+INCORRECT_WEIGHT = -2
 
 MAX_OPTIONS = 1
 
@@ -157,6 +157,9 @@ def calc_score(
     for index, prediction in enumerate(predicted):
         if index >= MAX_OPTIONS:
             break
+
+        if train.target_names[prediction] in ignore_labels:
+            return skip_weight
 
         if train.target_names[prediction] == test.target_names[target]:
             return correct_weight[index]
@@ -312,7 +315,9 @@ def run_category(category):
     for cutoff_method in methods:
 
         scores = score_map[cutoff_method]
-        score_tuples = [(test.target_names[i], f) for i, f in enumerate(scores)]
+        score_tuples = [
+            (train.target_names[text_clf.classes_[i]], f) for i, f in enumerate(scores)
+        ]
 
         (
             res,

@@ -167,6 +167,7 @@ const classifications = [
     },
 ];
 exports.createDataDirectories = async (dataDir) => {
+    var _a;
     const dumpFile = path.join(__dirname, 'issues.json');
     const issues = fs
         .readFileSync(dumpFile, { encoding: 'utf8' })
@@ -186,12 +187,16 @@ exports.createDataDirectories = async (dataDir) => {
             const categories = issue.labels
                 .map((label) => label)
                 .map((label) => labelToCategoryFn(label) || label);
-            let category = dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories);
+            const category = (_a = (dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories))) !== null && _a !== void 0 ? _a : (['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) => issue.labels.includes(otherLabel))
+                ? name === 'area' && Math.random() < 0.2
+                    ? '__OTHER__'
+                    : undefined
+                : undefined);
             const isDuplicate = issue.labels.includes('*duplicate');
             const isHumanLabeled = !!issue.labelEvents.find((event) => event.type === 'added' &&
                 event.label === category &&
                 !['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor));
-            if (category && !isDuplicate && isHumanLabeled) {
+            if (category && !isDuplicate && (isHumanLabeled || category === '__OTHER__')) {
                 if (!seen[category]) {
                     seen[category] = true;
                     fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {
