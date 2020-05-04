@@ -6,7 +6,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { JSONOutputLine } from './download'
-import { normalizeIssue, daysAgoToTimestamp } from '../../../utils/utils'
+import { normalizeIssue } from '../../../utils/utils'
 
 interface Classification {
 	name: string
@@ -176,10 +176,7 @@ const classifications: Classification[] = [
 	},
 ]
 
-export const createDataDirectories = async (
-	dataDir: 'assignee' | 'category',
-	options: { excludeBots?: boolean; excludeDuplicates?: boolean },
-) => {
+export const createDataDirectories = async (dataDir: 'assignee' | 'category') => {
 	const dumpFile = path.join(__dirname, 'issues.json')
 	const issues: JSONOutputLine[] = fs
 		.readFileSync(dumpFile, { encoding: 'utf8' })
@@ -206,20 +203,16 @@ export const createDataDirectories = async (
 				.map((label) => labelToCategoryFn(label) || label)
 			let category = dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories)
 
-			const isNotDuplicate = !issue.labels.includes('*duplicate')
+			const isDuplicate = issue.labels.includes('*duplicate')
 
-			const isNotBotLabeled = !!issue.labelEvents.find(
+			const isHumanLabeled = !!issue.labelEvents.find(
 				(event) =>
 					event.type === 'added' &&
 					event.label === category &&
 					!['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor),
 			)
 
-			if (
-				category &&
-				(!options?.excludeDuplicates || isNotDuplicate) &&
-				(!options?.excludeBots || isNotBotLabeled)
-			) {
+			if (category && !isDuplicate && isHumanLabeled) {
 				if (!seen[category]) {
 					seen[category] = true
 					fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {

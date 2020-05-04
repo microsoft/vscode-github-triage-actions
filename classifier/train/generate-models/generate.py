@@ -46,7 +46,7 @@ if not (DATA_DIR == "assignee" or DATA_DIR == "category"):
 def new_text_clf():
     return Pipeline(
         [
-            ("vect", StemmedCountVectorizer(ngram_range=(1, 1), max_df=1, min_df=1),),
+            ("vect", StemmedCountVectorizer(ngram_range=(1, 1), max_df=0.9, min_df=3),),
             ("tfidf", TfidfTransformer(use_idf=True)),
             (
                 "clf",
@@ -266,8 +266,8 @@ def run_category(category):
     test = load_test(category)
     train = load_train(category)
 
-    print('train categories', train.target_names)
-    print('test categories', test.target_names)
+    print("train categories", train.target_names)
+    print("test categories", test.target_names)
 
     text_clf = new_text_clf().fit(train.data, train.target)
     initial_prediction = text_clf.predict(test.data)

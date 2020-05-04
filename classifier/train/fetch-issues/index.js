@@ -13,7 +13,7 @@ const token = utils_1.getRequiredInput('token');
 const run = async () => {
     await download_1.download(token, github_1.context.repo);
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    await createDataDir_1.createDataDirectories('category', { excludeBots: false, excludeDuplicates: true });
+    await createDataDir_1.createDataDirectories('category');
 };
 run().catch(async (error) => {
     core.setFailed(error.message);

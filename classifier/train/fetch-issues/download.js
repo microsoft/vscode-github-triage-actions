@@ -86,11 +86,13 @@ exports.download = async (token, repo, endCursor) => {
     fs_1.writeFileSync(path_1.join(__dirname, 'issues.json'), issues.map((issue) => JSON.stringify(issue)).join('\n') + '\n', {
         flag: 'a',
     });
-    const pageInfo = data.data.repository.issues.pageInfo;
-    const rateInfo = data.data.rateLimit;
-    console.log('page returned:', JSON.stringify(pageInfo, null, 2));
-    console.log('rate info:', JSON.stringify(rateInfo, null, 2));
-    console.log('Last issue:', issues[issues.length - 1].number);
+    const pageInfo = response.repository.issues.pageInfo;
+    const rateInfo = response.rateLimit;
+    console.log({
+        lastIssue: issues[issues.length - 1].number,
+        quota: rateInfo.remaining,
+        endCursor: pageInfo.endCursor,
+    });
     endCursor = pageInfo.endCursor;
     if (pageInfo.hasNextPage) {
         return new Promise((resolve) => {

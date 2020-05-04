@@ -158,12 +158,14 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 		},
 	)
 
-	const pageInfo = data.data.repository.issues.pageInfo
-	const rateInfo = data.data.rateLimit
+	const pageInfo = response.repository.issues.pageInfo
+	const rateInfo = response.rateLimit
 
-	console.log('page returned:', JSON.stringify(pageInfo, null, 2))
-	console.log('rate info:', JSON.stringify(rateInfo, null, 2))
-	console.log('Last issue:', issues[issues.length - 1].number)
+	console.log({
+		lastIssue: issues[issues.length - 1].number,
+		quota: rateInfo.remaining,
+		endCursor: pageInfo.endCursor,
+	})
 
 	endCursor = pageInfo.endCursor
 	if (pageInfo.hasNextPage) {
