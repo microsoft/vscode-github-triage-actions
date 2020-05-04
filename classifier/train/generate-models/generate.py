@@ -40,7 +40,7 @@ BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
 if not (DATA_DIR == "assignee" or DATA_DIR == "category"):
-    raise ("Invalid data dir", DATA_DIR)
+    raise Exception("Invalid data dir", DATA_DIR)
 
 
 def new_text_clf():
