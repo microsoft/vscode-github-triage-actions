@@ -23,7 +23,7 @@ const from = daysAgoToHumanReadbleDate(+getRequiredInput('from') * minToDay)
 const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay)
 
 const blobContainer = getRequiredInput('blobContainerName')
-const blobStorageKey = getRequiredInput('blobStoragekey')
+const blobStorageKey = getRequiredInput('blobStorageKey')
 
 const main = async () => {
 	const github = new OctoKit(token, context.repo)

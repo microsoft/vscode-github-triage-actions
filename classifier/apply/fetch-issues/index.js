@@ -16,7 +16,7 @@ const token = utils_1.getRequiredInput('token');
 const from = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('from') * minToDay);
 const until = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('until') * minToDay);
 const blobContainer = utils_1.getRequiredInput('blobContainerName');
-const blobStorageKey = utils_1.getRequiredInput('blobStoragekey');
+const blobStorageKey = utils_1.getRequiredInput('blobStorageKey');
 const main = async () => {
     const github = new octokit_1.OctoKit(token, github_1.context.repo);
     const query = `created:>${from} updated:<${until} is:open`;
