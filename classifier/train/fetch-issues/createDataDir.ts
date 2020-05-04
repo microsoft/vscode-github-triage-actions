@@ -237,9 +237,7 @@ export const createDataDirectories = async (
 					'..',
 					dataDir,
 					name,
-					(issue.createdAt > daysAgoToTimestamp(30) ? Math.random() < 0.5 : Math.random() < 0.8)
-						? 'train'
-						: 'test',
+					Math.random() < 0.5 ? 'train' : 'test',
 					category,
 				)
 
