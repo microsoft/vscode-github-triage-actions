@@ -89,7 +89,9 @@ def main():
 
     print("Generated labels: ")
     for issue in results:
-        print(issue["number"], ": ", issue["labels"])
+        print(
+            issue["number"], ": ", json.dumps(issue["contents"]), "-", issue["labels"]
+        )
     with open(os.path.join(base_path, "issue_labels.json"), "w") as f:
         json.dump(results, f)
 

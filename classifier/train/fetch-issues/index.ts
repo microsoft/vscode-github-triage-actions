@@ -13,7 +13,7 @@ import { createDataDirectories } from './createDataDir'
 const token = getRequiredInput('token')
 
 const run = async () => {
-	// await download(token, context.repo)
+	await download(token, context.repo)
 	await new Promise((resolve) => setTimeout(resolve, 1000))
 	await createDataDirectories('category')
 }
