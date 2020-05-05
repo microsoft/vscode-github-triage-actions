@@ -84,6 +84,7 @@ def main():
                 {
                     "number": issue["number"],
                     "labels": get_top_labels(issue["contents"]),
+                    "contents": issue["contents"],
                 }
             )
 
