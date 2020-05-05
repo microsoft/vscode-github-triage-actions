@@ -59,6 +59,13 @@ class LanguageSpecificLabeler {
         const issue = await this.issue.getIssue();
         const { body, title } = utils_1.normalizeIssue(issue);
         const translationChunk = `${title} ${body}`;
+        for await (const page of this.issue.getComments()) {
+            for (const comment of page) {
+                if (comment.body.includes('<!-- translation_requested_comment -->')) {
+                    return;
+                }
+            }
+        }
         const language = (_a = (await this.detectLanguage(translationChunk))) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         if (!language || language === 'en') {
             const languagelabel = issue.labels.find((label) => label.startsWith(this.translatorRequestedLabelPrefix));
@@ -78,6 +85,14 @@ class LanguageSpecificLabeler {
                 await this.issue.addLabel(this.needsMoreInfoLabel);
             const targetLanguageComment = (_c = (_b = knownTranslations[language]) !== null && _b !== void 0 ? _b : (await this.translate(translation_data_json_1.baseString, language))) !== null && _c !== void 0 ? _c : 'ERR_TRANSLATION_FAILED';
             const englishComment = knownTranslations['en'];
+            // check again, another bot may have commented in the mean time.
+            for await (const page of this.issue.getComments()) {
+                for (const comment of page) {
+                    if (comment.body.includes('<!-- translation_requested_comment -->')) {
+                        return;
+                    }
+                }
+            }
             await this.issue.postComment(`${targetLanguageComment}\n\n---\n${englishComment}\n<!-- translation_requested_comment -->`);
         }
     }

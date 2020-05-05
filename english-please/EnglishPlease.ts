@@ -74,6 +74,14 @@ export class LanguageSpecificLabeler {
 		const { body, title } = normalizeIssue(issue)
 		const translationChunk = `${title} ${body}`
 
+		for await (const page of this.issue.getComments()) {
+			for (const comment of page) {
+				if (comment.body.includes('<!-- translation_requested_comment -->')) {
+					return
+				}
+			}
+		}
+
 		const language = (await this.detectLanguage(translationChunk))?.toLowerCase()
 
 		if (!language || language === 'en') {
@@ -98,6 +106,15 @@ export class LanguageSpecificLabeler {
 				'ERR_TRANSLATION_FAILED'
 
 			const englishComment = knownTranslations['en']
+
+			// check again, another bot may have commented in the mean time.
+			for await (const page of this.issue.getComments()) {
+				for (const comment of page) {
+					if (comment.body.includes('<!-- translation_requested_comment -->')) {
+						return
+					}
+				}
+			}
 
 			await this.issue.postComment(
 				`${targetLanguageComment}\n\n---\n${englishComment}\n<!-- translation_requested_comment -->`,
