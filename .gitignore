@@ -2,3 +2,4 @@ node_modules
 *.js.map
 classifier/issue_data.json
 classifier/issue_labels.json
+**/.DS_Store

@@ -183,10 +183,19 @@ exports.createDataDirectories = async (dataDir) => {
             ? categoryPriority
             : (categories) => categoryPriority.find((candidate) => categories.indexOf(candidate) !== -1);
         const seen = {};
+        const ignoredLabels = Object.entries(issues
+            .map((issue) => issue.labels.map((label) => labelToCategoryFn(label) || label))
+            .map((labels) => categoryPriorityFn(labels))
+            .filter((x) => !!x)
+            .reduce((record, label) => {
+            var _a;
+            record[label] = ((_a = record[label]) !== null && _a !== void 0 ? _a : 0) + 1;
+            return record;
+        }, {}))
+            .filter(([_, count]) => count < 5)
+            .map(([label]) => label);
         for (const issue of issues) {
-            const categories = issue.labels
-                .map((label) => label)
-                .map((label) => labelToCategoryFn(label) || label);
+            const categories = issue.labels.map((label) => labelToCategoryFn(label) || label);
             const category = (_a = (dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories))) !== null && _a !== void 0 ? _a : (['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) => issue.labels.includes(otherLabel))
                 ? name === 'area' && Math.random() < 0.2
                     ? '__OTHER__'
@@ -196,9 +205,12 @@ exports.createDataDirectories = async (dataDir) => {
             const isHumanLabeled = !!issue.labelEvents.find((event) => event.type === 'added' &&
                 event.label === category &&
                 !['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor));
-            if (category && !isDuplicate && (isHumanLabeled || category === '__OTHER__')) {
+            if (category &&
+                !isDuplicate &&
+                (isHumanLabeled || category === '__OTHER__') &&
+                !ignoredLabels.includes(category)) {
                 if (!seen[category]) {
-                    seen[category] = true;
+                    seen[category] = 0;
                     fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {
                         recursive: true,
                     });
@@ -207,13 +219,15 @@ exports.createDataDirectories = async (dataDir) => {
                     });
                     await new Promise((resolve) => setTimeout(resolve, 100)); // ?
                 }
-                const filepath = path.join(__dirname, '..', dataDir, name, Math.random() < 0.8 ? 'train' : 'test', category);
+                const filepath = path.join(__dirname, '..', dataDir, name, Math.random() < 0.8 || seen[category] == 0 ? 'train' : 'test', category);
                 const { title, body } = utils_1.normalizeIssue(issue);
                 const filename = `${issue.number}.txt`;
                 const content = `${title}\n\n${body}`;
                 fs.writeFileSync(path.join(filepath, filename), content);
+                seen[category]++;
             }
         }
+        console.log('Ignored', ignoredLabels);
     }
 };
 //# sourceMappingURL=createDataDir.js.map
