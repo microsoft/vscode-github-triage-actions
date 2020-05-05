@@ -26,6 +26,7 @@ const main = async () => {
 		+getRequiredInput('pingDays'),
 		getInput('closeComment') || '',
 		getInput('pingComment') || '',
+		(getInput('additionalTeam') ?? '').split('|'),
 	).run()
 }
 

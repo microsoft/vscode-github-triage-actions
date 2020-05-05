@@ -14,6 +14,7 @@ export class NeedsMoreInfoCloser {
 		private pingDays: number,
 		private closeComment: string,
 		private pingComment: string,
+		private additionalTeam: string[],
 	) {}
 
 	async run() {
@@ -40,6 +41,7 @@ export class NeedsMoreInfoCloser {
 						!lastComment ||
 						lastComment.author.isGitHubApp ||
 						// TODO: List the collaborators once per go rather than checking a single user each issue
+						this.additionalTeam.includes(lastComment.author.name) ||
 						(await issue.hasWriteAccess(lastComment.author))
 					) {
 						if (lastComment) {

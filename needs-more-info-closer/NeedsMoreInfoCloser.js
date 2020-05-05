@@ -6,13 +6,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils/utils");
 class NeedsMoreInfoCloser {
-    constructor(github, label, closeDays, pingDays, closeComment, pingComment) {
+    constructor(github, label, closeDays, pingDays, closeComment, pingComment, additionalTeam) {
         this.github = github;
         this.label = label;
         this.closeDays = closeDays;
         this.pingDays = pingDays;
         this.closeComment = closeComment;
         this.pingComment = pingComment;
+        this.additionalTeam = additionalTeam;
     }
     async run() {
         const updatedTimestamp = utils_1.daysAgoToHumanReadbleDate(this.closeDays);
@@ -33,6 +34,7 @@ class NeedsMoreInfoCloser {
                     if (!lastComment ||
                         lastComment.author.isGitHubApp ||
                         // TODO: List the collaborators once per go rather than checking a single user each issue
+                        this.additionalTeam.includes(lastComment.author.name) ||
                         (await issue.hasWriteAccess(lastComment.author))) {
                         if (lastComment) {
                             console.log(`Last comment on ${hydrated.number} by ${lastComment.author.name}. Closing.`);

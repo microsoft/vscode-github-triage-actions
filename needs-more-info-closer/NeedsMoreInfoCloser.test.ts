@@ -11,9 +11,15 @@ import { daysAgoToTimestamp } from '../utils/utils'
 
 describe('NeedsMoreInfoCloser', () => {
 	it('creates a reasonable query and closes the issues the query yields, but only if the last comment was a bot or contributor', async () => {
-		const contributorComment: () => Comment = () => ({
+		const teamComment: () => Comment = () => ({
 			author: { name: 'JacksonKearl' },
 			body: 'Hello i am a team member',
+			id: 0,
+			timestamp: 0,
+		})
+		const contributorComment: () => Comment = () => ({
+			author: { name: 'jax' },
+			body: 'Hello i am a contributor',
 			id: 0,
 			timestamp: 0,
 		})
@@ -34,13 +40,16 @@ describe('NeedsMoreInfoCloser', () => {
 			{ comments: [], labels: ['needs more info'] },
 			{ comments: [botComment()], labels: ['needs more info'] },
 			{ comments: [contributorComment()], labels: ['needs more info'] },
+			{ comments: [teamComment()], labels: ['needs more info'] },
 			{ comments: [otherComment(), botComment()], labels: ['needs more info'] },
 			{ comments: [otherComment(), contributorComment()], labels: ['needs more info'] },
+			{ comments: [otherComment(), teamComment()], labels: ['needs more info'] },
 		]
 
 		const issuesNotToClose: TestbedIssueConstructorArgs[] = [
 			{ comments: [otherComment()], labels: ['needs more info'] },
 			{ comments: [contributorComment(), otherComment()], labels: ['needs more info'] },
+			{ comments: [teamComment(), otherComment()], labels: ['needs more info'] },
 			{ comments: [botComment(), otherComment()], labels: ['needs more info'] },
 		]
 
@@ -76,6 +85,7 @@ describe('NeedsMoreInfoCloser', () => {
 			2,
 			'closed this because it needs more info thx :)',
 			'please check this issue out',
+			['jax'],
 		).run()
 		issuesToClose.map(
 			(issue) =>
