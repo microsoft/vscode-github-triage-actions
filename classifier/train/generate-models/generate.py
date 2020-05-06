@@ -23,7 +23,7 @@ import os
 sys.path.insert(0, ".")
 from utils import StemmedCountVectorizer  # noqa
 
-CUTOFF_EXPLORATION_RATE = 100
+CUTOFF_EXPLORATION_RATE = 5
 PROB_EXPLORATION_RATE = 3
 
 SKIP_WEIGHT = 0
@@ -46,7 +46,7 @@ if not (DATA_DIR == "assignee" or DATA_DIR == "category"):
 def new_text_clf():
     return Pipeline(
         [
-            ("vect", StemmedCountVectorizer(ngram_range=(1, 1), max_df=0.9, min_df=3),),
+            ("vect", StemmedCountVectorizer(ngram_range=(1, 1)),),
             ("tfidf", TfidfTransformer(use_idf=True)),
             (
                 "clf",
@@ -203,6 +203,10 @@ def find_best(
         if FILTER_DATA:
             train = load_train(category)
             filter_data(train, scores, cutoff)
+
+            if len(train.target_names) < 1:
+                return
+
             text_clf = new_text_clf().fit(train.data, train.target)
             probabilities = text_clf.predict_proba(test.data)
 
@@ -266,30 +270,27 @@ def find_best(
 
 
 def run_category(category):
-    test = load_test(category)
-    train = load_train(category)
+    raw_test = load_test(category)
+    raw_train = load_train(category)
 
-    print("train categories", train.target_names)
-    print("test categories", test.target_names)
-
-    text_clf = new_text_clf().fit(train.data, train.target)
-    initial_prediction = text_clf.predict(test.data)
+    text_clf = new_text_clf().fit(raw_train.data, raw_train.target)
+    initial_prediction = text_clf.predict(raw_test.data)
 
     score_map = {
         "precision": metrics.precision_score(
-            test.target, initial_prediction, average=None, zero_division=0
+            raw_test.target, initial_prediction, average=None, zero_division=0
         ),
         "fbeta0.5": metrics.fbeta_score(
-            test.target, initial_prediction, 0.5, average=None, zero_division=0
+            raw_test.target, initial_prediction, 0.5, average=None, zero_division=0
         ),
         "f1": metrics.f1_score(
-            test.target, initial_prediction, average=None, zero_division=0
+            raw_test.target, initial_prediction, average=None, zero_division=0
         ),
         "fbeta2": metrics.fbeta_score(
-            test.target, initial_prediction, 2, average=None, zero_division=0
+            raw_test.target, initial_prediction, 2, average=None, zero_division=0
         ),
         "recall": metrics.recall_score(
-            test.target, initial_prediction, average=None, zero_division=0
+            raw_test.target, initial_prediction, average=None, zero_division=0
         ),
     }
 
@@ -305,19 +306,17 @@ def run_category(category):
 
     # cutoffs dont seem to happen in practice, so these values dont really matter.
     methods = [
-        # "precision",
-        # "fbeta0.5",
+        "precision",
+        "fbeta0.5",
         "f1",
-        # "fbeta2",
-        # "recall",
+        "fbeta2",
+        "recall",
     ]
 
     for cutoff_method in methods:
 
         scores = score_map[cutoff_method]
-        score_tuples = [
-            (train.target_names[text_clf.classes_[i]], f) for i, f in enumerate(scores)
-        ]
+        score_tuples = [(raw_train.target_names[i], f) for i, f in enumerate(scores)]
 
         (
             res,
@@ -333,8 +332,8 @@ def run_category(category):
             cutoff_method,
             scores,
             score_tuples,
-            test,
-            train,
+            raw_test,
+            raw_train,
             initial_prediction,
             category,
         )
