@@ -196,11 +196,23 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 				: (categories: string[]) =>
 						categoryPriority.find((candidate) => categories.indexOf(candidate) !== -1)
 
-		const seen: Record<string, boolean> = {}
+		const seen: Record<string, number> = {}
+
+		const ignoredLabels = Object.entries(
+			issues
+				.map((issue) => issue.labels.map((label) => labelToCategoryFn(label) || label))
+				.map((labels) => categoryPriorityFn(labels))
+				.filter((x): x is string => !!x)
+				.reduce((record: Record<string, number>, label) => {
+					record[label] = (record[label] ?? 0) + 1
+					return record
+				}, {}),
+		)
+			.filter(([_, count]) => count < 5)
+			.map(([label]) => label)
+
 		for (const issue of issues) {
-			const categories = issue.labels
-				.map((label) => label)
-				.map((label) => labelToCategoryFn(label) || label)
+			const categories = issue.labels.map((label) => labelToCategoryFn(label) || label)
 
 			const category =
 				(dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories)) ??
@@ -221,9 +233,14 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 					!['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor),
 			)
 
-			if (category && !isDuplicate && (isHumanLabeled || category === '__OTHER__')) {
+			if (
+				category &&
+				!isDuplicate &&
+				(isHumanLabeled || category === '__OTHER__') &&
+				!ignoredLabels.includes(category)
+			) {
 				if (!seen[category]) {
-					seen[category] = true
+					seen[category] = 0
 					fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {
 						recursive: true,
 					})
@@ -239,7 +256,7 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 					'..',
 					dataDir,
 					name,
-					Math.random() < 0.8 ? 'train' : 'test',
+					Math.random() < 0.8 || seen[category] == 0 ? 'train' : 'test',
 					category,
 				)
 
@@ -247,7 +264,10 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 				const filename = `${issue.number}.txt`
 				const content = `${title}\n\n${body}`
 				fs.writeFileSync(path.join(filepath, filename), content)
+
+				seen[category]++
 			}
 		}
+		console.log('Ignored', ignoredLabels)
 	}
 }
