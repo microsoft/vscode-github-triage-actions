@@ -308,6 +308,8 @@ inputs:
   label:
     description: Label signifying an issue that needs more info
     required: true
+  additionalTeam:
+    description: Pipe-separated list of users to treat as team for purposes of closing `needs more info` issues
   closeDays:
     description: Days to wait before closing the issue
     required: true

@@ -15,6 +15,8 @@ inputs:
   pingDays:
     description: Days to wait before pinging the assignee
     required: true
+  additionalTeam:
+    description: Pipe-separated list of users to treat as team for purposes of closing `needs more info` issues
   pingComment:
     description: Comment to add when pinging assignee. ${assignee} and ${author} are replaced.
 runs:
