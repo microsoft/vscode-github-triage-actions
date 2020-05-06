@@ -6,14 +6,26 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
 
-import { logErrorToIssue, getRequiredInput } from '../../../utils/utils'
+import { logErrorToIssue, getRequiredInput, getInput } from '../../../utils/utils'
 import { download } from './download'
 import { createDataDirectories } from './createDataDir'
+import { statSync } from 'fs'
+import { join } from 'path'
 
 const token = getRequiredInput('token')
 
+const endCursor = getInput('cursor')
+
 const run = async () => {
-	await download(token, context.repo)
+	if (endCursor) {
+		await download(token, context.repo, endCursor)
+	} else {
+		try {
+			statSync(join(__dirname, 'issues.json')).isFile()
+		} catch {
+			await download(token, context.repo)
+		}
+	}
 	await new Promise((resolve) => setTimeout(resolve, 1000))
 	await createDataDirectories('category')
 }
