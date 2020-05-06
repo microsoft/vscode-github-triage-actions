@@ -158,6 +158,16 @@ class OctoKitIssue extends OctoKit {
             });
         }
     }
+    async removeAssignee(assignee) {
+        core_1.debug('Removing assignee ' + assignee + ' to ' + this.issueData.number);
+        if (!this.options.readonly) {
+            await this.octokit.issues.removeAssignees({
+                ...this.params,
+                issue_number: this.issueData.number,
+                assignees: [assignee],
+            });
+        }
+    }
     async closeIssue() {
         core_1.debug('Closing issue ' + this.issueData.number);
         if (!this.options.readonly)

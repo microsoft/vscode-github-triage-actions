@@ -39,30 +39,37 @@ class Commands {
             const args = [];
             let argList = ((_b = (_a = this.action.comment.match(new RegExp(String.raw `(?:\\|/)${command.name}(.*)(?:\r)?(?:\n|$)`))) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : '').trim();
             while (argList) {
+                const task = argList[0] === '-' ? 'remove' : 'add';
+                if (task === 'remove')
+                    argList = argList.slice(1);
                 if (argList[0] === '"') {
                     const endIndex = argList.indexOf('"', 1);
                     if (endIndex === -1)
                         throw Error('Unable to parse arglist. Could not find matching double quote');
-                    args.push(argList.slice(1, endIndex));
+                    args.push({ task, name: argList.slice(1, endIndex) });
                     argList = argList.slice(endIndex + 1).trim();
                 }
                 else {
                     const endIndex = argList.indexOf(' ', 1);
                     if (endIndex === -1) {
-                        args.push(argList);
+                        args.push({ task, name: argList });
                         argList = '';
                     }
                     else {
-                        args.push(argList.slice(0, endIndex));
+                        args.push({ task, name: argList.slice(0, endIndex) });
                         argList = argList.slice(endIndex + 1).trim();
                     }
                 }
             }
             if (command.name === 'label') {
-                tasks.push(...args.map((arg) => this.github.addLabel(arg)));
+                tasks.push(...args.map((arg) => arg.task === 'add'
+                    ? this.github.addLabel(arg.name)
+                    : this.github.removeLabel(arg.name)));
             }
             if (command.name === 'assign') {
-                tasks.push(...args.map((arg) => this.github.addAssignee(arg[0] === '@' ? arg.slice(1) : arg)));
+                tasks.push(...args.map((arg) => arg.task === 'add'
+                    ? this.github.addAssignee(arg.name[0] === '@' ? arg.name.slice(1) : arg.name)
+                    : this.github.removeAssignee(arg.name[0] === '@' ? arg.name.slice(1) : arg.name)));
             }
         }
         if (command.action === 'close') {

@@ -10,14 +10,14 @@ async function downloadBlob(name, container, key) {
     const blobServiceClient = storage_blob_1.BlobServiceClient.fromConnectionString(key);
     const containerClient = blobServiceClient.getContainerClient(container);
     const createContainerResponse = containerClient.getBlockBlobClient(name);
-    await createContainerResponse.downloadToFile(path_1.join(__dirname, name));
+    await createContainerResponse.downloadToFile(path_1.join(__dirname, 'bin', name));
 }
 exports.downloadBlob = downloadBlob;
 async function uploadBlob(name, container, key) {
     const blobServiceClient = storage_blob_1.BlobServiceClient.fromConnectionString(key);
     const containerClient = blobServiceClient.getContainerClient(container);
     const createContainerResponse = containerClient.getBlockBlobClient(name);
-    await createContainerResponse.uploadFile(path_1.join(__dirname, name));
+    await createContainerResponse.uploadFile(path_1.join(__dirname, 'bin', name));
 }
 exports.uploadBlob = uploadBlob;
-//# sourceMappingURL=blobStorage.js.map
+//# sourceMappingURL=index.js.map

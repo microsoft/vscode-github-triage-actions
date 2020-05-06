@@ -185,6 +185,34 @@ describe('Commands', () => {
 			}).run()
 			expect((await testbed.getIssue()).assignee).to.equal('Jackso')
 		})
+
+		it('removes labels with - prefix in /label comment', async () => {
+			const testbed = new TestbedIssue(
+				{ writers: ['JacksonKearl'] },
+				{ labels: ['hello', 'hello world'] },
+			)
+			const commands: Command[] = [{ type: 'comment', allowUsers: [], name: 'label' }]
+			await new Commands(testbed, commands, {
+				comment: '/label -hello -"hello world" "-hello"',
+				user: { name: 'JacksonKearl' },
+			}).run()
+			expect((await testbed.getIssue()).labels).not.to.include('hello')
+			expect((await testbed.getIssue()).labels).not.to.include('hello world')
+			expect((await testbed.getIssue()).labels).to.include('-hello')
+		})
+
+		it('removes assignees with - prefix in /assign comment', async () => {
+			const testbed = new TestbedIssue(
+				{ writers: ['JacksonKearl'] },
+				{ issue: { assignee: 'JacksonKearl' } },
+			)
+			const commands: Command[] = [{ type: 'comment', allowUsers: [], name: 'assign' }]
+			await new Commands(testbed, commands, {
+				comment: '/assign -JacksonKearl \r\n',
+				user: { name: 'JacksonKearl' },
+			}).run()
+			expect((await testbed.getIssue()).assignee).to.equal(undefined)
+		})
 	})
 
 	describe('Labels', () => {

@@ -26,7 +26,7 @@ const run = async () => {
         }
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    await createDataDir_1.createDataDirectories('category');
+    await createDataDir_1.createDataDirectories();
 };
 run().catch(async (error) => {
     core.setFailed(error.message);

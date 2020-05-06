@@ -12,6 +12,7 @@ const classifications = [
         name: 'type',
         categoryPriority: ['bug', 'feature-request'],
         labelToCategory: {},
+        categoriesExtractor: (issue) => issue.labels,
     },
     {
         name: 'area',
@@ -152,6 +153,7 @@ const classifications = [
             }
             return category.replace('/', '-');
         },
+        categoriesExtractor: (issue) => issue.labels,
     },
     {
         name: 'editor',
@@ -159,14 +161,48 @@ const classifications = [
             .sort()
             .find((candidate) => candidate.startsWith('editor-') && candidate !== 'editor-core'),
         labelToCategory: {},
+        categoriesExtractor: (issue) => issue.labels,
     },
     {
         name: 'workbench',
         categoryPriority: (candidates) => candidates.sort().find((candidate) => candidate.startsWith('workbench-')),
         labelToCategory: {},
+        categoriesExtractor: (issue) => issue.labels,
+    },
+    {
+        name: 'assignee',
+        labelToCategory: {},
+        categoriesExtractor: (issue) => issue.assignees,
+        categoryPriority: [
+            'jrieken',
+            'alexdima',
+            'isidorn',
+            'weinand',
+            'bpasero',
+            'aeschli',
+            'joaomoreno',
+            'dbaeumer',
+            'roblourens',
+            'chrmarti',
+            'Tyriar',
+            'gregvanl',
+            'mjbvz',
+            'rebornix',
+            'alexr00',
+            'stevencl',
+            'sbatten',
+            'RMacfarlane',
+            'sandy081',
+            'misolori',
+            'deepak1556',
+            'connor4312',
+            'eamodio',
+            'JacksonKearl',
+        ],
     },
 ];
-exports.createDataDirectories = async (dataDir) => {
+const DATA_DIR = 'train_data';
+exports.createDataDirectories = async () => {
     var _a;
     const dumpFile = path.join(__dirname, 'issues.json');
     const issues = fs
@@ -175,7 +211,7 @@ exports.createDataDirectories = async (dataDir) => {
         .filter((l) => l)
         .map((l) => JSON.parse(l));
     for (const classification of classifications) {
-        const { name, categoryPriority, labelToCategory } = classification;
+        const { name, categoryPriority, labelToCategory, categoriesExtractor } = classification;
         const labelToCategoryFn = typeof labelToCategory === 'function'
             ? labelToCategory
             : (label) => labelToCategory[label];
@@ -195,8 +231,7 @@ exports.createDataDirectories = async (dataDir) => {
             .filter(([_, count]) => count < 5)
             .map(([label]) => label);
         for (const issue of issues) {
-            const categories = issue.labels.map((label) => labelToCategoryFn(label) || label);
-            const category = (_a = (dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories))) !== null && _a !== void 0 ? _a : (['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) => issue.labels.includes(otherLabel))
+            const category = (_a = categoryPriorityFn(categoriesExtractor(issue).map((label) => labelToCategoryFn(label) || label))) !== null && _a !== void 0 ? _a : (['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) => issue.labels.includes(otherLabel))
                 ? name === 'area' && Math.random() < 0.2
                     ? '__OTHER__'
                     : undefined
@@ -206,20 +241,19 @@ exports.createDataDirectories = async (dataDir) => {
                 event.label === category &&
                 !['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor));
             if (category &&
-                !isDuplicate &&
-                (isHumanLabeled || category === '__OTHER__') &&
-                !ignoredLabels.includes(category)) {
+                !ignoredLabels.includes(category) &&
+                (name === 'assignee' || (!isDuplicate && (isHumanLabeled || category === '__OTHER__')))) {
                 if (!seen[category]) {
                     seen[category] = 0;
-                    fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {
+                    fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, 'train', category), {
                         recursive: true,
                     });
-                    fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'test', category), {
+                    fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, 'test', category), {
                         recursive: true,
                     });
                     await new Promise((resolve) => setTimeout(resolve, 100)); // ?
                 }
-                const filepath = path.join(__dirname, '..', dataDir, name, Math.random() < 0.8 || seen[category] == 0 ? 'train' : 'test', category);
+                const filepath = path.join(__dirname, '..', DATA_DIR, name, Math.random() < 0.8 || seen[category] == 0 ? 'train' : 'test', category);
                 const { title, body } = utils_1.normalizeIssue(issue);
                 const filename = `${issue.number}.txt`;
                 const content = `${title}\n\n${body}`;
