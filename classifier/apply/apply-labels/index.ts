@@ -69,8 +69,8 @@ const main = async () => {
 			await issue.addLabel(assignee)
 		}
 
-		const labelConfig = config.labels[label]
-		const assigneeConfig = config.assignees[assignee]
+		const labelConfig = config.labels?.[label]
+		const assigneeConfig = config.assignees?.[assignee]
 		await Promise.all<any>([
 			labelConfig?.assignLabel || debug ? issue.addLabel(label) : Promise.resolve,
 			labelConfig?.comment ? issue.postComment(labelConfig.comment) : Promise.resolve(),

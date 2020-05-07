@@ -14,6 +14,7 @@ const token = utils_1.getRequiredInput('token');
 const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
 const debug = !!utils_1.getInput('__debug');
 const main = async () => {
+    var _a, _b;
     console.log('hello');
     const github = new octokit_1.OctoKit(token, github_1.context.repo);
     const config = await github.readConfig(utils_1.getRequiredInput('config-path'));
@@ -47,8 +48,8 @@ const main = async () => {
             }
             await issue.addLabel(assignee);
         }
-        const labelConfig = config.labels[label];
-        const assigneeConfig = config.assignees[assignee];
+        const labelConfig = (_a = config.labels) === null || _a === void 0 ? void 0 : _a[label];
+        const assigneeConfig = (_b = config.assignees) === null || _b === void 0 ? void 0 : _b[assignee];
         await Promise.all([
             (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assignLabel) || debug ? issue.addLabel(label) : Promise.resolve,
             (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.comment) ? issue.postComment(labelConfig.comment) : Promise.resolve(),
