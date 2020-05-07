@@ -11,17 +11,18 @@ import os.path
 # Allow pickling the snowball stemmer to work right
 sys.path.insert(0, ".")
 
-base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-print("running with base_path:", base_path)
+BASE_PATH = os.path.join(os.path.dirname(__file__), "..")
+MODEL_PATH = os.path.abspath(os.path.join(BASE_PATH, "..", "blobStorage", "bin"))
+print("running with BASE_PATH, MODEL_PATH:", BASE_PATH, MODEL_PATH)
 
 
 def loadClassifier(classification):
     with open(
-        os.path.join(base_path, "..", classification + "-model-config.json")
+        os.path.join(MODEL_PATH, classification + "-model-config.json")
     ) as infile:
         classifier = json.load(infile)
         classifier["text_clf"] = joblib.load(
-            os.path.join(base_path, "..", classification + "-model.pickle")
+            os.path.join(MODEL_PATH, classification + "-model.pickle")
         )
         return classifier
 
@@ -29,6 +30,7 @@ def loadClassifier(classification):
 area_classifier = loadClassifier("area")
 editor_classifier = loadClassifier("editor")
 workbench_classifier = loadClassifier("workbench")
+assignee_classifier = loadClassifier("assignee")
 
 
 def refine_label(label, issue_data):
@@ -48,6 +50,13 @@ def get_top_labels(issue_data):
     return labels
 
 
+def get_assignee(issue_data):
+    assignees = apply_classifier(assignee_classifier, issue_data)
+    if len(assignees) > 0:
+        return assignees[0]
+    return None
+
+
 def get_label_config(config):
     if isinstance(config, dict):
         return config
@@ -58,11 +67,15 @@ def get_label_config(config):
 
 def apply_classifier(classifier, text):
     return predict(
-        classifier["text_clf"], classifier["target_names"], text, classifier["min_prob"]
+        classifier["text_clf"],
+        classifier["target_names"],
+        text,
+        classifier["min_prob"],
+        classifier["ignore_labels"],
     )
 
 
-def predict(text_clf, target_names, text, min_prob):
+def predict(text_clf, target_names, text, min_prob, ignore_labels):
     print("getting prediction for ", text)
     probs = text_clf.predict_proba([text])[0]
     best = sorted(enumerate(probs), key=lambda p: -p[1])
@@ -72,28 +85,32 @@ def predict(text_clf, target_names, text, min_prob):
         [(target_names[i], str(int(round(p, 2) * 100)) + "%") for i, p in best[:5]],
     )
 
-    return [target_names[i] for i, p in best if p > min_prob]
+    return [
+        target_names[i]
+        for i, p in best
+        if p > min_prob and target_names[i] not in ignore_labels
+    ]
 
 
 def main():
     results = []
-    with open(os.path.join(base_path, "issue_data.json")) as f:
+    with open(os.path.join(BASE_PATH, "issue_data.json")) as f:
         issue_data = json.load(f)
         for issue in issue_data:
             results.append(
                 {
                     "number": issue["number"],
                     "labels": get_top_labels(issue["contents"]),
+                    "assignee": get_assignee(issue["contents"]),
                     "contents": issue["contents"],
                 }
             )
 
     print("Generated labels: ")
     for issue in results:
-        print(
-            issue["number"], ": ", json.dumps(issue["contents"]), "-", issue["labels"]
-        )
-    with open(os.path.join(base_path, "issue_labels.json"), "w") as f:
+        print(issue["number"], ": ", "-", issue["labels"], issue["assignee"])
+
+    with open(os.path.join(BASE_PATH, "issue_labels.json"), "w") as f:
         json.dump(results, f)
 
 

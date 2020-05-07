@@ -27,7 +27,7 @@ const run = async () => {
 		}
 	}
 	await new Promise((resolve) => setTimeout(resolve, 1000))
-	await createDataDirectories('category')
+	await createDataDirectories()
 }
 
 run().catch(async (error) => {

@@ -12,6 +12,7 @@ interface Classification {
 	name: string
 	categoryPriority: string[] | ((candidates: string[]) => string | undefined)
 	labelToCategory: Record<string, string> | ((label: string) => string)
+	categoriesExtractor: (issue: JSONOutputLine) => string[]
 }
 
 const classifications: Classification[] = [
@@ -19,6 +20,7 @@ const classifications: Classification[] = [
 		name: 'type',
 		categoryPriority: ['bug', 'feature-request'],
 		labelToCategory: {},
+		categoriesExtractor: (issue) => issue.labels,
 	},
 	{
 		name: 'area',
@@ -159,6 +161,7 @@ const classifications: Classification[] = [
 			}
 			return category.replace('/', '-')
 		},
+		categoriesExtractor: (issue) => issue.labels,
 	},
 	{
 		name: 'editor',
@@ -167,16 +170,51 @@ const classifications: Classification[] = [
 				.sort()
 				.find((candidate) => candidate.startsWith('editor-') && candidate !== 'editor-core'),
 		labelToCategory: {},
+		categoriesExtractor: (issue) => issue.labels,
 	},
 	{
 		name: 'workbench',
 		categoryPriority: (candidates) =>
 			candidates.sort().find((candidate) => candidate.startsWith('workbench-')),
 		labelToCategory: {},
+		categoriesExtractor: (issue) => issue.labels,
+	},
+	{
+		name: 'assignee',
+		labelToCategory: {},
+		categoriesExtractor: (issue) => issue.assignees,
+		categoryPriority: [
+			'jrieken',
+			'alexdima',
+			'isidorn',
+			'weinand',
+			'bpasero',
+			'aeschli',
+			'joaomoreno',
+			'dbaeumer',
+			'roblourens',
+			'chrmarti',
+			'Tyriar',
+			'gregvanl',
+			'mjbvz',
+			'rebornix',
+			'alexr00',
+			'stevencl',
+			'sbatten',
+			'RMacfarlane',
+			'sandy081',
+			'misolori',
+			'deepak1556',
+			'connor4312',
+			'eamodio',
+			'JacksonKearl',
+		],
 	},
 ]
 
-export const createDataDirectories = async (dataDir: 'assignee' | 'category') => {
+const DATA_DIR = 'train_data'
+
+export const createDataDirectories = async () => {
 	const dumpFile = path.join(__dirname, 'issues.json')
 	const issues: JSONOutputLine[] = fs
 		.readFileSync(dumpFile, { encoding: 'utf8' })
@@ -185,7 +223,7 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 		.map((l) => JSON.parse(l))
 
 	for (const classification of classifications) {
-		const { name, categoryPriority, labelToCategory } = classification
+		const { name, categoryPriority, labelToCategory, categoriesExtractor } = classification
 		const labelToCategoryFn =
 			typeof labelToCategory === 'function'
 				? labelToCategory
@@ -212,10 +250,10 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 			.map(([label]) => label)
 
 		for (const issue of issues) {
-			const categories = issue.labels.map((label) => labelToCategoryFn(label) || label)
-
 			const category =
-				(dataDir === 'assignee' ? issue.assignees[0] : categoryPriorityFn(categories)) ??
+				categoryPriorityFn(
+					categoriesExtractor(issue).map((label) => labelToCategoryFn(label) || label),
+				) ??
 				(['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) =>
 					issue.labels.includes(otherLabel),
 				)
@@ -235,16 +273,15 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 
 			if (
 				category &&
-				!isDuplicate &&
-				(isHumanLabeled || category === '__OTHER__') &&
-				!ignoredLabels.includes(category)
+				!ignoredLabels.includes(category) &&
+				(name === 'assignee' || (!isDuplicate && (isHumanLabeled || category === '__OTHER__')))
 			) {
 				if (!seen[category]) {
 					seen[category] = 0
-					fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'train', category), {
+					fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, 'train', category), {
 						recursive: true,
 					})
-					fs.mkdirSync(path.join(__dirname, '..', dataDir, name, 'test', category), {
+					fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, 'test', category), {
 						recursive: true,
 					})
 
@@ -254,7 +291,7 @@ export const createDataDirectories = async (dataDir: 'assignee' | 'category') =>
 				const filepath = path.join(
 					__dirname,
 					'..',
-					dataDir,
+					DATA_DIR,
 					name,
 					Math.random() < 0.8 || seen[category] == 0 ? 'train' : 'test',
 					category,

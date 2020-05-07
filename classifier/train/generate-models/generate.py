@@ -30,17 +30,11 @@ SKIP_WEIGHT = 0
 CORRECT_WEIGHT = [1]
 INCORRECT_WEIGHT = -1.75
 
-MAX_OPTIONS = 1
-
 FILTER_DATA = False
 
-DATA_DIR = sys.argv[-1]
-
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-
-if not (DATA_DIR == "assignee" or DATA_DIR == "category"):
-    raise Exception("Invalid data dir", DATA_DIR)
+MODEL_DIR = os.path.join(BASE_PATH, "..", "blobStorage", "bin",)
+DATA_DIR = os.path.join(BASE_PATH, "train_data")
 
 
 def new_text_clf():
@@ -61,7 +55,7 @@ def new_text_clf():
 
 def load_test(category):
     return load_files(
-        os.path.join(BASE_PATH, DATA_DIR, category, "test"),
+        os.path.join(DATA_DIR, category, "test"),
         encoding="utf-8",
         decode_error="replace",
         shuffle=True,
@@ -71,7 +65,7 @@ def load_test(category):
 
 def load_train(category):
     return load_files(
-        os.path.join(BASE_PATH, DATA_DIR, category, "train"),
+        os.path.join(DATA_DIR, category, "train"),
         encoding="utf-8",
         decode_error="replace",
         shuffle=True,
@@ -154,29 +148,36 @@ def calc_score(
     if predicted is None:
         return skip_weight
 
-    for index, prediction in enumerate(predicted):
-        if index >= MAX_OPTIONS:
-            break
+    prediction = predicted[0]
 
-        if train.target_names[prediction] in ignore_labels:
-            return skip_weight
+    if train.target_names[prediction] in ignore_labels:
+        return skip_weight
 
-        if train.target_names[prediction] == test.target_names[target]:
-            return correct_weight[index]
+    if train.target_names[prediction] == test.target_names[target]:
+        return correct_weight[0]
 
     return incorrect_weight
 
 
-def write_model_to_file(category, target_names, best_min_prob, text_clf):
+def write_model_to_file(category, target_names, min_prob, ignore_labels, text_clf):
+
+    if not os.path.exists(MODEL_DIR):
+        os.makedirs(MODEL_DIR)
     with open(
-        os.path.join(BASE_PATH, "..", category + "-model-config.json"), "w"
+        os.path.join(MODEL_DIR, category + "-model-config.json"), "w",
     ) as outfile:
         json.dump(
-            {"min_prob": best_min_prob, "target_names": target_names},
+            {
+                "min_prob": min_prob,
+                "target_names": target_names,
+                "ignore_labels": ignore_labels,
+            },
             outfile,
             indent=4,
         )
-    joblib.dump(text_clf, os.path.join(BASE_PATH, "..", category + "-model.pickle"))
+    joblib.dump(
+        text_clf, os.path.join(MODEL_DIR, category + "-model.pickle"),
+    )
 
 
 def find_best(
@@ -362,7 +363,10 @@ def run_category(category):
         best_min_prob,
         best_res,
     )
-    write_model_to_file(category, best_train.target_names, best_min_prob, best_clf)
+
+    write_model_to_file(
+        category, best_train.target_names, best_min_prob, best_ignore_labels, best_clf
+    )
 
 
 def main():
@@ -371,6 +375,7 @@ def main():
         "area",
         "editor",
         "workbench",
+        "assignee",
     ]
 
     try:

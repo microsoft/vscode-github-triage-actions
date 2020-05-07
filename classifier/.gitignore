@@ -1,5 +1,6 @@
-*-model.pickle
-*-model-config.json
-category
+train_data
 *.pyc
 issues.json
+issue_data.json
+issue_labels.json
+blobStorage/bin*

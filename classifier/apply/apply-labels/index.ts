@@ -12,10 +12,15 @@ import { getRequiredInput, logErrorToIssue, logRateLimit, getInput } from '../..
 
 const token = getRequiredInput('token')
 const allowLabels = (getInput('allowLabels') || '').split('|')
-const createLabels = !!getInput('__createLabels')
+const debug = !!getInput('__debug')
 
 type ClassifierConfig = {
-	[area: string]: { assignLabel?: boolean; comment?: string; assign?: [string] }
+	labels: {
+		[area: string]: { assignLabel?: boolean; comment?: string; assign?: [string] }
+	}
+	assignees: {
+		[assignee: string]: { assign: boolean; comment?: string }
+	}
 }
 
 const main = async () => {
@@ -23,7 +28,7 @@ const main = async () => {
 
 	const github = new OctoKit(token, context.repo)
 	const config: ClassifierConfig = await github.readConfig(getRequiredInput('config-path'))
-	const labelings: { number: number; labels: string[] }[] = JSON.parse(
+	const labelings: { number: number; labels: string[]; assignee: string }[] = JSON.parse(
 		readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 	)
 	console.log('labelings:', labelings)
@@ -46,7 +51,7 @@ const main = async () => {
 
 		console.log(`adding label ${label} to issue ${issueData.number}`)
 
-		if (createLabels) {
+		if (debug) {
 			console.log(`create labels enabled`)
 			if (!(await github.repoHasLabel(label))) {
 				console.log(`creating label`)
@@ -54,11 +59,24 @@ const main = async () => {
 			}
 		}
 
-		const labelConfig = config[label]
+		const assignee = labeling.assignee
+
+		if (assignee && debug) {
+			if (!(await github.repoHasLabel(label))) {
+				console.log(`creating assignee label`)
+				await github.createLabel(assignee, 'f1d9ff', '')
+			}
+			await issue.addLabel(assignee)
+		}
+
+		const labelConfig = config.labels[label]
+		const assigneeConfig = config.assignees[assignee]
 		await Promise.all<any>([
-			labelConfig?.assignLabel === false ? Promise.resolve() : issue.addLabel(label),
+			labelConfig?.assignLabel || debug ? issue.addLabel(label) : Promise.resolve,
 			labelConfig?.comment ? issue.postComment(labelConfig.comment) : Promise.resolve(),
 			...(labelConfig?.assign ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee)) : []),
+			assigneeConfig?.assign ? issue.addAssignee(assignee) : Promise.resolve(),
+			assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
 		])
 	}
 }

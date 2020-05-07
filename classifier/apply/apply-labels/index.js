@@ -12,7 +12,7 @@ const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../utils/utils");
 const token = utils_1.getRequiredInput('token');
 const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
-const createLabels = !!utils_1.getInput('__createLabels');
+const debug = !!utils_1.getInput('__debug');
 const main = async () => {
     console.log('hello');
     const github = new octokit_1.OctoKit(token, github_1.context.repo);
@@ -32,18 +32,29 @@ const main = async () => {
             continue;
         }
         console.log(`adding label ${label} to issue ${issueData.number}`);
-        if (createLabels) {
+        if (debug) {
             console.log(`create labels enabled`);
             if (!(await github.repoHasLabel(label))) {
                 console.log(`creating label`);
                 await github.createLabel(label, 'f1d9ff', '');
             }
         }
-        const labelConfig = config[label];
+        const assignee = labeling.assignee;
+        if (assignee && debug) {
+            if (!(await github.repoHasLabel(label))) {
+                console.log(`creating assignee label`);
+                await github.createLabel(assignee, 'f1d9ff', '');
+            }
+            await issue.addLabel(assignee);
+        }
+        const labelConfig = config.labels[label];
+        const assigneeConfig = config.assignees[assignee];
         await Promise.all([
-            (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assignLabel) === false ? Promise.resolve() : issue.addLabel(label),
+            (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assignLabel) || debug ? issue.addLabel(label) : Promise.resolve,
             (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.comment) ? issue.postComment(labelConfig.comment) : Promise.resolve(),
             ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee)) : []),
+            (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) ? issue.addAssignee(assignee) : Promise.resolve(),
+            (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
         ]);
     }
 };

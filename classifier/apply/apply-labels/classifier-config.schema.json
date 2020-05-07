@@ -4,24 +4,41 @@
 	"properties": {
 		"$schema": {
 			"type": "string"
-		}
-	},
-	"additionalProperties": {
-		"type": "object",
-		"properties": {
-			"assignLabel": {
-				"description": "If false, this label will not be autoimatically applied to issues. Default true.",
-				"type": "boolean"
-			},
-			"comment": {
-				"description": "Comment to add to issues detected to be in this feature area",
-				"type": "string"
-			},
-			"assign": {
-				"description": "List of usernames to assign to issues detected to be in this feature area",
-				"type": "array",
-				"items": {
-					"type": "string"
+		},
+		"labels": {
+			"additionalProperties": {
+				"type": "object",
+				"properties": {
+					"assignLabel": {
+						"description": "If true, this label will be automatically applied to issues.",
+						"type": "boolean"
+					},
+					"comment": {
+						"description": "Comment to add to issues detected to be in this feature area",
+						"type": "string"
+					},
+					"assign": {
+						"description": "List of usernames to assign to issues detected to be in this feature area",
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			}
+		},
+		"assignees": {
+			"additionalProperties": {
+				"type": "object",
+				"properties": {
+					"assign": {
+						"description": "If true, automatically assign this team member",
+						"type": "boolean"
+					},
+					"comment": {
+						"description": "Comment to add to issues detected to be assigned to this team member",
+						"type": "string"
+					}
 				}
 			}
 		}
