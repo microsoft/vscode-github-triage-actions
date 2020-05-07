@@ -21,10 +21,6 @@ const main = async () => {
     const labelings = JSON.parse(fs_1.readFileSync(path_1.join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
     console.log('labelings:', labelings);
     for (const labeling of labelings) {
-        const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined;
-        if (!label) {
-            continue;
-        }
         const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
         const issueData = await issue.getIssue();
         if (!debug &&
@@ -33,31 +29,36 @@ const main = async () => {
                 issueData.labels.some((label) => !allowLabels.includes(label)))) {
             continue;
         }
-        console.log(`adding label ${label} to issue ${issueData.number}`);
-        if (debug) {
-            console.log(`create labels enabled`);
-            if (!(await github.repoHasLabel(label))) {
-                console.log(`creating label`);
-                await github.createLabel(label, 'f1d9ff', '');
-            }
-        }
         const assignee = labeling.assignee;
-        if (assignee && debug) {
-            if (!(await github.repoHasLabel(assignee))) {
+        if (assignee) {
+            if (debug && !(await github.repoHasLabel(assignee))) {
                 console.log(`creating assignee label`);
                 await github.createLabel(assignee, 'ffa5a1', '');
             }
-            await issue.addLabel(assignee);
+            const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[assignee];
+            await Promise.all([
+                (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) || debug ? issue.addAssignee(assignee) : Promise.resolve(),
+                (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
+            ]);
         }
-        const labelConfig = (_a = config.labels) === null || _a === void 0 ? void 0 : _a[label];
-        const assigneeConfig = (_b = config.assignees) === null || _b === void 0 ? void 0 : _b[assignee];
-        await Promise.all([
-            (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assignLabel) || debug ? issue.addLabel(label) : Promise.resolve,
-            (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.comment) ? issue.postComment(labelConfig.comment) : Promise.resolve(),
-            ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee)) : []),
-            (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) || debug ? issue.addAssignee(assignee) : Promise.resolve(),
-            (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
-        ]);
+        const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined;
+        if (label) {
+            console.log(`adding label ${label} to issue ${issueData.number}`);
+            if (debug) {
+                console.log(`create labels enabled`);
+                if (!(await github.repoHasLabel(label))) {
+                    console.log(`creating label`);
+                    await github.createLabel(label, 'f1d9ff', '');
+                }
+            }
+            const labelConfig = (_b = config.labels) === null || _b === void 0 ? void 0 : _b[label];
+            await Promise.all([
+                (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assignLabel) || debug ? issue.addLabel(label) : Promise.resolve,
+                (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.comment) ? issue.postComment(labelConfig.comment) : Promise.resolve(),
+                ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
+                    : []),
+            ]);
+        }
     }
 };
 main()

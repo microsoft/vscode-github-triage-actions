@@ -34,11 +34,6 @@ const main = async () => {
 	console.log('labelings:', labelings)
 
 	for (const labeling of labelings) {
-		const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined
-		if (!label) {
-			continue
-		}
-
 		const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
 		const issueData = await issue.getIssue()
 		if (
@@ -50,35 +45,40 @@ const main = async () => {
 			continue
 		}
 
-		console.log(`adding label ${label} to issue ${issueData.number}`)
-
-		if (debug) {
-			console.log(`create labels enabled`)
-			if (!(await github.repoHasLabel(label))) {
-				console.log(`creating label`)
-				await github.createLabel(label, 'f1d9ff', '')
-			}
-		}
-
 		const assignee = labeling.assignee
-
-		if (assignee && debug) {
-			if (!(await github.repoHasLabel(assignee))) {
+		if (assignee) {
+			if (debug && !(await github.repoHasLabel(assignee))) {
 				console.log(`creating assignee label`)
 				await github.createLabel(assignee, 'ffa5a1', '')
 			}
-			await issue.addLabel(assignee)
+
+			const assigneeConfig = config.assignees?.[assignee]
+			await Promise.all<any>([
+				assigneeConfig?.assign || debug ? issue.addAssignee(assignee) : Promise.resolve(),
+				assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
+			])
 		}
 
-		const labelConfig = config.labels?.[label]
-		const assigneeConfig = config.assignees?.[assignee]
-		await Promise.all<any>([
-			labelConfig?.assignLabel || debug ? issue.addLabel(label) : Promise.resolve,
-			labelConfig?.comment ? issue.postComment(labelConfig.comment) : Promise.resolve(),
-			...(labelConfig?.assign ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee)) : []),
-			assigneeConfig?.assign || debug ? issue.addAssignee(assignee) : Promise.resolve(),
-			assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
-		])
+		const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined
+		if (label) {
+			console.log(`adding label ${label} to issue ${issueData.number}`)
+
+			if (debug) {
+				console.log(`create labels enabled`)
+				if (!(await github.repoHasLabel(label))) {
+					console.log(`creating label`)
+					await github.createLabel(label, 'f1d9ff', '')
+				}
+			}
+			const labelConfig = config.labels?.[label]
+			await Promise.all<any>([
+				labelConfig?.assignLabel || debug ? issue.addLabel(label) : Promise.resolve,
+				labelConfig?.comment ? issue.postComment(labelConfig.comment) : Promise.resolve(),
+				...(labelConfig?.assign
+					? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
+					: []),
+			])
+		}
 	}
 }
 
