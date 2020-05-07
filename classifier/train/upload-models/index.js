@@ -29,6 +29,12 @@ const main = async () => {
     console.log('uploading workbench-model-config.json');
     await blobStorage_1.uploadBlob('workbench-model-config.json', blobContainer, blobStorageKey);
     console.log('done');
+    console.log('uploading assignee-model.pickle');
+    await blobStorage_1.uploadBlob('assignee-model.pickle', blobContainer, blobStorageKey);
+    console.log('done');
+    console.log('uploading assignee-model-config.json');
+    await blobStorage_1.uploadBlob('assignee-model-config.json', blobContainer, blobStorageKey);
+    console.log('done');
 };
 main().catch(async (error) => {
     core.setFailed(error.message);
