@@ -12,7 +12,7 @@ export async function downloadBlob(name: string, container: string, key: string)
 
 	const createContainerResponse = containerClient.getBlockBlobClient(name)
 
-	await createContainerResponse.downloadToFile(join(__dirname, 'bin', name))
+	await createContainerResponse.downloadToFile(join(__dirname, name))
 }
 
 export async function uploadBlob(name: string, container: string, key: string) {
@@ -21,5 +21,5 @@ export async function uploadBlob(name: string, container: string, key: string) {
 
 	const createContainerResponse = containerClient.getBlockBlobClient(name)
 
-	await createContainerResponse.uploadFile(join(__dirname, 'bin', name))
+	await createContainerResponse.uploadFile(join(__dirname, name))
 }

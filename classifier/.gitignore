@@ -3,4 +3,5 @@ train_data
 issues.json
 issue_data.json
 issue_labels.json
-blobStorage/bin*
+blobStorage/*-config.json
+blobStorage/*.pickle

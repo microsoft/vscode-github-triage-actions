@@ -33,7 +33,7 @@ INCORRECT_WEIGHT = -1.75
 FILTER_DATA = False
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-MODEL_DIR = os.path.join(BASE_PATH, "..", "blobStorage", "bin",)
+MODEL_DIR = os.path.join(BASE_PATH, "..", "blobStorage")
 DATA_DIR = os.path.join(BASE_PATH, "train_data")
 
 

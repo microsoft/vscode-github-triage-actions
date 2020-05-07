@@ -12,7 +12,7 @@ import os.path
 sys.path.insert(0, ".")
 
 BASE_PATH = os.path.join(os.path.dirname(__file__), "..")
-MODEL_PATH = os.path.abspath(os.path.join(BASE_PATH, "..", "blobStorage", "bin"))
+MODEL_PATH = os.path.abspath(os.path.join(BASE_PATH, "..", "blobStorage"))
 print("running with BASE_PATH, MODEL_PATH:", BASE_PATH, MODEL_PATH)
 
 
