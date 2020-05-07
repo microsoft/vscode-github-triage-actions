@@ -18,7 +18,7 @@ console.log({ debug })
 
 type ClassifierConfig = {
 	labels: {
-		[area: string]: { assignLabel?: boolean; comment?: string; assign?: [string] }
+		[area: string]: { applyLabel?: boolean; comment?: string; assign?: [string] }
 	}
 	assignees: {
 		[assignee: string]: { assign: boolean; comment?: string }
@@ -87,7 +87,7 @@ const main = async () => {
 			}
 			const labelConfig = config.labels?.[label]
 			await Promise.all<any>([
-				labelConfig?.assignLabel || debug ? issue.addLabel(label) : Promise.resolve,
+				labelConfig?.applyLabel || debug ? issue.addLabel(label) : Promise.resolve,
 				labelConfig?.comment ? issue.postComment(labelConfig.comment) : Promise.resolve(),
 				...(labelConfig?.assign
 					? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))

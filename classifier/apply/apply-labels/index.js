@@ -65,7 +65,7 @@ const main = async () => {
             }
             const labelConfig = (_b = config.labels) === null || _b === void 0 ? void 0 : _b[label];
             await Promise.all([
-                (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assignLabel) || debug ? issue.addLabel(label) : Promise.resolve,
+                (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.applyLabel) || debug ? issue.addLabel(label) : Promise.resolve,
                 (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.comment) ? issue.postComment(labelConfig.comment) : Promise.resolve(),
                 ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
                     : []),

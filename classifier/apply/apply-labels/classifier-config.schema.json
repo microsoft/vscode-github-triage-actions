@@ -1,6 +1,7 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type": "object",
+	"additionalProperties": false,
 	"properties": {
 		"$schema": {
 			"type": "string"
@@ -8,9 +9,10 @@
 		"labels": {
 			"additionalProperties": {
 				"type": "object",
+				"additionalProperties": false,
 				"properties": {
-					"assignLabel": {
-						"description": "If true, this label will be automatically applied to issues.",
+					"applyLabel": {
+						"description": "Enables automatically applying this label to issues.",
 						"type": "boolean"
 					},
 					"comment": {
@@ -30,9 +32,10 @@
 		"assignees": {
 			"additionalProperties": {
 				"type": "object",
+				"additionalProperties": false,
 				"properties": {
 					"assign": {
-						"description": "If true, automatically assign this team member",
+						"description": "Enables automatically assigning this team member",
 						"type": "boolean"
 					},
 					"comment": {
