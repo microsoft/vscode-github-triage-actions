@@ -27,9 +27,10 @@ const main = async () => {
         }
         const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
         const issueData = await issue.getIssue();
-        if (issueData.assignee ||
-            issueData.numComments ||
-            issueData.labels.some((label) => !allowLabels.includes(label))) {
+        if (!debug &&
+            (issueData.assignee ||
+                issueData.numComments ||
+                issueData.labels.some((label) => !allowLabels.includes(label)))) {
             continue;
         }
         console.log(`adding label ${label} to issue ${issueData.number}`);
@@ -54,7 +55,7 @@ const main = async () => {
             (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assignLabel) || debug ? issue.addLabel(label) : Promise.resolve,
             (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.comment) ? issue.postComment(labelConfig.comment) : Promise.resolve(),
             ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee)) : []),
-            (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) ? issue.addAssignee(assignee) : Promise.resolve(),
+            (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) || debug ? issue.addAssignee(assignee) : Promise.resolve(),
             (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
         ]);
     }

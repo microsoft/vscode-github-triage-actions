@@ -42,9 +42,10 @@ const main = async () => {
 		const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
 		const issueData = await issue.getIssue()
 		if (
-			issueData.assignee ||
-			issueData.numComments ||
-			issueData.labels.some((label) => !allowLabels.includes(label))
+			!debug &&
+			(issueData.assignee ||
+				issueData.numComments ||
+				issueData.labels.some((label) => !allowLabels.includes(label)))
 		) {
 			continue
 		}
@@ -75,7 +76,7 @@ const main = async () => {
 			labelConfig?.assignLabel || debug ? issue.addLabel(label) : Promise.resolve,
 			labelConfig?.comment ? issue.postComment(labelConfig.comment) : Promise.resolve(),
 			...(labelConfig?.assign ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee)) : []),
-			assigneeConfig?.assign ? issue.addAssignee(assignee) : Promise.resolve(),
+			assigneeConfig?.assign || debug ? issue.addAssignee(assignee) : Promise.resolve(),
 			assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
 		])
 	}
