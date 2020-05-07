@@ -63,7 +63,7 @@ const main = async () => {
 		const assignee = labeling.assignee
 
 		if (assignee && debug) {
-			if (!(await github.repoHasLabel(label))) {
+			if (!(await github.repoHasLabel(assignee))) {
 				console.log(`creating assignee label`)
 				await github.createLabel(assignee, 'ffa5a1', '')
 			}
