@@ -31,6 +31,11 @@ const main = async () => {
             console.log('skipping');
             continue;
         }
+        console.log('not skipping', {
+            assignee: labeling.assignee,
+            labels: labeling.labels,
+            number: labeling.number,
+        });
         const assignee = labeling.assignee;
         if (assignee) {
             if (debug && !(await github.repoHasLabel(assignee))) {
