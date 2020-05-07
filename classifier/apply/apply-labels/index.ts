@@ -55,12 +55,16 @@ const main = async () => {
 
 		const assignee = labeling.assignee
 		if (assignee) {
+			console.log('has assignee')
+
 			if (debug && !(await github.repoHasLabel(assignee))) {
 				console.log(`creating assignee label`)
 				await github.createLabel(assignee, 'ffa5a1', '')
 			}
 
 			const assigneeConfig = config.assignees?.[assignee]
+			console.log({ assigneeConfig })
+
 			await Promise.all<any>([
 				assigneeConfig?.assign || debug ? issue.addAssignee(assignee) : Promise.resolve(),
 				assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),

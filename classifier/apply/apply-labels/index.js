@@ -38,11 +38,13 @@ const main = async () => {
         });
         const assignee = labeling.assignee;
         if (assignee) {
+            console.log('has assignee');
             if (debug && !(await github.repoHasLabel(assignee))) {
                 console.log(`creating assignee label`);
                 await github.createLabel(assignee, 'ffa5a1', '');
             }
             const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[assignee];
+            console.log({ assigneeConfig });
             await Promise.all([
                 (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) || debug ? issue.addAssignee(assignee) : Promise.resolve(),
                 (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
