@@ -61,6 +61,9 @@ const main = async () => {
 				console.log(`creating assignee label`)
 				await github.createLabel(assignee, 'ffa5a1', '')
 			}
+			if (debug) {
+				await issue.addLabel(assignee)
+			}
 
 			const assigneeConfig = config.assignees?.[assignee]
 			console.log({ assigneeConfig })
