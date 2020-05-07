@@ -183,6 +183,17 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		}
 	}
 
+	async removeAssignee(assignee: string): Promise<void> {
+		debug('Removing assignee ' + assignee + ' to ' + this.issueData.number)
+		if (!this.options.readonly) {
+			await this.octokit.issues.removeAssignees({
+				...this.params,
+				issue_number: this.issueData.number,
+				assignees: [assignee],
+			})
+		}
+	}
+
 	async closeIssue(): Promise<void> {
 		debug('Closing issue ' + this.issueData.number)
 		if (!this.options.readonly)

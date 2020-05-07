@@ -120,6 +120,10 @@ export class TestbedIssue extends Testbed implements GitHubIssue {
 		this.issueConfig.issue.assignee = assignee
 	}
 
+	async removeAssignee(): Promise<void> {
+		this.issueConfig.issue.assignee = undefined
+	}
+
 	async setMilestone(milestoneId: number): Promise<void> {
 		this.issueConfig.issue.milestoneId = milestoneId
 	}
