@@ -149,7 +149,7 @@ class OctoKitIssue extends OctoKit {
         console.log('running bot on issue', issueData.number);
     }
     async addAssignee(assignee) {
-        core_1.debug('Adding assignee ' + assignee + ' to ' + this.issueData.number);
+        console.log('Adding assignee ' + assignee + ' to ' + this.issueData.number);
         if (!this.options.readonly) {
             await this.octokit.issues.addAssignees({
                 ...this.params,

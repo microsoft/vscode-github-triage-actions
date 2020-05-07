@@ -173,7 +173,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async addAssignee(assignee: string): Promise<void> {
-		debug('Adding assignee ' + assignee + ' to ' + this.issueData.number)
+		console.log('Adding assignee ' + assignee + ' to ' + this.issueData.number)
 		if (!this.options.readonly) {
 			await this.octokit.issues.addAssignees({
 				...this.params,
