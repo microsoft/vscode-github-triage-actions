@@ -36,6 +36,8 @@ const main = async () => {
     await blobStorage_1.downloadBlob('editor-model-config.json', blobContainer, blobStorageKey);
     await blobStorage_1.downloadBlob('workbench-model.pickle', blobContainer, blobStorageKey);
     await blobStorage_1.downloadBlob('workbench-model-config.json', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlob('assignee-model.pickle', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlob('assignee-model-config.json', blobContainer, blobStorageKey);
 };
 main()
     .then(() => utils_1.logRateLimit(token))

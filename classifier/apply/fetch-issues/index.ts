@@ -48,6 +48,9 @@ const main = async () => {
 
 	await downloadBlob('workbench-model.pickle', blobContainer, blobStorageKey)
 	await downloadBlob('workbench-model-config.json', blobContainer, blobStorageKey)
+
+	await downloadBlob('assignee-model.pickle', blobContainer, blobStorageKey)
+	await downloadBlob('assignee-model-config.json', blobContainer, blobStorageKey)
 }
 
 main()
