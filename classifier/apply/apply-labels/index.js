@@ -39,25 +39,24 @@ const main = async () => {
         const assignee = labeling.assignee;
         if (assignee) {
             console.log('has assignee');
-            if (debug && !(await github.repoHasLabel(assignee))) {
-                console.log(`creating assignee label`);
-                await github.createLabel(assignee, 'ffa5a1', '');
-            }
             if (debug) {
+                if (!(await github.repoHasLabel(assignee))) {
+                    console.log(`creating assignee label`);
+                    await github.createLabel(assignee, 'ffa5a1', '');
+                }
                 await issue.addLabel(assignee);
             }
             const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[assignee];
             console.log({ assigneeConfig });
             await Promise.all([
-                (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) || debug ? issue.addAssignee(assignee) : Promise.resolve(),
+                (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) ? issue.addAssignee(assignee) : Promise.resolve(),
                 (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
             ]);
         }
-        const label = labeling.labels.length === 1 ? labeling.labels[0] : undefined;
+        const label = labeling.labels.length > 0 ? labeling.labels[0] : undefined;
         if (label) {
             console.log(`adding label ${label} to issue ${issueData.number}`);
             if (debug) {
-                console.log(`create labels enabled`);
                 if (!(await github.repoHasLabel(label))) {
                     console.log(`creating label`);
                     await github.createLabel(label, 'f1d9ff', '');
