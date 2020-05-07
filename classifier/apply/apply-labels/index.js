@@ -13,6 +13,7 @@ const utils_1 = require("../../../utils/utils");
 const token = utils_1.getRequiredInput('token');
 const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
 const debug = !!utils_1.getInput('__debug');
+console.log({ debug });
 const main = async () => {
     var _a, _b;
     console.log('hello');
@@ -27,6 +28,7 @@ const main = async () => {
             (issueData.assignee ||
                 issueData.numComments ||
                 issueData.labels.some((label) => !allowLabels.includes(label)))) {
+            console.log('skipping');
             continue;
         }
         const assignee = labeling.assignee;

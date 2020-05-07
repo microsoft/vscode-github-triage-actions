@@ -14,6 +14,8 @@ const token = getRequiredInput('token')
 const allowLabels = (getInput('allowLabels') || '').split('|')
 const debug = !!getInput('__debug')
 
+console.log({ debug })
+
 type ClassifierConfig = {
 	labels: {
 		[area: string]: { assignLabel?: boolean; comment?: string; assign?: [string] }
@@ -42,6 +44,7 @@ const main = async () => {
 				issueData.numComments ||
 				issueData.labels.some((label) => !allowLabels.includes(label)))
 		) {
+			console.log('skipping')
 			continue
 		}
 
