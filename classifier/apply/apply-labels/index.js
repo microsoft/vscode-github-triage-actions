@@ -43,7 +43,7 @@ const main = async () => {
         if (assignee && debug) {
             if (!(await github.repoHasLabel(label))) {
                 console.log(`creating assignee label`);
-                await github.createLabel(assignee, 'f1d9ff', '');
+                await github.createLabel(assignee, 'ffa5a1', '');
             }
             await issue.addLabel(assignee);
         }
