@@ -1,6 +1,6 @@
-# VS Code's Issue Traige GitHub Actions
+# VS Code's Issue Triage GitHub Actions
 
-We here host our [GitHub Actions](https://help.github.com/en/actions) for triaging issues.
+We host our [GitHub Actions](https://help.github.com/en/actions) for triaging issues here.
 
 Many of these are not specific to VS Code, and can be used in other projects by importing the repository like so:
 
@@ -60,7 +60,7 @@ The full classifier workflow is a 2-part process (Train, Apply), with each part 
 
 #### Train
 
-In this part, the full issue data for the repository is downloaaded and ML models are applied to it. These models then get uploaded to Azure Storage, to be later consumed by the Labeling part. This action should run periodically (approximately monthly) to keep the models from going stale.
+In this part, the full issue data for the repository is downloaded and ML models are applied to it. These models then get uploaded to Azure Storage, to be later consumed by the Labeling part. This action should run periodically (approximately monthly) to keep the models from going stale.
 
 ##### fetch-issues
 Download all issues and associated labeling data
@@ -97,7 +97,7 @@ inputs:
 
 #### Apply
 
-In this part, the models generated in the Training phase get aapplied to issues. To save on bandwidth and compute, this is dont in batches. Every half hour, the issues in the past period are passed through the models and assigned a label.
+In this part, the models generated in the Training phase get applied to issues. To save on bandwidth and compute, this is dont in batches. Every half hour, the issues in the past period are passed through the models and assigned a label.
 
 ##### fetch-issues
 Collect the issues which need to be labeled and write them to a file for later processing
@@ -278,7 +278,7 @@ inputs:
 ```
 
 ### Locker
-Lock issues and prs that have been closed and not updated for some time.
+Lock issues and PRs that have been closed and not updated for some time.
 
 ```yml
 inputs:
