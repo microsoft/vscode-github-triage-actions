@@ -1,6 +1,8 @@
 train_data
+train_data_old
 *.pyc
 issues.json
+issues.*.json
 issue_data.json
 issue_labels.json
 blobStorage/*-config.json

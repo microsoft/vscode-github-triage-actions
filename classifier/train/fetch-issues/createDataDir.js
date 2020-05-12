@@ -8,198 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const utils_1 = require("../../../utils/utils");
 const classifications = [
-    {
-        name: 'type',
-        categoryPriority: ['bug', 'feature-request'],
-        labelToCategory: {},
-        categoriesExtractor: (issue) => issue.labels,
-    },
-    {
-        name: 'area',
-        categoryPriority: [
-            'L10N',
-            'VIM',
-            'api',
-            'authentication',
-            'breadcrumbs',
-            'callhierarchy',
-            'color-palette',
-            'comments',
-            'config',
-            'context-keys',
-            'css-less-scss',
-            'custom-editors',
-            'debug-console',
-            'debug',
-            'dialogs',
-            'diff-editor',
-            'dropdown',
-            'editor',
-            'emmet',
-            'error-list',
-            'explorer-custom',
-            'extension-host',
-            'extension-recommendations',
-            'extensions-development',
-            'extensions',
-            'file-decorations',
-            'file-encoding',
-            'file-explorer',
-            'file-glob',
-            'file-guess-encoding',
-            'file-io',
-            'file-watcher',
-            'font-rendering',
-            'formatting',
-            'git',
-            'gpu',
-            'grammar',
-            'grid-view',
-            'html',
-            'i18n',
-            'icon-brand',
-            'icons-product',
-            'install-update',
-            'integrated-terminal',
-            'integration-test',
-            'intellisense-config',
-            'ipc',
-            'issue-bot',
-            'issue-reporter',
-            'javascript',
-            'json',
-            'keyboard-layout',
-            'keybindings',
-            'keybindings-editor',
-            'label-provider',
-            'languages-diagnostics',
-            'languages-basic',
-            'languages-guessing',
-            'layout',
-            'lcd-text-rendering',
-            'list',
-            'log',
-            'markdown',
-            'marketplace',
-            'menus',
-            'merge-conflict',
-            'notebook',
-            'outline',
-            'output',
-            'perf',
-            'perf-bloat',
-            'perf-startup',
-            'php',
-            'portable-mode',
-            'proxy',
-            'quick-pick',
-            'references-viewlet',
-            'release-notes',
-            'remote-explorer',
-            'remote',
-            'rename',
-            'samples',
-            'sandbox',
-            'scm',
-            'screencast-mode',
-            'search-api',
-            'search-editor',
-            'search',
-            'search-replace',
-            'semantic-tokens',
-            'settings-editor',
-            'settings-sync-server',
-            'settings-sync',
-            'shared-process',
-            'simple-file-dialog',
-            'smart-select',
-            'smoke-test',
-            'snap',
-            'snippets',
-            'splitview',
-            'suggest',
-            'sync-error-handling',
-            'tasks',
-            'telemetry',
-            'themes',
-            'timeline-git',
-            'timeline',
-            'titlebar',
-            'tokenization',
-            'touch/pointer',
-            'trackpad/scroll',
-            'tree',
-            'typescript',
-            'undo-redo',
-            'unit-test',
-            'uri',
-            'ux',
-            'variable-resolving',
-            'vscode-build',
-            'vscode-website',
-            'web',
-            'webview',
-            'workbench',
-            'workspace-edit',
-            'workspace-symbols',
-            'zoom',
-        ],
-        labelToCategory: (category) => {
-            if (category.startsWith('editor-')) {
-                return 'editor';
-            }
-            if (category.startsWith('workbench-')) {
-                return 'workbench';
-            }
-            return category.replace('/', '-');
-        },
-        categoriesExtractor: (issue) => issue.labels,
-    },
-    {
-        name: 'editor',
-        categoryPriority: (candidates) => candidates
-            .sort()
-            .find((candidate) => candidate.startsWith('editor-') && candidate !== 'editor-core'),
-        labelToCategory: {},
-        categoriesExtractor: (issue) => issue.labels,
-    },
-    {
-        name: 'workbench',
-        categoryPriority: (candidates) => candidates.sort().find((candidate) => candidate.startsWith('workbench-')),
-        labelToCategory: {},
-        categoriesExtractor: (issue) => issue.labels,
-    },
-    {
-        name: 'assignee',
-        labelToCategory: {},
-        categoriesExtractor: (issue) => issue.assignees,
-        categoryPriority: [
-            'jrieken',
-            'alexdima',
-            'isidorn',
-            'weinand',
-            'bpasero',
-            'aeschli',
-            'joaomoreno',
-            'dbaeumer',
-            'roblourens',
-            'chrmarti',
-            'Tyriar',
-            'gregvanl',
-            'mjbvz',
-            'rebornix',
-            'alexr00',
-            'stevencl',
-            'sbatten',
-            'RMacfarlane',
-            'sandy081',
-            'misolori',
-            'deepak1556',
-            'connor4312',
-            'eamodio',
-            'JacksonKearl',
-        ],
-    },
+    { name: 'raw', categoriesExtractor: () => ['issue'], categoryPriority: ['issue'], labelToCategory: {} },
 ];
 const DATA_DIR = 'train_data';
 exports.createDataDirectories = async () => {
@@ -231,7 +40,7 @@ exports.createDataDirectories = async () => {
             .filter(([_, count]) => count < 5)
             .map(([label]) => label);
         for (const issue of issues) {
-            const category = (_a = categoryPriorityFn(categoriesExtractor(issue).map((label) => labelToCategoryFn(label) || label))) !== null && _a !== void 0 ? _a : (['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) => issue.labels.includes(otherLabel))
+            const category = (_a = categoryPriorityFn(categoriesExtractor(issue).map((label) => labelToCategoryFn(label) || label))) !== null && _a !== void 0 ? _a : (['*caused-by-extension', 'needs mo_re info', '*question'].find((otherLabel) => issue.labels.includes(otherLabel))
                 ? name === 'area' && Math.random() < 0.2
                     ? '__OTHER__'
                     : undefined
@@ -242,18 +51,16 @@ exports.createDataDirectories = async () => {
                 !['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor));
             if (category &&
                 !ignoredLabels.includes(category) &&
-                (name === 'assignee' || (!isDuplicate && (isHumanLabeled || category === '__OTHER__')))) {
+                (name !== 'area' ||
+                    (!isDuplicate && (isHumanLabeled || issue.closedWithCode || category === '__OTHER__')))) {
                 if (!seen[category]) {
                     seen[category] = 0;
-                    fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, 'train', category), {
-                        recursive: true,
-                    });
-                    fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, 'test', category), {
+                    fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, category), {
                         recursive: true,
                     });
                     await new Promise((resolve) => setTimeout(resolve, 100)); // ?
                 }
-                const filepath = path.join(__dirname, '..', DATA_DIR, name, Math.random() < 0.8 || seen[category] == 0 ? 'train' : 'test', category);
+                const filepath = path.join(__dirname, '..', DATA_DIR, name, category);
                 const { title, body } = utils_1.normalizeIssue(issue);
                 const filename = `${issue.number}.txt`;
                 const content = `${title}\n\n${body}`;
@@ -262,6 +69,7 @@ exports.createDataDirectories = async () => {
             }
         }
         console.log('Ignored', ignoredLabels);
+        console.log('Label Counts', seen);
     }
 };
 //# sourceMappingURL=createDataDir.js.map
