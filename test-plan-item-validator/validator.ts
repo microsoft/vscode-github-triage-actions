@@ -8,7 +8,7 @@
 enum Platform {
 	MAC = 1,
 	WINDOWS,
-	LINUX
+	LINUX,
 }
 
 function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
@@ -18,7 +18,7 @@ function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
 		})
 	}
 
-	const seen: { [key: string]: boolean; } = Object.create(null)
+	const seen: { [key: string]: boolean } = Object.create(null)
 	return array.filter((elem) => {
 		const key = keyFn(elem)
 		if (seen[key]) {
@@ -30,33 +30,37 @@ function distinct<T>(array: T[], keyFn?: (t: T) => string): T[] {
 		return true
 	})
 }
-
 interface PlatformAssigment {
-	platform: Platform;
-	user: string;
-	range: [number, number];
+	platform: Platform
+	user: string
+	range: [number, number]
 }
 
 interface TestPlanItem {
-	complexity: number;
-	assignments: PlatformAssigment[];
-	authors: string[];
+	headerRange: [number, number]
+	complexity: number
+	assignments: PlatformAssigment[]
+	authors: string[]
 }
 
 // Make sure all platform assignments have similar groups
-const MacPlatformTerm = '(mac(os)?)'
+const MacPlatformTerm = `(mac(os)?)`
 const MacPlatformAssignment: RegExp = new RegExp(`\\[[\\sx]\\]\\s+${MacPlatformTerm}\\s*:?\\s*`, 'i')
-const WindowsPlatformTerm = '(win(dows)?|(wsl))'
+const WindowsPlatformTerm = `(win(dows)?|(wsl))`
 const WindowsPlatformAssignment: RegExp = new RegExp(`\\[[\\sx]\\]\\s+${WindowsPlatformTerm}\\s*:?\\s*`, 'i')
-const LinuxPlatformTerm = '(linux)'
+const LinuxPlatformTerm = `(linux)`
 const LinuxPlatformAssignment: RegExp = new RegExp(`\\[[\\sx]\\]\\s+${LinuxPlatformTerm}\\s*:?\\s*`, 'i')
-const AnyPlatformTerm = '(any\\s*(os)?|ssh|dev\\s?container)'
+const AnyPlatformTerm = `(any\\s*(os)?|ssh|dev\\s?container|web)`
 const AnyPlatformAssignment: RegExp = new RegExp(`\\[[\\sx]\\]\\s+${AnyPlatformTerm}\\s*:?\\s*`, 'i')
-const InvalidAssignment: RegExp = new RegExp(`\\[[\\sx]\\]\\s+(?!(${MacPlatformTerm}|${WindowsPlatformTerm}|${LinuxPlatformTerm}|${AnyPlatformTerm}))\\s*:?\\s*`, 'i')
+const InvalidAssignment: RegExp = new RegExp(
+	`\\[[\\sx]\\]\\s+(?!(${MacPlatformTerm}|${WindowsPlatformTerm}|${LinuxPlatformTerm}|${AnyPlatformTerm}))\\s*:?\\s*`,
+	'i',
+)
 
 export function parseTestPlanItem(body: string, author: string): TestPlanItem {
-	const testPlanItem: TestPlanItem = { complexity: 3, assignments: [], authors: [] }
-	const header = parseHeader(body)
+	const headerRange = parseHeaderRange(body)
+	const testPlanItem: TestPlanItem = { complexity: 3, assignments: [], authors: [], headerRange }
+	const header = body.substring(testPlanItem.headerRange[0], testPlanItem.headerRange[1])
 	testPlanItem.complexity = parseComplexity(header)
 	testPlanItem.authors = distinct([author, ...parseAuthors(header)])
 
@@ -76,18 +80,20 @@ export function parseTestPlanItem(body: string, author: string): TestPlanItem {
 
 	let matches = InvalidAssignment.exec(body)
 	if (matches && matches.length) {
-		throw new Error(`Test plan item has invalid assignments - ${body.substring(matches.index).split('\n')[0]}`)
+		throw new Error(
+			`Test plan item has invalid assignments - ${body.substring(matches.index).split('\n')[0]}`,
+		)
 	}
 
 	return testPlanItem
 }
 
-function parseHeader(body: string): string {
+function parseHeaderRange(body: string): [number, number] {
 	const matches = /(\r\n|\n)----*(\r\n|\n)/i.exec(body)
 	if (matches && matches.length) {
-		return body.substring(0, matches.index)
+		return [0, matches.index]
 	}
-	throw new Error('Test plan item should have header . (Must match /(\\r\\n|\\n)----*(\\r\\n|\\n)/)')
+	throw new Error('Test plan item should have header')
 }
 
 function parseComplexity(body: string): number {
@@ -96,35 +102,66 @@ function parseComplexity(body: string): number {
 }
 
 function parseAuthors(body: string): string[] {
-	const matches = /author(s)?\s*[:-]?\s*(<\!--.*-->)*(.*)/i.exec(body)
-	return matches && matches[3] ? matches[3].trim().split(',').map(a => {
-		a = a.trim()
-		return a.indexOf('@') === 0 ? a.substring(1) : a
-	}) : []
+	const matches = /author(s)?\s*[:-]?\s*(<!--.*-->)*(.*)/i.exec(body)
+	return matches && matches[3]
+		? matches[3]
+				.trim()
+				.split(',')
+				.map((a) => {
+					a = a.trim()
+					return a.indexOf('@') === 0 ? a.substring(1) : a
+				})
+		: []
 }
 
-function parsePlatformAssignment(body: string, platform: Platform, platformAssignments: PlatformAssigment[]): void {
+function parsePlatformAssignment(
+	body: string,
+	platform: Platform,
+	platformAssignments: PlatformAssigment[],
+): void {
 	let regex: RegExp
 	switch (platform) {
-		case Platform.MAC: regex = MacPlatformAssignment; break
-		case Platform.WINDOWS: regex = WindowsPlatformAssignment; break
-		case Platform.LINUX: regex = LinuxPlatformAssignment; break
+		case Platform.MAC:
+			regex = MacPlatformAssignment
+			break
+		case Platform.WINDOWS:
+			regex = WindowsPlatformAssignment
+			break
+		case Platform.LINUX:
+			regex = LinuxPlatformAssignment
+			break
 	}
 	let matches = regex.exec(body)
 	if (matches && matches.length) {
 		const platformAssignment: PlatformAssigment = { platform, user: undefined!, range: undefined! }
 		platformAssignments.push(platformAssignment)
-		let endIndex = setUserAssignment(body, { match: matches[0], start: matches.index }, platformAssignment)
+		let endIndex = setUserAssignment(
+			body,
+			{ match: matches[0], start: matches.index },
+			platformAssignment,
+		)
 		matches = regex.exec(body.substring(endIndex))
 		if (matches && matches.length) {
 			const platformAssignment: PlatformAssigment = { platform, user: undefined!, range: undefined! }
 			platformAssignments.push(platformAssignment)
-			endIndex = setUserAssignment(body, { match: matches[0], start: endIndex + matches.index }, platformAssignment)
+			endIndex = setUserAssignment(
+				body,
+				{ match: matches[0], start: endIndex + matches.index },
+				platformAssignment,
+			)
 			matches = regex.exec(body.substring(endIndex))
 			if (matches && matches.length) {
-				const platformAssignment: PlatformAssigment = { platform, user: undefined!, range: undefined! }
+				const platformAssignment: PlatformAssigment = {
+					platform,
+					user: undefined!,
+					range: undefined!,
+				}
 				platformAssignments.push(platformAssignment)
-				endIndex = setUserAssignment(body, { match: matches[0], start: endIndex + matches.index }, platformAssignment)
+				endIndex = setUserAssignment(
+					body,
+					{ match: matches[0], start: endIndex + matches.index },
+					platformAssignment,
+				)
 			}
 		}
 	}
@@ -135,21 +172,39 @@ function parseAnyPlatformAssignments(body: string, platformAssignments: Platform
 	let fromIndex = 0
 	fromIndex = parseAnyPlatformAssignmentsStartingFrom(body, fromIndex, allPlatforms, platformAssignments)
 	if (fromIndex !== -1) {
-		fromIndex = parseAnyPlatformAssignmentsStartingFrom(body, fromIndex, allPlatforms, platformAssignments)
+		fromIndex = parseAnyPlatformAssignmentsStartingFrom(
+			body,
+			fromIndex,
+			allPlatforms,
+			platformAssignments,
+		)
 		if (fromIndex !== -1) {
 			parseAnyPlatformAssignmentsStartingFrom(body, fromIndex, allPlatforms, platformAssignments)
 		}
 	}
 }
 
-function parseAnyPlatformAssignmentsStartingFrom(body: string, fromIndex: number, platforms: Platform[], platformAssignments: PlatformAssigment[]): number {
+function parseAnyPlatformAssignmentsStartingFrom(
+	body: string,
+	fromIndex: number,
+	platforms: Platform[],
+	platformAssignments: PlatformAssigment[],
+): number {
 	const matches = AnyPlatformAssignment.exec(body.substring(fromIndex))
 	if (matches && matches.length) {
 		for (const platform of platforms) {
-			if (!platformAssignments.some(assignment => assignment.platform === platform)) {
-				const platformAssignment: PlatformAssigment = { platform, user: (void 0)!, range: (void 0)! }
+			if (!platformAssignments.some((assignment) => assignment.platform === platform)) {
+				const platformAssignment: PlatformAssigment = {
+					platform,
+					user: undefined!,
+					range: undefined!,
+				}
 				platformAssignments.push(platformAssignment)
-				let endIndex = setUserAssignment(body, { match: matches[0], start: fromIndex + matches.index }, platformAssignment)
+				let endIndex = setUserAssignment(
+					body,
+					{ match: matches[0], start: fromIndex + matches.index },
+					platformAssignment,
+				)
 				return endIndex
 			}
 		}
@@ -157,11 +212,15 @@ function parseAnyPlatformAssignmentsStartingFrom(body: string, fromIndex: number
 	return -1
 }
 
-function setUserAssignment(body: string, { match, start }: { match: string, start: number }, platformAssignment: PlatformAssigment): number {
+function setUserAssignment(
+	body: string,
+	{ match, start }: { match: string; start: number },
+	platformAssignment: PlatformAssigment,
+): number {
 	let from = start + match.length
-	const matches = /^@([^\s\*\r\n]+)\s*/i.exec(body.substring(from))
+	const matches = /^@([^\s*\r\n]+)\s*/i.exec(body.substring(from))
 	if (matches && matches.length) {
-		platformAssignment.user = matches[1] ? matches[1].trim() : (void 0)!
+		platformAssignment.user = matches[1] ? matches[1].trim() : undefined!
 		platformAssignment.range = [from + matches.index, from + matches.index + matches[0].length]
 		return platformAssignment.range[1]
 	} else {
@@ -180,15 +239,14 @@ function rtrimSpaceAndEOL(haystack: string): string {
 
 	const endsWith = (needle: string, offset: number): boolean => {
 		idx = haystack.lastIndexOf(needle, offset - needle.length)
-		return idx !== - 1 && idx + needle.length === offset
+		return idx !== -1 && idx + needle.length === offset
 	}
 
 	let offset = haystack.length,
 		idx = -1
 
 	while (offset !== 0) {
-		if (endsWith(' ', offset)
-			|| endsWith('\t', offset)) {
+		if (endsWith(' ', offset) || endsWith('\t', offset)) {
 			offset = offset - 1
 		} else if (endsWith('\n', offset)) {
 			offset = offset - 1
