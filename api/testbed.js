@@ -12,6 +12,7 @@ class Testbed {
             configs: (_b = config === null || config === void 0 ? void 0 : config.configs) !== null && _b !== void 0 ? _b : {},
             writers: (_c = config === null || config === void 0 ? void 0 : config.writers) !== null && _c !== void 0 ? _c : [],
             releasedCommits: (_d = config === null || config === void 0 ? void 0 : config.releasedCommits) !== null && _d !== void 0 ? _d : [],
+            latestCommit: 'helloworld',
             queryRunner: (_e = config === null || config === void 0 ? void 0 : config.queryRunner) !== null && _e !== void 0 ? _e : async function* () {
                 yield [];
             },
@@ -41,7 +42,10 @@ class Testbed {
         this.config.globalLabels = this.config.globalLabels.filter((label) => label !== labelToDelete);
     }
     async releaseContainsCommit(_release, commit) {
-        return this.config.releasedCommits.includes(commit);
+        return this.config.releasedCommits.includes(commit) ? 'yes' : 'no';
+    }
+    async getLatestCommit() {
+        return this.config.latestCommit;
     }
 }
 exports.Testbed = Testbed;
