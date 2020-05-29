@@ -15,9 +15,6 @@ export class AuthorVerifiedQueryer {
 	) {}
 
 	async run(): Promise<void> {
-		const latestRelease = (await loadLatestRelease('insider'))?.version
-		if (!latestRelease) throw Error('Error loading latest release')
-
 		const query = `is:closed label:${this.pendingReleaseLabel} label:${this.authorVerificationRequestedLabel}`
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
@@ -64,33 +61,15 @@ export class AuthorVerifiedLabeler {
 			const latestRelease = await loadLatestRelease('insider')
 			if (!latestRelease) throw Error('Error loading latest release')
 
-			const closingInfo = await this.github.getClosingInfo()
+			const closingInfo = (await this.github.getClosingInfo())?.hash
 			if (!closingInfo) throw Error('Error loading closing info')
 
-			let releaseContainsCommit = false
-			if (closingInfo.hash) {
-				try {
-					releaseContainsCommit = await this.github.releaseContainsCommit(
-						latestRelease.version,
-						closingInfo.hash,
-					)
-				} catch (e) {
-					const message: string = e.message
-					if (message.includes(`Not a valid commit name ${closingInfo.hash}`)) {
-						// Closing commit in seprate repo. Fall back to close date.
-						releaseContainsCommit = closingInfo.timestamp < latestRelease.timestamp
-					} else if (message.includes(`Not a valid commit name ${latestRelease.version}`)) {
-						// Release commit in seprate branch. Likely endgame. Commit is not released.
-						releaseContainsCommit = false
-					} else {
-						throw e
-					}
-				}
-			} else {
-				releaseContainsCommit = closingInfo.timestamp < latestRelease.timestamp
-			}
+			let releaseContainsCommit = await this.github.releaseContainsCommit(
+				latestRelease.version,
+				closingInfo,
+			)
 
-			if (releaseContainsCommit) {
+			if (releaseContainsCommit == 'yes') {
 				console.log('determined released due to closing info recieved:', JSON.stringify(closingInfo))
 				await this.github.removeLabel(this.pendingReleaseLabel)
 				await this.github.postComment(
@@ -98,8 +77,13 @@ export class AuthorVerifiedLabeler {
 						.replace('${commit}', latestRelease.version)
 						.replace('${author}', issue.author.name),
 				)
-			} else {
+			} else if (releaseContainsCommit === 'no') {
 				await this.github.addLabel(this.pendingReleaseLabel)
+			} else {
+				await this.github.postComment(
+					`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
+Unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`.`,
+				)
 			}
 		}
 	}

@@ -16,7 +16,7 @@ export interface GitHub {
 
 	createIssue(owner: string, repo: string, title: string, body: string): Promise<void>
 
-	releaseContainsCommit(release: string, commit: string): Promise<boolean>
+	releaseContainsCommit(release: string, commit: string): Promise<'yes' | 'no' | 'unknown'>
 }
 
 export interface GitHubIssue extends GitHub {

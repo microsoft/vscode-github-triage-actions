@@ -7,7 +7,7 @@ import { debug } from '@actions/core'
 import { GitHub as GitHubAPI } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import { exec } from 'child_process'
-import { getInput, logRateLimit } from '../utils/utils'
+import { logRateLimit } from '../utils/utils'
 import { Comment, GitHub, GitHubIssue, Issue, Query, User } from './api'
 
 export class OctoKit implements GitHub {
@@ -149,14 +149,21 @@ export class OctoKit implements GitHub {
 		}
 	}
 
-	async releaseContainsCommit(release: string, commit: string): Promise<boolean> {
-		if (getInput('commitReleasedDebuggingOverride')) {
-			return true
-		}
+	async releaseContainsCommit(release: string, commit: string): Promise<'yes' | 'no' | 'unknown'> {
 		return new Promise((resolve, reject) =>
-			exec(`git -C ./repo merge-base --is-ancestor ${commit} ${release}`, (err) =>
-				!err || err.code === 1 ? resolve(!err) : reject(err),
-			),
+			exec(`git -C ./repo merge-base --is-ancestor ${commit} ${release}`, (err) => {
+				if (!err || err.code === 1) {
+					resolve(!err ? 'yes' : 'no')
+				} else if (err.message.includes(`Not a valid commit name ${release}`)) {
+					// release branch is forked. Probably in endgame. Not released.
+					resolve('no')
+				} else if (err.message.includes(`Not a valid commit name ${commit}`)) {
+					// commit is probably in a different repo.
+					resolve('unknown')
+				} else {
+					reject(err)
+				}
+			}),
 		)
 	}
 }
@@ -315,6 +322,8 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			return
 		}
 
+		const closingHashComment = /(?:\\|\/)closedWith (\S*)/
+
 		const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
 			...this.params,
 			issue_number: this.issueData.number,
@@ -326,6 +335,16 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 				if (timelineEvent.event === 'closed') {
 					closingCommit = {
 						hash: timelineEvent.commit_id ?? undefined,
+						timestamp: +new Date(timelineEvent.created_at),
+					}
+				}
+				if (
+					timelineEvent.event === 'commented' &&
+					!((timelineEvent as any).body as string)?.includes('UNABLE_TO_LOCATE_COMMIT_MESSAGE') &&
+					closingHashComment.test((timelineEvent as any).body)
+				) {
+					closingCommit = {
+						hash: closingHashComment.exec((timelineEvent as any).body)![1],
 						timestamp: +new Date(timelineEvent.created_at),
 					}
 				}

@@ -64,8 +64,8 @@ export class Testbed implements GitHub {
 		this.config.globalLabels = this.config.globalLabels.filter((label) => label !== labelToDelete)
 	}
 
-	async releaseContainsCommit(_release: string, commit: string): Promise<boolean> {
-		return this.config.releasedCommits.includes(commit)
+	async releaseContainsCommit(_release: string, commit: string): Promise<'yes' | 'no' | 'unknown'> {
+		return this.config.releasedCommits.includes(commit) ? 'yes' : 'no'
 	}
 }
 

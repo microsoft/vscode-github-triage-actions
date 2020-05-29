@@ -151,14 +151,6 @@ class OctoKit {
             }
         }));
     }
-    async getLatestCommit() {
-        return new Promise((resolve, reject) => child_process_1.exec(`git -C ./repo rev-parse HEAD`, (err, stdout) => {
-            if (err)
-                reject(err);
-            else
-                resolve(stdout);
-        }));
-    }
 }
 exports.OctoKit = OctoKit;
 class OctoKitIssue extends OctoKit {

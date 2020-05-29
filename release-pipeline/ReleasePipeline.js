@@ -51,6 +51,10 @@ class ReleasePipelineLabeler {
         else if (releaseContainsCommit === 'no') {
             await this.github.addLabel(this.notYetReleasedLabel);
         }
+        else if ((await this.github.getIssue()).labels.includes(this.notYetReleasedLabel)) {
+            await this.github.postComment(`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
+Issue marked as unreleased but unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`.`);
+        }
     }
 }
 exports.ReleasePipelineLabeler = ReleasePipelineLabeler;
