@@ -332,9 +332,9 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		for await (const event of this.octokit.paginate.iterator(options)) {
 			const timelineEvents = event.data as Octokit.IssuesListEventsForTimelineResponseItem[]
 			for (const timelineEvent of timelineEvents) {
-				if (timelineEvent.event === 'closed') {
+				if (timelineEvent.event === 'closed' && timelineEvent.commit_id) {
 					closingCommit = {
-						hash: timelineEvent.commit_id ?? undefined,
+						hash: timelineEvent.commit_id,
 						timestamp: +new Date(timelineEvent.created_at),
 					}
 				}
@@ -350,7 +350,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 				}
 			}
 		}
-		console.log(`Got ${closingCommit} as closing commit of ${this.issueData.number}`)
+		console.log(`Got ${JSON.stringify(closingCommit)} as closing commit of ${this.issueData.number}`)
 		return closingCommit
 	}
 }

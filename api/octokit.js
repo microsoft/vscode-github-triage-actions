@@ -282,7 +282,7 @@ class OctoKitIssue extends OctoKit {
         }
     }
     async getClosingInfo() {
-        var _a, _b;
+        var _a;
         if ((await this.getIssue()).open) {
             return;
         }
@@ -295,14 +295,14 @@ class OctoKitIssue extends OctoKit {
         for await (const event of this.octokit.paginate.iterator(options)) {
             const timelineEvents = event.data;
             for (const timelineEvent of timelineEvents) {
-                if (timelineEvent.event === 'closed') {
+                if (timelineEvent.event === 'closed' && timelineEvent.commit_id) {
                     closingCommit = {
-                        hash: (_a = timelineEvent.commit_id) !== null && _a !== void 0 ? _a : undefined,
+                        hash: timelineEvent.commit_id,
                         timestamp: +new Date(timelineEvent.created_at),
                     };
                 }
                 if (timelineEvent.event === 'commented' &&
-                    !((_b = timelineEvent.body) === null || _b === void 0 ? void 0 : _b.includes('UNABLE_TO_LOCATE_COMMIT_MESSAGE')) &&
+                    !((_a = timelineEvent.body) === null || _a === void 0 ? void 0 : _a.includes('UNABLE_TO_LOCATE_COMMIT_MESSAGE')) &&
                     closingHashComment.test(timelineEvent.body)) {
                     closingCommit = {
                         hash: closingHashComment.exec(timelineEvent.body)[1],
@@ -311,7 +311,7 @@ class OctoKitIssue extends OctoKit {
                 }
             }
         }
-        console.log(`Got ${closingCommit} as closing commit of ${this.issueData.number}`);
+        console.log(`Got ${JSON.stringify(closingCommit)} as closing commit of ${this.issueData.number}`);
         return closingCommit;
     }
 }
