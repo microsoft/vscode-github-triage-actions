@@ -42,8 +42,9 @@ class ReleasePipelineLabeler {
             throw Error('Error loading latest release');
         const closingHash = (_a = (await this.github.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
         if (!closingHash) {
+            await this.github.removeLabel(this.notYetReleasedLabel);
             return this.github.postComment(`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Issue marked as unreleased but unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`.`);
+Issue marked as unreleased but unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`);
         }
         let releaseContainsCommit = await this.github.releaseContainsCommit(latestRelease.version, closingHash);
         if (releaseContainsCommit === 'yes') {
@@ -54,8 +55,9 @@ Issue marked as unreleased but unable to locate closing commit. You can manually
             await this.github.addLabel(this.notYetReleasedLabel);
         }
         else if ((await this.github.getIssue()).labels.includes(this.notYetReleasedLabel)) {
+            await this.github.removeLabel(this.notYetReleasedLabel);
             await this.github.postComment(`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Issue marked as unreleased but unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`.`);
+Issue marked as unreleased but unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`);
         }
     }
 }
