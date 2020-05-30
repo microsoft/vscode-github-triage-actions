@@ -52,7 +52,7 @@ export class ReleasePipelineLabeler {
 			await this.github.removeLabel(this.notYetReleasedLabel)
 			return this.github.postComment(
 				`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Issue marked as unreleased but unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`,
+Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`,
 			)
 		}
 
@@ -70,7 +70,7 @@ Issue marked as unreleased but unable to locate closing commit. You can manually
 			await this.github.removeLabel(this.notYetReleasedLabel)
 			await this.github.postComment(
 				`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Issue marked as unreleased but unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`,
+Issue marked as unreleased but unable to locate closing commit in repo history. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`,
 			)
 		}
 	}
