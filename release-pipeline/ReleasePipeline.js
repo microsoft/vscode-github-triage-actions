@@ -41,8 +41,10 @@ class ReleasePipelineLabeler {
         if (!latestRelease)
             throw Error('Error loading latest release');
         const closingHash = (_a = (await this.github.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
-        if (!closingHash)
-            throw Error('Error loading closing info');
+        if (!closingHash) {
+            return this.github.postComment(`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
+Issue marked as unreleased but unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`.`);
+        }
         let releaseContainsCommit = await this.github.releaseContainsCommit(latestRelease.version, closingHash);
         if (releaseContainsCommit === 'yes') {
             await this.github.removeLabel(this.notYetReleasedLabel);
