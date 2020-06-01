@@ -47,7 +47,13 @@ export class ReleasePipeline {
 			return
 		}
 
-		const releaseContainsCommit = await issue.releaseContainsCommit(latestRelease.version, closingHash)
+		const releaseContainsCommit = await issue
+			.releaseContainsCommit(latestRelease.version, closingHash)
+			.catch(async (e) => {
+				await issue.postComment(e.message)
+				return 'unknown' as const
+			})
+
 		if (releaseContainsCommit === 'yes') {
 			await issue.removeLabel(this.notYetReleasedLabel)
 			await issue.addLabel(this.insidersReleasedLabel)

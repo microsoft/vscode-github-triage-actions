@@ -39,7 +39,12 @@ class ReleasePipeline {
 				Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`);
             return;
         }
-        const releaseContainsCommit = await issue.releaseContainsCommit(latestRelease.version, closingHash);
+        const releaseContainsCommit = await issue
+            .releaseContainsCommit(latestRelease.version, closingHash)
+            .catch(async (e) => {
+            await issue.postComment(e.message);
+            return 'unknown';
+        });
         if (releaseContainsCommit === 'yes') {
             await issue.removeLabel(this.notYetReleasedLabel);
             await issue.addLabel(this.insidersReleasedLabel);
