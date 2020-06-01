@@ -7,7 +7,7 @@ import * as core from '@actions/core'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../api/octokit'
 import { getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
-import { ReleasePipelineQueryer, ReleasePipelineLabeler } from './ReleasePipeline'
+import { ReleasePipeline, enrollIssue } from './ReleasePipeline'
 
 const token = getRequiredInput('token')
 
@@ -16,17 +16,16 @@ const main = async () => {
 	const insidersReleasedLabel = getRequiredInput('insidersReleasedLabel')
 
 	if (context.eventName === 'schedule') {
-		await new ReleasePipelineQueryer(
+		await new ReleasePipeline(
 			new OctoKit(token, context.repo),
 			notYetReleasedLabel,
 			insidersReleasedLabel,
 		).run()
 	} else if (context.eventName === 'issues') {
-		await new ReleasePipelineLabeler(
+		await enrollIssue(
 			new OctoKitIssue(token, context.repo, { number: context.issue.number }),
 			notYetReleasedLabel,
-			insidersReleasedLabel,
-		).run()
+		)
 	}
 }
 

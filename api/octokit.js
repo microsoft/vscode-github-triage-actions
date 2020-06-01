@@ -295,7 +295,11 @@ class OctoKitIssue extends OctoKit {
         for await (const event of this.octokit.paginate.iterator(options)) {
             const timelineEvents = event.data;
             for (const timelineEvent of timelineEvents) {
-                if (timelineEvent.event === 'closed' && timelineEvent.commit_id) {
+                if (timelineEvent.event === 'closed' &&
+                    timelineEvent.commit_id &&
+                    timelineEvent.commit_url
+                        .toLowerCase()
+                        .includes(`/${this.params.owner}/${this.params.repo}/`.toLowerCase())) {
                     closingCommit = {
                         hash: timelineEvent.commit_id,
                         timestamp: +new Date(timelineEvent.created_at),

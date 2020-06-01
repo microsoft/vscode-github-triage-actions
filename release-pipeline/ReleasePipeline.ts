@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub, GitHubIssue } from '../api/api'
-import { loadLatestRelease } from '../utils/utils'
+import { loadLatestRelease, Release } from '../utils/utils'
 
-export class ReleasePipelineQueryer {
+export class ReleasePipeline {
 	constructor(
 		private github: GitHub,
 		private notYetReleasedLabel: string,
@@ -14,16 +14,16 @@ export class ReleasePipelineQueryer {
 	) {}
 
 	async run() {
+		const latestRelease = await loadLatestRelease('insider')
+		if (!latestRelease) throw Error('Error loading latest release')
+
 		const query = `is:closed label:${this.notYetReleasedLabel}`
+
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
 				const issueData = await issue.getIssue()
 				if (issueData.labels.includes(this.notYetReleasedLabel) && issueData.open === false) {
-					await new ReleasePipelineLabeler(
-						issue,
-						this.notYetReleasedLabel,
-						this.insidersReleasedLabel,
-					).run()
+					await this.update(issue, latestRelease)
 					await new Promise((resolve) => setTimeout(resolve, 1000))
 				} else {
 					console.log(
@@ -34,47 +34,38 @@ export class ReleasePipelineQueryer {
 			}
 		}
 	}
-}
 
-export class ReleasePipelineLabeler {
-	constructor(
-		private github: GitHubIssue,
-		private notYetReleasedLabel: string,
-		private insidersReleasedLabel: string,
-	) {}
+	private async update(issue: GitHubIssue, latestRelease: Release) {
+		const closingHash = (await issue.getClosingInfo())?.hash
 
-	async run() {
-		const latestRelease = await loadLatestRelease('insider')
-		if (!latestRelease) throw Error('Error loading latest release')
-
-		const closingHash = (await this.github.getClosingInfo())?.hash
 		if (!closingHash) {
-			if ((await this.github.getIssue()).labels.includes(this.notYetReleasedLabel)) {
-				await this.github.removeLabel(this.notYetReleasedLabel)
-				await this.github.postComment(
-					`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`,
-				)
-			}
+			await issue.removeLabel(this.notYetReleasedLabel)
+			await issue.postComment(
+				`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
+				Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`,
+			)
 			return
 		}
 
-		let releaseContainsCommit = await this.github.releaseContainsCommit(
-			latestRelease.version,
-			closingHash,
-		)
-
+		const releaseContainsCommit = await issue.releaseContainsCommit(latestRelease.version, closingHash)
 		if (releaseContainsCommit === 'yes') {
-			await this.github.removeLabel(this.notYetReleasedLabel)
-			await this.github.addLabel(this.insidersReleasedLabel)
+			await issue.removeLabel(this.notYetReleasedLabel)
+			await issue.addLabel(this.insidersReleasedLabel)
 		} else if (releaseContainsCommit === 'no') {
-			await this.github.addLabel(this.notYetReleasedLabel)
-		} else if ((await this.github.getIssue()).labels.includes(this.notYetReleasedLabel)) {
-			await this.github.removeLabel(this.notYetReleasedLabel)
-			await this.github.postComment(
+			await issue.addLabel(this.notYetReleasedLabel)
+		} else if ((await issue.getIssue()).labels.includes(this.notYetReleasedLabel)) {
+			await issue.removeLabel(this.notYetReleasedLabel)
+			await issue.postComment(
 				`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
 Issue marked as unreleased but unable to locate closing commit in repo history. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`,
 			)
 		}
+	}
+}
+
+export const enrollIssue = async (issue: GitHubIssue, notYetReleasedLabel: string) => {
+	const closingHash = (await issue.getClosingInfo())?.hash
+	if (closingHash) {
+		await issue.addLabel(notYetReleasedLabel)
 	}
 }
