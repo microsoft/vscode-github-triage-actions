@@ -39,10 +39,11 @@ class ReleasePipeline {
 Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`);
             return;
         }
+        let errorMessage = '';
         const releaseContainsCommit = await issue
             .releaseContainsCommit(latestRelease.version, closingHash)
             .catch(async (e) => {
-            await issue.postComment(e.message);
+            errorMessage = `\n\`\`\`${e.message}\`\`\``;
             return 'unknown';
         });
         if (releaseContainsCommit === 'yes') {
@@ -55,7 +56,8 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
         else if ((await issue.getIssue()).labels.includes(this.notYetReleasedLabel)) {
             await issue.removeLabel(this.notYetReleasedLabel);
             await issue.postComment(`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Issue marked as unreleased but unable to locate closing commit in repo history. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`);
+Issue marked as unreleased but unable to locate closing commit in repo history. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.` +
+                errorMessage);
         }
     }
 }
