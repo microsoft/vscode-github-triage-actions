@@ -51,7 +51,7 @@ class AuthorVerifiedLabeler {
                 throw Error('Error loading latest release');
             const closingInfo = (_a = (await this.github.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
             if (!closingInfo)
-                throw Error('Error loading closing info');
+                throw Error('Error loading closing info for' + issue.number);
             let releaseContainsCommit = await this.github.releaseContainsCommit(latestRelease.version, closingInfo);
             if (releaseContainsCommit == 'yes') {
                 console.log('determined released due to closing info recieved:', JSON.stringify(closingInfo));

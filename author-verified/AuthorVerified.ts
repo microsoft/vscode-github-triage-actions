@@ -62,7 +62,7 @@ export class AuthorVerifiedLabeler {
 			if (!latestRelease) throw Error('Error loading latest release')
 
 			const closingInfo = (await this.github.getClosingInfo())?.hash
-			if (!closingInfo) throw Error('Error loading closing info')
+			if (!closingInfo) throw Error('Error loading closing info for' + issue.number)
 
 			let releaseContainsCommit = await this.github.releaseContainsCommit(
 				latestRelease.version,
