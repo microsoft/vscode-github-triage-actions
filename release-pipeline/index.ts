@@ -15,17 +15,17 @@ const main = async () => {
 	const notYetReleasedLabel = getRequiredInput('notYetReleasedLabel')
 	const insidersReleasedLabel = getRequiredInput('insidersReleasedLabel')
 
-	if (context.eventName === 'schedule') {
+	if (context.eventName === 'issues') {
+		await enrollIssue(
+			new OctoKitIssue(token, context.repo, { number: context.issue.number }),
+			notYetReleasedLabel,
+		)
+	} else {
 		await new ReleasePipeline(
 			new OctoKit(token, context.repo),
 			notYetReleasedLabel,
 			insidersReleasedLabel,
 		).run()
-	} else if (context.eventName === 'issues') {
-		await enrollIssue(
-			new OctoKitIssue(token, context.repo, { number: context.issue.number }),
-			notYetReleasedLabel,
-		)
 	}
 }
 
