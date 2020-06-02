@@ -38,7 +38,7 @@ exports.download = async (token, repo, endCursor) => {
                 name
               }
             }
-            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT], first: 100) {
+            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
               nodes {
                 __typename
                 ... on UnlabeledEvent {
@@ -54,6 +54,9 @@ exports.download = async (token, repo, endCursor) => {
                   createdAt
                   currentTitle
                   previousTitle
+                }
+                ... on ClosedEvent {
+                  __typename
                 }
               }
             }
@@ -82,6 +85,11 @@ exports.download = async (token, repo, endCursor) => {
         labels: issue.labels.nodes.map((label) => label.name),
         assignees: issue.assignees.nodes.map((assignee) => assignee.login),
         labelEvents: extractLabelEvents(issue),
+        closedWithCode: !!issue.timelineItems.nodes.find((event) => {
+            var _a, _b;
+            return event.__typename === 'ClosedEvent' &&
+                (((_a = event.closer) === null || _a === void 0 ? void 0 : _a.__typename) === 'PullRequest' || ((_b = event.closer) === null || _b === void 0 ? void 0 : _b.__typename) === 'Commit');
+        }),
     }));
     fs_1.writeFileSync(path_1.join(__dirname, 'issues.json'), issues.map((issue) => JSON.stringify(issue)).join('\n') + '\n', {
         flag: 'a',

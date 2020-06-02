@@ -25,6 +25,11 @@ type GHRenameEvent = {
 	previousTitle: string
 }
 
+type GHCloseEvent = {
+	__typename: 'ClosedEvent'
+	closer: { __typename: 'Commit' | 'PullRequest' } | null
+}
+
 type RateLimitResponse = { cost: number; remaining: number }
 type IssueResponse = {
 	pageInfo: { endCursor: string; hasNextPage: boolean }
@@ -37,7 +42,7 @@ type IssueResponse = {
 		assignees: { nodes: { login: string }[] }
 		labels: { nodes: { name: string }[] }
 		timelineItems: {
-			nodes: (GHLabelEvent | GHRenameEvent)[]
+			nodes: (GHLabelEvent | GHRenameEvent | GHCloseEvent)[]
 		}
 	}[]
 }
@@ -50,6 +55,7 @@ export type JSONOutputLine = {
 	labels: string[]
 	assignees: string[]
 	labelEvents: LabelEvent[]
+	closedWithCode: boolean
 }
 
 export type LabelEvent = AddedLabelEvent | RemovedLabelEvent
@@ -100,7 +106,7 @@ export const download = async (token: string, repo: { owner: string; repo: strin
                 name
               }
             }
-            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT], first: 100) {
+            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
               nodes {
                 __typename
                 ... on UnlabeledEvent {
@@ -116,6 +122,9 @@ export const download = async (token: string, repo: { owner: string; repo: strin
                   createdAt
                   currentTitle
                   previousTitle
+                }
+                ... on ClosedEvent {
+                  __typename
                 }
               }
             }
@@ -148,6 +157,11 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 		labels: issue.labels.nodes.map((label) => label.name),
 		assignees: issue.assignees.nodes.map((assignee) => assignee.login),
 		labelEvents: extractLabelEvents(issue),
+		closedWithCode: !!issue.timelineItems.nodes.find(
+			(event) =>
+				event.__typename === 'ClosedEvent' &&
+				(event.closer?.__typename === 'PullRequest' || event.closer?.__typename === 'Commit'),
+		),
 	}))
 
 	writeFileSync(
