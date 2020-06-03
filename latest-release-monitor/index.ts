@@ -17,6 +17,7 @@ const update = async (quality: 'stable' | 'insider') => {
 
 	const latest = (await loadLatestRelease(quality))?.version
 	if (latest && latest !== lastKnown) {
+		console.log('found a new release of', quality)
 		await uploadBlobText('latest-' + quality, latest, 'latest-releases', storageKey)
 		await new OctoKit(token, context.repo).dispatch('released-' + quality)
 	}
