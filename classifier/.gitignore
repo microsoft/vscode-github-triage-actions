@@ -5,3 +5,4 @@ issue_data.json
 issue_labels.json
 blobStorage/*-config.json
 blobStorage/*.pickle
+blobStorage/*.zip
