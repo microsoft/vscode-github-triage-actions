@@ -67,6 +67,10 @@ export class Testbed implements GitHub {
 	async releaseContainsCommit(_release: string, commit: string): Promise<'yes' | 'no' | 'unknown'> {
 		return this.config.releasedCommits.includes(commit) ? 'yes' : 'no'
 	}
+
+	async dispatch(title: string): Promise<void> {
+		console.log('dispatching for', title)
+	}
 }
 
 type TestbedIssueConfig = {

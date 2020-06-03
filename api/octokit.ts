@@ -166,6 +166,12 @@ export class OctoKit implements GitHub {
 			}),
 		)
 	}
+
+	async dispatch(title: string): Promise<void> {
+		debug('Dispatching ' + title)
+		if (!this.options.readonly)
+			await this.octokit.repos.createDispatchEvent({ ...this.params, event_type: title })
+	}
 }
 
 export class OctoKitIssue extends OctoKit implements GitHubIssue {

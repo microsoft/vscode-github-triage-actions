@@ -14,6 +14,8 @@ export interface GitHub {
 
 	readConfig(path: string): Promise<any>
 
+	dispatch(title: string): Promise<void>
+
 	createIssue(owner: string, repo: string, title: string, body: string): Promise<void>
 
 	releaseContainsCommit(release: string, commit: string): Promise<'yes' | 'no' | 'unknown'>

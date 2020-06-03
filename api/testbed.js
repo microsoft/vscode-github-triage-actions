@@ -43,6 +43,9 @@ class Testbed {
     async releaseContainsCommit(_release, commit) {
         return this.config.releasedCommits.includes(commit) ? 'yes' : 'no';
     }
+    async dispatch(title) {
+        console.log('dispatching for', title);
+    }
 }
 exports.Testbed = Testbed;
 class TestbedIssue extends Testbed {

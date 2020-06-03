@@ -15,7 +15,7 @@ import {
 	daysAgoToHumanReadbleDate,
 	normalizeIssue,
 } from '../../../utils/utils'
-import { downloadBlob } from '../../blobStorage'
+import { downloadBlobFile } from '../../blobStorage'
 
 const minToDay = 0.0007
 const token = getRequiredInput('token')
@@ -40,17 +40,17 @@ const main = async () => {
 	console.log('Got issues', JSON.stringify(data, null, 2))
 	writeFileSync(join(__dirname, '../issue_data.json'), JSON.stringify(data))
 
-	await downloadBlob('area-model.pickle', blobContainer, blobStorageKey)
-	await downloadBlob('area-model-config.json', blobContainer, blobStorageKey)
+	await downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey)
+	await downloadBlobFile('area-model-config.json', blobContainer, blobStorageKey)
 
-	await downloadBlob('editor-model.pickle', blobContainer, blobStorageKey)
-	await downloadBlob('editor-model-config.json', blobContainer, blobStorageKey)
+	await downloadBlobFile('editor-model.pickle', blobContainer, blobStorageKey)
+	await downloadBlobFile('editor-model-config.json', blobContainer, blobStorageKey)
 
-	await downloadBlob('workbench-model.pickle', blobContainer, blobStorageKey)
-	await downloadBlob('workbench-model-config.json', blobContainer, blobStorageKey)
+	await downloadBlobFile('workbench-model.pickle', blobContainer, blobStorageKey)
+	await downloadBlobFile('workbench-model-config.json', blobContainer, blobStorageKey)
 
-	await downloadBlob('assignee-model.pickle', blobContainer, blobStorageKey)
-	await downloadBlob('assignee-model-config.json', blobContainer, blobStorageKey)
+	await downloadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey)
+	await downloadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey)
 }
 
 main()

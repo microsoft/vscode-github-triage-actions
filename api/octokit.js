@@ -151,6 +151,11 @@ class OctoKit {
             }
         }));
     }
+    async dispatch(title) {
+        core_1.debug('Dispatching ' + title);
+        if (!this.options.readonly)
+            await this.octokit.repos.createDispatchEvent({ ...this.params, event_type: title });
+    }
 }
 exports.OctoKit = OctoKit;
 class OctoKitIssue extends OctoKit {

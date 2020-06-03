@@ -30,14 +30,14 @@ const main = async () => {
     }
     console.log('Got issues', JSON.stringify(data, null, 2));
     fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
-    await blobStorage_1.downloadBlob('area-model.pickle', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlob('area-model-config.json', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlob('editor-model.pickle', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlob('editor-model-config.json', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlob('workbench-model.pickle', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlob('workbench-model-config.json', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlob('assignee-model.pickle', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlob('assignee-model-config.json', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlobFile('area-model-config.json', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlobFile('editor-model.pickle', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlobFile('editor-model-config.json', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlobFile('workbench-model.pickle', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlobFile('workbench-model-config.json', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey);
+    await blobStorage_1.downloadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey);
 };
 main()
     .then(() => utils_1.logRateLimit(token))

@@ -5,7 +5,7 @@
 
 import * as core from '@actions/core'
 import { getRequiredInput, logErrorToIssue } from '../../../utils/utils'
-import { uploadBlob } from '../../blobStorage'
+import { uploadBlobFile } from '../../blobStorage'
 
 const token = getRequiredInput('token')
 const blobContainer = getRequiredInput('blobContainerName')
@@ -13,35 +13,35 @@ const blobStorageKey = getRequiredInput('blobStoragekey')
 
 const main = async () => {
 	console.log('uploading area-model.pickle')
-	await uploadBlob('area-model.pickle', blobContainer, blobStorageKey)
+	await uploadBlobFile('area-model.pickle', blobContainer, blobStorageKey)
 	console.log('done')
 
 	console.log('uploading area-model-config.json')
-	await uploadBlob('area-model-config.json', blobContainer, blobStorageKey)
+	await uploadBlobFile('area-model-config.json', blobContainer, blobStorageKey)
 	console.log('done')
 
 	console.log('uploading editor-model.pickle')
-	await uploadBlob('editor-model.pickle', blobContainer, blobStorageKey)
+	await uploadBlobFile('editor-model.pickle', blobContainer, blobStorageKey)
 	console.log('done')
 
 	console.log('uploading editor-model-config.json')
-	await uploadBlob('editor-model-config.json', blobContainer, blobStorageKey)
+	await uploadBlobFile('editor-model-config.json', blobContainer, blobStorageKey)
 	console.log('done')
 
 	console.log('uploading workbench-model.pickle')
-	await uploadBlob('workbench-model.pickle', blobContainer, blobStorageKey)
+	await uploadBlobFile('workbench-model.pickle', blobContainer, blobStorageKey)
 	console.log('done')
 
 	console.log('uploading workbench-model-config.json')
-	await uploadBlob('workbench-model-config.json', blobContainer, blobStorageKey)
+	await uploadBlobFile('workbench-model-config.json', blobContainer, blobStorageKey)
 	console.log('done')
 
 	console.log('uploading assignee-model.pickle')
-	await uploadBlob('assignee-model.pickle', blobContainer, blobStorageKey)
+	await uploadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey)
 	console.log('done')
 
 	console.log('uploading assignee-model-config.json')
-	await uploadBlob('assignee-model-config.json', blobContainer, blobStorageKey)
+	await uploadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey)
 	console.log('done')
 }
 

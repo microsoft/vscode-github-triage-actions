@@ -5,21 +5,39 @@
 
 import { join } from 'path'
 import { BlobServiceClient } from '@azure/storage-blob'
+import { Readable } from 'stream'
 
-export async function downloadBlob(name: string, container: string, key: string) {
+export async function downloadBlobFile(name: string, container: string, key: string) {
 	const blobServiceClient = BlobServiceClient.fromConnectionString(key)
 	const containerClient = blobServiceClient.getContainerClient(container)
 
 	const createContainerResponse = containerClient.getBlockBlobClient(name)
-
 	await createContainerResponse.downloadToFile(join(__dirname, name))
 }
 
-export async function uploadBlob(name: string, container: string, key: string) {
+export async function uploadBlobFile(name: string, container: string, key: string) {
 	const blobServiceClient = BlobServiceClient.fromConnectionString(key)
 	const containerClient = blobServiceClient.getContainerClient(container)
 
 	const createContainerResponse = containerClient.getBlockBlobClient(name)
 
 	await createContainerResponse.uploadFile(join(__dirname, name))
+}
+
+export async function uploadBlobText(name: string, text: string, container: string, key: string) {
+	const blobServiceClient = BlobServiceClient.fromConnectionString(key)
+	const containerClient = blobServiceClient.getContainerClient(container)
+
+	const createContainerResponse = containerClient.getBlockBlobClient(name)
+
+	await createContainerResponse.uploadStream(Readable.from([text]))
+}
+
+export async function downloadBlobText(name: string, container: string, key: string) {
+	const blobServiceClient = BlobServiceClient.fromConnectionString(key)
+	const containerClient = blobServiceClient.getContainerClient(container)
+
+	const createContainerResponse = containerClient.getBlockBlobClient(name)
+	const buffer = await createContainerResponse.downloadToBuffer()
+	return buffer.toString()
 }
