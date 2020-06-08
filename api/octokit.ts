@@ -16,7 +16,7 @@ export class OctoKit implements GitHub {
 	protected mockLabels: Set<string> = new Set()
 
 	constructor(
-		private token: string,
+		protected token: string,
 		protected params: { repo: string; owner: string },
 		protected options: { readonly: boolean } = { readonly: false },
 	) {
@@ -335,11 +335,12 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			issue_number: this.issueData.number,
 		})
 		let closingCommit: { hash: string | undefined; timestamp: number } | undefined
+		const crossReferencing: number[] = []
 		for await (const event of this.octokit.paginate.iterator(options)) {
 			const timelineEvents = event.data as Octokit.IssuesListEventsForTimelineResponseItem[]
 			for (const timelineEvent of timelineEvents) {
 				if (
-					timelineEvent.event === 'closed' &&
+					(timelineEvent.event === 'closed' || timelineEvent.event === 'merged') &&
 					timelineEvent.commit_id &&
 					timelineEvent.commit_url
 						.toLowerCase()
@@ -349,6 +350,9 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 						hash: timelineEvent.commit_id,
 						timestamp: +new Date(timelineEvent.created_at),
 					}
+				}
+				if (timelineEvent.event === 'reopened') {
+					closingCommit = undefined
 				}
 				if (
 					timelineEvent.event === 'commented' &&
@@ -360,8 +364,32 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 						timestamp: +new Date(timelineEvent.created_at),
 					}
 				}
+				if (
+					timelineEvent.event === 'cross-referenced' &&
+					(timelineEvent as any).source?.issue?.number
+				) {
+					crossReferencing.push((timelineEvent as any).source.issue.number)
+				}
 			}
 		}
+
+		// If we dont have any closing info, try to get it from linked issues (PRs).
+		// If there's a linked issue that was closed at almost the same time, guess it was a PR that closed this.
+		if (!closingCommit) {
+			for (const id of crossReferencing.reverse()) {
+				const closed = await new OctoKitIssue(this.token, this.params, {
+					number: id,
+				}).getClosingInfo()
+
+				if (closed) {
+					if (Math.abs(closed.timestamp - ((await this.getIssue()).closedAt ?? 0)) < 5000) {
+						closingCommit = closed
+						break
+					}
+				}
+			}
+		}
+
 		console.log(`Got ${JSON.stringify(closingCommit)} as closing commit of ${this.issueData.number}`)
 		return closingCommit
 	}

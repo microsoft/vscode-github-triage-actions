@@ -287,7 +287,7 @@ class OctoKitIssue extends OctoKit {
         }
     }
     async getClosingInfo() {
-        var _a;
+        var _a, _b, _c, _d;
         if ((await this.getIssue()).open) {
             return;
         }
@@ -297,10 +297,11 @@ class OctoKitIssue extends OctoKit {
             issue_number: this.issueData.number,
         });
         let closingCommit;
+        const crossReferencing = [];
         for await (const event of this.octokit.paginate.iterator(options)) {
             const timelineEvents = event.data;
             for (const timelineEvent of timelineEvents) {
-                if (timelineEvent.event === 'closed' &&
+                if ((timelineEvent.event === 'closed' || timelineEvent.event === 'merged') &&
                     timelineEvent.commit_id &&
                     timelineEvent.commit_url
                         .toLowerCase()
@@ -310,6 +311,9 @@ class OctoKitIssue extends OctoKit {
                         timestamp: +new Date(timelineEvent.created_at),
                     };
                 }
+                if (timelineEvent.event === 'reopened') {
+                    closingCommit = undefined;
+                }
                 if (timelineEvent.event === 'commented' &&
                     !((_a = timelineEvent.body) === null || _a === void 0 ? void 0 : _a.includes('UNABLE_TO_LOCATE_COMMIT_MESSAGE')) &&
                     closingHashComment.test(timelineEvent.body)) {
@@ -317,6 +321,24 @@ class OctoKitIssue extends OctoKit {
                         hash: closingHashComment.exec(timelineEvent.body)[1],
                         timestamp: +new Date(timelineEvent.created_at),
                     };
+                }
+                if (timelineEvent.event === 'cross-referenced' && ((_c = (_b = timelineEvent.source) === null || _b === void 0 ? void 0 : _b.issue) === null || _c === void 0 ? void 0 : _c.number)) {
+                    crossReferencing.push(timelineEvent.source.issue.number);
+                }
+            }
+        }
+        // If we dont have any closing info, try to get it from linked issues (PRs).
+        // If there's a linked issue that was closed at almost the same time, guess it was a PR that closed this.
+        if (!closingCommit) {
+            for (const id of crossReferencing.reverse()) {
+                const closed = await new OctoKitIssue(this.token, this.params, {
+                    number: id,
+                }).getClosingInfo();
+                if (closed) {
+                    if (Math.abs(closed.timestamp - ((_d = (await this.getIssue()).closedAt) !== null && _d !== void 0 ? _d : 0)) < 5000) {
+                        closingCommit = closed;
+                        break;
+                    }
                 }
             }
         }
