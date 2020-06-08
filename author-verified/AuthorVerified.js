@@ -50,11 +50,14 @@ class AuthorVerifiedLabeler {
             if (!latestRelease)
                 throw Error('Error loading latest release');
             const closingInfo = (_a = (await this.github.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
-            if (!closingInfo)
-                throw Error('Error loading closing info for' + issue.number);
+            if (!closingInfo) {
+                await this.github.removeLabel(this.authorVerificationRequestedLabel);
+                await this.github.postComment(`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
+Unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`.`);
+                return;
+            }
             let releaseContainsCommit = await this.github.releaseContainsCommit(latestRelease.version, closingInfo);
             if (releaseContainsCommit == 'yes') {
-                console.log('determined released due to closing info recieved:', JSON.stringify(closingInfo));
                 await this.github.removeLabel(this.pendingReleaseLabel);
                 await this.github.postComment(this.comment
                     .replace('${commit}', latestRelease.version)
@@ -64,8 +67,9 @@ class AuthorVerifiedLabeler {
                 await this.github.addLabel(this.pendingReleaseLabel);
             }
             else {
+                await this.github.removeLabel(this.pendingReleaseLabel);
                 await this.github.postComment(`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Unable to locate closing commit. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`.`);
+	Issue marked as unreleased but unable to locate closing commit in repo history. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`${this.pendingReleaseLabel}\` label.`);
             }
         }
     }
