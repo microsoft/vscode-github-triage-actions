@@ -14,7 +14,12 @@ const main = async () => {
     const notYetReleasedLabel = utils_1.getRequiredInput('notYetReleasedLabel');
     const insidersReleasedLabel = utils_1.getRequiredInput('insidersReleasedLabel');
     if (github_1.context.eventName === 'issues') {
-        await ReleasePipeline_1.enrollIssue(new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: github_1.context.issue.number }), notYetReleasedLabel);
+        if (github_1.context.payload.action === 'reopened') {
+            await ReleasePipeline_1.unenrollIssue(new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: github_1.context.issue.number }), notYetReleasedLabel, insidersReleasedLabel);
+        }
+        else {
+            await ReleasePipeline_1.enrollIssue(new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: github_1.context.issue.number }), notYetReleasedLabel);
+        }
     }
     else {
         await new ReleasePipeline_1.ReleasePipeline(new octokit_1.OctoKit(token, github_1.context.repo), notYetReleasedLabel, insidersReleasedLabel).run();

@@ -7,7 +7,7 @@ import * as core from '@actions/core'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../api/octokit'
 import { getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
-import { ReleasePipeline, enrollIssue } from './ReleasePipeline'
+import { ReleasePipeline, enrollIssue, unenrollIssue } from './ReleasePipeline'
 
 const token = getRequiredInput('token')
 
@@ -16,10 +16,18 @@ const main = async () => {
 	const insidersReleasedLabel = getRequiredInput('insidersReleasedLabel')
 
 	if (context.eventName === 'issues') {
-		await enrollIssue(
-			new OctoKitIssue(token, context.repo, { number: context.issue.number }),
-			notYetReleasedLabel,
-		)
+		if (context.payload.action === 'reopened') {
+			await unenrollIssue(
+				new OctoKitIssue(token, context.repo, { number: context.issue.number }),
+				notYetReleasedLabel,
+				insidersReleasedLabel,
+			)
+		} else {
+			await enrollIssue(
+				new OctoKitIssue(token, context.repo, { number: context.issue.number }),
+				notYetReleasedLabel,
+			)
+		}
 	} else {
 		await new ReleasePipeline(
 			new OctoKit(token, context.repo),

@@ -59,6 +59,7 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
 			await issue.removeLabel(this.notYetReleasedLabel)
 			await issue.addLabel(this.insidersReleasedLabel)
 		} else if (releaseContainsCommit === 'no') {
+			await issue.removeLabel(this.insidersReleasedLabel)
 			await issue.addLabel(this.notYetReleasedLabel)
 		} else if ((await issue.getIssue()).labels.includes(this.notYetReleasedLabel)) {
 			await issue.removeLabel(this.notYetReleasedLabel)
@@ -76,4 +77,13 @@ export const enrollIssue = async (issue: GitHubIssue, notYetReleasedLabel: strin
 	if (closingHash) {
 		await issue.addLabel(notYetReleasedLabel)
 	}
+}
+
+export const unenrollIssue = async (
+	issue: GitHubIssue,
+	notYetReleasedLabel: string,
+	insidersReleasedLabel: string,
+) => {
+	await issue.removeLabel(insidersReleasedLabel)
+	await issue.removeLabel(notYetReleasedLabel)
 }
