@@ -6,7 +6,7 @@
     "test": "mocha -r ts-node/register **/*.test.ts",
     "build": "tsc",
     "lint": "eslint -c .eslintrc --fix --ext .ts .",
-    "watch-typecheck": "tsc --watch"
+    "watch": "tsc --watch"
   },
   "repository": {
     "type": "git",
