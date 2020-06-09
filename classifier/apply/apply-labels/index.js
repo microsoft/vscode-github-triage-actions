@@ -33,7 +33,7 @@ const main = async () => {
         }
         console.log('not skipping', {
             assignee: labeling.assignee,
-            labels: labeling.labels,
+            area: labeling.area,
             number: labeling.number,
         });
         const assignee = labeling.assignee;
@@ -53,7 +53,7 @@ const main = async () => {
                 (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
             ]);
         }
-        const label = labeling.labels.length > 0 ? labeling.labels[0] : undefined;
+        const label = labeling.area;
         if (label) {
             console.log(`adding label ${label} to issue ${issueData.number}`);
             if (debug) {

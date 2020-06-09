@@ -17,18 +17,6 @@ const main = async () => {
     console.log('uploading area-model-config.json');
     await blobStorage_1.uploadBlobFile('area-model-config.json', blobContainer, blobStorageKey);
     console.log('done');
-    console.log('uploading editor-model.pickle');
-    await blobStorage_1.uploadBlobFile('editor-model.pickle', blobContainer, blobStorageKey);
-    console.log('done');
-    console.log('uploading editor-model-config.json');
-    await blobStorage_1.uploadBlobFile('editor-model-config.json', blobContainer, blobStorageKey);
-    console.log('done');
-    console.log('uploading workbench-model.pickle');
-    await blobStorage_1.uploadBlobFile('workbench-model.pickle', blobContainer, blobStorageKey);
-    console.log('done');
-    console.log('uploading workbench-model-config.json');
-    await blobStorage_1.uploadBlobFile('workbench-model-config.json', blobContainer, blobStorageKey);
-    console.log('done');
     console.log('uploading assignee-model.pickle');
     await blobStorage_1.uploadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey);
     console.log('done');

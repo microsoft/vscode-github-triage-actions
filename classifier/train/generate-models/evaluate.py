@@ -38,7 +38,7 @@ def divide(num, denom):
     return f"{ratio} ({num}/{denom})"
 
 
-for category in ["area", "editor", "workbench", "assignee"]:
+for category in ["area", "assignee"]:
     print(category + ": ")
 
     test_data = load_test_data(category)

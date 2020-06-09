@@ -43,12 +43,6 @@ const main = async () => {
 	await downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey)
 	await downloadBlobFile('area-model-config.json', blobContainer, blobStorageKey)
 
-	await downloadBlobFile('editor-model.pickle', blobContainer, blobStorageKey)
-	await downloadBlobFile('editor-model-config.json', blobContainer, blobStorageKey)
-
-	await downloadBlobFile('workbench-model.pickle', blobContainer, blobStorageKey)
-	await downloadBlobFile('workbench-model-config.json', blobContainer, blobStorageKey)
-
 	await downloadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey)
 	await downloadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey)
 }

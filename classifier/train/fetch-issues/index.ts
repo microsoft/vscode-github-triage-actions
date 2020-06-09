@@ -13,8 +13,10 @@ import { statSync } from 'fs'
 import { join } from 'path'
 
 const token = getRequiredInput('token')
-
 const endCursor = getInput('cursor')
+
+const areas = getRequiredInput('areas').split('|')
+const assignees = getRequiredInput('assignees').split('|')
 
 const run = async () => {
 	if (endCursor) {
@@ -27,7 +29,7 @@ const run = async () => {
 		}
 	}
 	await new Promise((resolve) => setTimeout(resolve, 1000))
-	await createDataDirectories()
+	await createDataDirectories(areas, assignees)
 }
 
 run().catch(async (error) => {

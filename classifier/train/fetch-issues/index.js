@@ -13,6 +13,8 @@ const fs_1 = require("fs");
 const path_1 = require("path");
 const token = utils_1.getRequiredInput('token');
 const endCursor = utils_1.getInput('cursor');
+const areas = utils_1.getRequiredInput('areas').split('|');
+const assignees = utils_1.getRequiredInput('assignees').split('|');
 const run = async () => {
     if (endCursor) {
         await download_1.download(token, github_1.context.repo, endCursor);
@@ -26,7 +28,7 @@ const run = async () => {
         }
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    await createDataDir_1.createDataDirectories();
+    await createDataDir_1.createDataDirectories(areas, assignees);
 };
 run().catch(async (error) => {
     core.setFailed(error.message);

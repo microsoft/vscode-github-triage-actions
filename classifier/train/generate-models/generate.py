@@ -371,10 +371,7 @@ def run_category(category):
 
 def main():
     categories = [
-        "type",
         "area",
-        "editor",
-        "workbench",
         "assignee",
     ]
 

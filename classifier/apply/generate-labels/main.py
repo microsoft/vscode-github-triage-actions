@@ -28,42 +28,13 @@ def loadClassifier(classification):
 
 
 area_classifier = loadClassifier("area")
-editor_classifier = loadClassifier("editor")
-workbench_classifier = loadClassifier("workbench")
 assignee_classifier = loadClassifier("assignee")
 
-
-def refine_label(label, issue_data):
-    if label == "editor":
-        return apply_classifier(editor_classifier, issue_data)
-    elif label == "workbench":
-        return apply_classifier(workbench_classifier, issue_data)
-    else:
-        return [label]
-
-
-def get_top_labels(issue_data):
-    labels = []
-    for label in apply_classifier(area_classifier, issue_data):
-        labels += refine_label(label, issue_data)
-
-    return labels
-
-
-def get_assignee(issue_data):
-    assignees = apply_classifier(assignee_classifier, issue_data)
-    if len(assignees) > 0:
-        return assignees[0]
+def get_classification(issue_data, classifier):
+    categories = apply_classifier(classifier, issue_data)
+    if len(categories) > 0:
+        return categories[0]
     return None
-
-
-def get_label_config(config):
-    if isinstance(config, dict):
-        return config
-    if isinstance(config, list):
-        return {"assignees": config, "assignLabel": True}
-    return {"assignees": [], "assignLabel": True}
-
 
 def apply_classifier(classifier, text):
     return predict(
@@ -100,15 +71,15 @@ def main():
             results.append(
                 {
                     "number": issue["number"],
-                    "labels": get_top_labels(issue["contents"]),
-                    "assignee": get_assignee(issue["contents"]),
+                    "area": get_classification(issue["contents"], loadClassifier("area")),
+                    "assignee": get_classification(issue["contents"], loadClassifier("assignee")),
                     "contents": issue["contents"],
                 }
             )
 
     print("Generated labels: ")
     for issue in results:
-        print(issue["number"], ": ", "-", issue["labels"], issue["assignee"])
+        print(issue["number"], ": ", "-", issue["area"], issue["assignee"])
 
     with open(os.path.join(BASE_PATH, "issue_labels.json"), "w") as f:
         json.dump(results, f)

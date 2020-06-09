@@ -30,7 +30,7 @@ const main = async () => {
 
 	const github = new OctoKit(token, context.repo)
 	const config: ClassifierConfig = await github.readConfig(getRequiredInput('config-path'))
-	const labelings: { number: number; labels: string[]; assignee: string }[] = JSON.parse(
+	const labelings: { number: number; area: string; assignee: string }[] = JSON.parse(
 		readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 	)
 	console.log('labelings:', labelings)
@@ -49,7 +49,7 @@ const main = async () => {
 		}
 		console.log('not skipping', {
 			assignee: labeling.assignee,
-			labels: labeling.labels,
+			area: labeling.area,
 			number: labeling.number,
 		})
 
@@ -74,7 +74,7 @@ const main = async () => {
 			])
 		}
 
-		const label = labeling.labels.length > 0 ? labeling.labels[0] : undefined
+		const label = labeling.area
 		if (label) {
 			console.log(`adding label ${label} to issue ${issueData.number}`)
 
