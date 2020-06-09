@@ -344,16 +344,6 @@ inputs:
     required: true
 ```
 
-### Queryer
-Runs a query based on the comment given, logging the results. Useful for testing.
-
-```yml
-inputs:
-  token:
-    description: GitHub token with issue, comment, and label read/write permissions
-    default: ${{ github.token }}
-```
-
 ### Test Plan Item Validator
 Tag testplan item issues that don't match the VS Code test plan item format
 ```yml
