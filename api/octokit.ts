@@ -144,8 +144,8 @@ export class OctoKit implements GitHub {
 				throw Error(`Could not read contents "${data.content}" in encoding "${data.encoding}"`)
 			}
 			throw Error('Found directory at config path when expecting file' + JSON.stringify(data))
-		} catch {
-			throw Error('Error with config file at ' + repoPath)
+		} catch (e) {
+			throw Error('Error with config file at ' + repoPath + ': ' + JSON.stringify(e))
 		}
 	}
 

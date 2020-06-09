@@ -40,9 +40,7 @@ const main = async () => {
 		const issueData = await issue.getIssue()
 		if (
 			!debug &&
-			(issueData.assignee ||
-				issueData.numComments ||
-				issueData.labels.some((label) => !allowLabels.includes(label)))
+			(issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))
 		) {
 			console.log('skipping')
 			continue

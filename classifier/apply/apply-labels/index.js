@@ -25,9 +25,7 @@ const main = async () => {
         const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
         const issueData = await issue.getIssue();
         if (!debug &&
-            (issueData.assignee ||
-                issueData.numComments ||
-                issueData.labels.some((label) => !allowLabels.includes(label)))) {
+            (issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))) {
             console.log('skipping');
             continue;
         }
