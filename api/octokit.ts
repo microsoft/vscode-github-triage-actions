@@ -323,7 +323,14 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		}
 	}
 
-	async getClosingInfo(): Promise<{ hash: string | undefined; timestamp: number } | undefined> {
+	async getClosingInfo(
+		alreadyChecked: number[] = [],
+	): Promise<{ hash: string | undefined; timestamp: number } | undefined> {
+		if (alreadyChecked.includes(this.issueData.number)) {
+			return undefined
+		}
+		alreadyChecked.push(this.issueData.number)
+
 		if ((await this.getIssue()).open) {
 			return
 		}
@@ -366,7 +373,10 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 				}
 				if (
 					timelineEvent.event === 'cross-referenced' &&
-					(timelineEvent as any).source?.issue?.number
+					(timelineEvent as any).source?.issue?.number &&
+					(timelineEvent as any).source?.issue?.pull_request?.url.includes(
+						`/${this.params.owner}/${this.params.repo}/`.toLowerCase(),
+					)
 				) {
 					crossReferencing.push((timelineEvent as any).source.issue.number)
 				}
@@ -379,7 +389,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			for (const id of crossReferencing.reverse()) {
 				const closed = await new OctoKitIssue(this.token, this.params, {
 					number: id,
-				}).getClosingInfo()
+				}).getClosingInfo(alreadyChecked)
 
 				if (closed) {
 					if (Math.abs(closed.timestamp - ((await this.getIssue()).closedAt ?? 0)) < 5000) {

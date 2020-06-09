@@ -286,8 +286,12 @@ class OctoKitIssue extends OctoKit {
             throw err;
         }
     }
-    async getClosingInfo() {
-        var _a, _b, _c, _d;
+    async getClosingInfo(alreadyChecked = []) {
+        var _a, _b, _c, _d, _e, _f, _g;
+        if (alreadyChecked.includes(this.issueData.number)) {
+            return undefined;
+        }
+        alreadyChecked.push(this.issueData.number);
         if ((await this.getIssue()).open) {
             return;
         }
@@ -322,7 +326,7 @@ class OctoKitIssue extends OctoKit {
                         timestamp: +new Date(timelineEvent.created_at),
                     };
                 }
-                if (timelineEvent.event === 'cross-referenced' && ((_c = (_b = timelineEvent.source) === null || _b === void 0 ? void 0 : _b.issue) === null || _c === void 0 ? void 0 : _c.number)) {
+                if (timelineEvent.event === 'cross-referenced' && ((_c = (_b = timelineEvent.source) === null || _b === void 0 ? void 0 : _b.issue) === null || _c === void 0 ? void 0 : _c.number) && ((_f = (_e = (_d = timelineEvent.source) === null || _d === void 0 ? void 0 : _d.issue) === null || _e === void 0 ? void 0 : _e.pull_request) === null || _f === void 0 ? void 0 : _f.url.includes(`/${this.params.owner}/${this.params.repo}/`.toLowerCase()))) {
                     crossReferencing.push(timelineEvent.source.issue.number);
                 }
             }
@@ -333,9 +337,9 @@ class OctoKitIssue extends OctoKit {
             for (const id of crossReferencing.reverse()) {
                 const closed = await new OctoKitIssue(this.token, this.params, {
                     number: id,
-                }).getClosingInfo();
+                }).getClosingInfo(alreadyChecked);
                 if (closed) {
-                    if (Math.abs(closed.timestamp - ((_d = (await this.getIssue()).closedAt) !== null && _d !== void 0 ? _d : 0)) < 5000) {
+                    if (Math.abs(closed.timestamp - ((_g = (await this.getIssue()).closedAt) !== null && _g !== void 0 ? _g : 0)) < 5000) {
                         closingCommit = closed;
                         break;
                     }
