@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub } from '../api/api'
-import { daysAgoToHumanReadbleDate, daysAgoToTimestamp } from '../utils/utils'
+import { daysAgoToHumanReadbleDate, daysAgoToTimestamp } from '../common/utils'
 
 export class NeedsMoreInfoCloser {
 	constructor(

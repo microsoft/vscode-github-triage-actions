@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
-import { getRequiredInput, logErrorToIssue, logRateLimit, loadLatestRelease } from '../utils/utils'
+import { getRequiredInput, logErrorToIssue, logRateLimit, loadLatestRelease } from '../common/utils'
 import { uploadBlobText, downloadBlobText } from '../classifier/blobStorage'
 import { OctoKit } from '../api/octokit'
 

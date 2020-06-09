@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("../utils/utils");
+const utils_1 = require("../common/utils");
 class NewRelease {
     constructor(github, label, labelColor, labelDescription, days) {
         this.github = github;

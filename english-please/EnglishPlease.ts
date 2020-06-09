@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { GitHubIssue } from '../api/api'
-import { normalizeIssue } from '../utils/utils'
+import { normalizeIssue } from '../common/utils'
 import {
 	commonNames as _commonNames,
 	knownTranslations as _knownTranslations,

@@ -7,7 +7,7 @@ import { debug } from '@actions/core'
 import { GitHub as GitHubAPI } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import { exec } from 'child_process'
-import { logRateLimit } from '../utils/utils'
+import { logRateLimit } from '../common/utils'
 import { Comment, GitHub, GitHubIssue, Issue, Query, User } from './api'
 
 export class OctoKit implements GitHub {

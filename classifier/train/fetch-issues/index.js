@@ -6,7 +6,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = require("@actions/core");
 const github_1 = require("@actions/github");
-const utils_1 = require("../../../utils/utils");
+const utils_1 = require("../../../common/utils");
 const download_1 = require("./download");
 const createDataDir_1 = require("./createDataDir");
 const fs_1 = require("fs");

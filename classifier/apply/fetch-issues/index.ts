@@ -14,7 +14,7 @@ import {
 	logRateLimit,
 	daysAgoToHumanReadbleDate,
 	normalizeIssue,
-} from '../../../utils/utils'
+} from '../../../common/utils'
 import { downloadBlobFile } from '../../blobStorage'
 
 const minToDay = 0.0007

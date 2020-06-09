@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = require("axios");
-const utils_1 = require("../utils/utils");
+const utils_1 = require("../common/utils");
 const translation_data_json_1 = require("./translation-data.json");
 const commonNames = translation_data_json_1.commonNames;
 const knownTranslations = translation_data_json_1.knownTranslations;

@@ -6,7 +6,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { JSONOutputLine } from './download'
-import { normalizeIssue } from '../../../utils/utils'
+import { normalizeIssue } from '../../../common/utils'
 
 interface Classification {
 	name: string

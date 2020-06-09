@@ -6,7 +6,7 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../api/octokit'
-import { getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
+import { getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
 import {
 	FeatureRequestConfig,
 	FeatureRequestOnLabel,

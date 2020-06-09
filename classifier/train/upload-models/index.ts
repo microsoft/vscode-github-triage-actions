@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as core from '@actions/core'
-import { getRequiredInput, logErrorToIssue } from '../../../utils/utils'
+import { getRequiredInput, logErrorToIssue } from '../../../common/utils'
 import { uploadBlobFile } from '../../blobStorage'
 
 const token = getRequiredInput('token')

@@ -5,7 +5,7 @@
 
 import * as core from '@actions/core'
 import { context } from '@actions/github'
-import { logErrorToIssue, logRateLimit, getRequiredInput } from '../utils/utils'
+import { logErrorToIssue, logRateLimit, getRequiredInput } from '../common/utils'
 
 const main = async () => {
 	// Get the JSON webhook payload for the event that triggered the workflow

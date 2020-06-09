@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
 import { OctoKitIssue } from '../api/octokit'
-import { getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
+import { getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
 import { NewRelease } from './NewRelease'
 
 const token = getRequiredInput('token')

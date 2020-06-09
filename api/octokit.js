@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const child_process_1 = require("child_process");
-const utils_1 = require("../utils/utils");
+const utils_1 = require("../common/utils");
 class OctoKit {
     constructor(token, params, options = { readonly: false }) {
         this.token = token;

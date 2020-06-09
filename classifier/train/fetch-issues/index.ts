@@ -6,7 +6,7 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
 
-import { logErrorToIssue, getRequiredInput, getInput } from '../../../utils/utils'
+import { logErrorToIssue, getRequiredInput, getInput } from '../../../common/utils'
 import { download } from './download'
 import { createDataDirectories } from './createDataDir'
 import { statSync } from 'fs'

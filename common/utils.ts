@@ -7,7 +7,6 @@ import * as core from '@actions/core'
 import { context, GitHub } from '@actions/github'
 import axios from 'axios'
 import { OctoKitIssue } from '../api/octokit'
-import { Issue } from '../api/api'
 
 export const getInput = (name: string) => core.getInput(name) || undefined
 export const getRequiredInput = (name: string) => core.getInput(name, { required: true })

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("../utils/utils");
+const utils_1 = require("../common/utils");
 const EnglishPlease_1 = require("./EnglishPlease");
 const octokit_1 = require("../api/octokit");
 const core = require("@actions/core");

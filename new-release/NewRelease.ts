@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHubIssue } from '../api/api'
-import { loadLatestRelease } from '../utils/utils'
+import { loadLatestRelease } from '../common/utils'
 
 export class NewRelease {
 	constructor(

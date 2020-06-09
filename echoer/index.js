@@ -6,7 +6,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = require("@actions/core");
 const github_1 = require("@actions/github");
-const utils_1 = require("../utils/utils");
+const utils_1 = require("../common/utils");
 const main = async () => {
     // Get the JSON webhook payload for the event that triggered the workflow
     const payload = JSON.stringify(github_1.context, undefined, 2);

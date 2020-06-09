@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub } from '../api/api'
-import { daysAgoToHumanReadbleDate } from '../utils/utils'
+import { daysAgoToHumanReadbleDate } from '../common/utils'
 
 export class Locker {
 	constructor(

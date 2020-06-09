@@ -6,7 +6,7 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
 import { OctoKit } from '../api/octokit'
-import { getInput, getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
+import { getInput, getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
 import { NeedsMoreInfoCloser } from './NeedsMoreInfoCloser'
 
 const token = getRequiredInput('token')

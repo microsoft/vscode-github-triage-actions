@@ -6,7 +6,7 @@
 import * as core from '@actions/core'
 import { context } from '@actions/github'
 import { OctoKitIssue } from '../api/octokit'
-import { getInput, getRequiredInput, logErrorToIssue, logRateLimit } from '../utils/utils'
+import { getInput, getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
 import { RegexFlagger } from './RegexLabeler'
 
 const main = async () => {

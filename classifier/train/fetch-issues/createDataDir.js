@@ -6,7 +6,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
-const utils_1 = require("../../../utils/utils");
+const utils_1 = require("../../../common/utils");
 const DATA_DIR = 'train_data';
 exports.createDataDirectories = async (areas, assignees) => {
     var _a;

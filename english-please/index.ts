@@ -1,4 +1,4 @@
-import { getRequiredInput, logRateLimit, logErrorToIssue } from '../utils/utils'
+import { getRequiredInput, logRateLimit, logErrorToIssue } from '../common/utils'
 import { LanguageSpecificLabeler, EnglishPleaseLabler } from './EnglishPlease'
 import { OctoKitIssue } from '../api/octokit'
 import * as core from '@actions/core'

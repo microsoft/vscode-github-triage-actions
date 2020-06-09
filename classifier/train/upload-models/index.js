@@ -5,7 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = require("@actions/core");
-const utils_1 = require("../../../utils/utils");
+const utils_1 = require("../../../common/utils");
 const blobStorage_1 = require("../../blobStorage");
 const token = utils_1.getRequiredInput('token');
 const blobContainer = utils_1.getRequiredInput('blobContainerName');

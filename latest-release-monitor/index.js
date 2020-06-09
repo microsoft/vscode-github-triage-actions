@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = require("@actions/core");
 const github_1 = require("@actions/github");
-const utils_1 = require("../utils/utils");
+const utils_1 = require("../common/utils");
 const blobStorage_1 = require("../classifier/blobStorage");
 const octokit_1 = require("../api/octokit");
 const token = utils_1.getRequiredInput('token');

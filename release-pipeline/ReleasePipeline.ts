@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub, GitHubIssue } from '../api/api'
-import { loadLatestRelease, Release } from '../utils/utils'
+import { loadLatestRelease, Release } from '../common/utils'
 
 export class ReleasePipeline {
 	constructor(
