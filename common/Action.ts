@@ -52,10 +52,12 @@ export abstract class Action {
 	public async run() {
 		console.log('running ', this.id, 'with context', {
 			...context,
-			issue: context.payload?.issue?.number,
-			label: context.payload?.label?.name,
-			repository: context.payload?.repository?.html_url,
-			sender: context.payload?.sender?.login ?? context.payload?.sender?.type,
+			payload: {
+				issue: context.payload?.issue?.number,
+				label: context.payload?.label?.name,
+				repository: context.payload?.repository?.html_url,
+				sender: context.payload?.sender?.login ?? context.payload?.sender?.type,
+			},
 		})
 
 		try {
@@ -108,7 +110,7 @@ export abstract class Action {
 
 	private async error(error: Error) {
 		const details: any = {
-			message: error,
+			message: `${error.name}${error.message}\n${error.stack}`,
 			repo: `${context.repo.owner}/${context.repo.repo}`,
 			id: this.id,
 			user: await this.username,

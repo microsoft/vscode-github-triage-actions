@@ -46,10 +46,12 @@ class Action {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
         console.log('running ', this.id, 'with context', {
             ...github_1.context,
-            issue: (_b = (_a = github_1.context.payload) === null || _a === void 0 ? void 0 : _a.issue) === null || _b === void 0 ? void 0 : _b.number,
-            label: (_d = (_c = github_1.context.payload) === null || _c === void 0 ? void 0 : _c.label) === null || _d === void 0 ? void 0 : _d.name,
-            repository: (_f = (_e = github_1.context.payload) === null || _e === void 0 ? void 0 : _e.repository) === null || _f === void 0 ? void 0 : _f.html_url,
-            sender: (_j = (_h = (_g = github_1.context.payload) === null || _g === void 0 ? void 0 : _g.sender) === null || _h === void 0 ? void 0 : _h.login) !== null && _j !== void 0 ? _j : (_l = (_k = github_1.context.payload) === null || _k === void 0 ? void 0 : _k.sender) === null || _l === void 0 ? void 0 : _l.type,
+            payload: {
+                issue: (_b = (_a = github_1.context.payload) === null || _a === void 0 ? void 0 : _a.issue) === null || _b === void 0 ? void 0 : _b.number,
+                label: (_d = (_c = github_1.context.payload) === null || _c === void 0 ? void 0 : _c.label) === null || _d === void 0 ? void 0 : _d.name,
+                repository: (_f = (_e = github_1.context.payload) === null || _e === void 0 ? void 0 : _e.repository) === null || _f === void 0 ? void 0 : _f.html_url,
+                sender: (_j = (_h = (_g = github_1.context.payload) === null || _g === void 0 ? void 0 : _g.sender) === null || _h === void 0 ? void 0 : _h.login) !== null && _j !== void 0 ? _j : (_l = (_k = github_1.context.payload) === null || _k === void 0 ? void 0 : _k.sender) === null || _l === void 0 ? void 0 : _l.type,
+            },
         });
         try {
             const token = utils_1.getRequiredInput('token');
@@ -100,7 +102,7 @@ class Action {
     }
     async error(error) {
         const details = {
-            message: error,
+            message: `${error.name}${error.message}\n${error.stack}`,
             repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,
             id: this.id,
             user: await this.username,
