@@ -43,6 +43,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   requestVerificationComment:
     description: Comment to add whenn asking authors to verify the issue. ${commit} and ${author} will be substituted
     required: true
@@ -70,6 +73,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
 ```
 
 ##### generate-models
@@ -87,6 +93,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   blobContainerName:
     description: Name of Azure Storage container
     required: true
@@ -107,6 +116,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   from:
     description: Start point of collected issues (minutes ago)
     required: true
@@ -136,6 +148,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   config-path:
     description: The PATH of a .github/PATH.json in the repo that describes what should be done per feature area
     required: true
@@ -169,6 +184,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   config-path:
     description: Name of .json file (no extension) in .github/ directory of repo holding configuration for this action
     required: true
@@ -182,6 +200,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions to both repos
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   owner:
     description: account/organization that owns the destination repo (the microsoft part of microsoft/vscode)
     required: true
@@ -208,6 +229,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   nonEnglishLabel:
     description: Label to add when issues are not written in english
     required: true
@@ -231,6 +255,9 @@ inputs:
   token:
     description: GitHub token with issue, milestone, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   candidateMilestoneID:
     description: Numeric ID of the candidate issues milestone
     required: true
@@ -280,6 +307,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   daysSinceClose:
     description: Days to wait since closing before locking the item
     required: true
@@ -300,6 +330,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   label:
     description: Label signifying an issue that needs more info
     required: true
@@ -325,6 +358,9 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   days:
     description: time ago for releases to count as new releases
     required: true
@@ -346,6 +382,9 @@ inputs:
   token:
     description: 'GitHub token with issue, comment, and label read/write permissions'
     default: ${{ github.token }}
+  appInsightsKey:
+    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
+    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   label:
     description: The label that signifies an item is a testplan item and should be checked
     required: true
