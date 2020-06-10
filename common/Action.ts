@@ -106,9 +106,9 @@ export abstract class Action {
 		await this.trackMetric({ name: 'usage_search', value: usage.search })
 	}
 
-	private async error(message: string) {
+	private async error(error: Error) {
 		const details: any = {
-			message,
+			message: error,
 			repo: `${context.repo.owner}/${context.repo.repo}`,
 			id: this.id,
 			user: await this.username,
@@ -121,7 +121,12 @@ export abstract class Action {
 		if (token) {
 			await logErrorToIssue(rendered, false, token)
 		}
-		setFailed(message)
+
+		if (aiHandle) {
+			aiHandle.trackException({ exception: error })
+		}
+
+		setFailed(error.message)
 	}
 
 	protected async onTriggered(_octokit: OctoKit): Promise<void> {

@@ -98,9 +98,9 @@ class Action {
         await this.trackMetric({ name: 'usage_graphql', value: usage.graphql });
         await this.trackMetric({ name: 'usage_search', value: usage.search });
     }
-    async error(message) {
+    async error(error) {
         const details = {
-            message,
+            message: error,
             repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,
             id: this.id,
             user: await this.username,
@@ -112,7 +112,10 @@ class Action {
         if (token) {
             await utils_1.logErrorToIssue(rendered, false, token);
         }
-        core_1.setFailed(message);
+        if (aiHandle) {
+            aiHandle.trackException({ exception: error });
+        }
+        core_1.setFailed(error.message);
     }
     async onTriggered(_octokit) {
         throw Error('not implemented');
