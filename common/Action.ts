@@ -5,7 +5,7 @@
 
 import { OctoKit, OctoKitIssue, getNumRequests } from '../api/octokit'
 import { context, GitHub } from '@actions/github'
-import { getRequiredInput, logErrorToIssue, getRateLimit } from './utils'
+import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue } from './utils'
 import { getInput, setFailed } from '@actions/core'
 import * as appInsights from 'applicationinsights'
 
@@ -74,6 +74,17 @@ export abstract class Action {
 				sender: context.payload?.sender?.login ?? context.payload?.sender?.type,
 			},
 		})
+
+		if (errorLoggingIssue) {
+			const { repo, issue, owner } = errorLoggingIssue
+			if (
+				context.repo.repo === repo &&
+				context.repo.owner === owner &&
+				context.payload.issue?.number === issue
+			) {
+				return console.log('refusing to run on error logging issue to prevent cascading errors')
+			}
+		}
 
 		try {
 			const token = getRequiredInput('token')

@@ -51,13 +51,28 @@ exports.getRateLimit = async (token) => {
     });
     return usage;
 };
+exports.errorLoggingIssue = (() => {
+    const repo = github_1.context.repo.owner.toLowerCase() + '/' + github_1.context.repo.repo.toLowerCase();
+    if (repo === 'microsoft/vscode' || repo === 'microsoft/vscode-remote-release') {
+        return { repo: 'vscode', owner: 'Microsoft', issue: 93814 };
+    }
+    else if (/microsoft\//.test(repo)) {
+        return { repo: 'vscode-internalbacklog', owner: 'Microsoft', issue: 974 };
+    }
+    else if (exports.getInput('errorLogIssueNumber')) {
+        return { ...github_1.context.repo, issue: +exports.getRequiredInput('errorLogIssueNumber') };
+    }
+    else {
+        return undefined;
+    }
+})();
 exports.logErrorToIssue = async (message, ping, token) => {
     // Attempt to wait out abuse detection timeout if present
     await new Promise((resolve) => setTimeout(resolve, 10000));
-    const dest = github_1.context.repo.repo === 'vscode-internalbacklog'
-        ? { repo: 'vscode-internalbacklog', issue: 974 }
-        : { repo: 'vscode', issue: 93814 };
-    return new octokit_1.OctoKitIssue(token, { owner: 'Microsoft', repo: dest.repo }, { number: dest.issue })
+    const dest = exports.errorLoggingIssue;
+    if (!dest)
+        return console.log('no error logging repo defined. swallowing error:', message);
+    return new octokit_1.OctoKitIssue(token, { owner: dest.owner, repo: dest.repo }, { number: dest.issue })
         .postComment(`
 Workflow: ${github_1.context.workflow}
 

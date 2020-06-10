@@ -76,14 +76,26 @@ export const getRateLimit = async (token: string) => {
 	return usage
 }
 
+export const errorLoggingIssue = (() => {
+	const repo = context.repo.owner.toLowerCase() + '/' + context.repo.repo.toLowerCase()
+	if (repo === 'microsoft/vscode' || repo === 'microsoft/vscode-remote-release') {
+		return { repo: 'vscode', owner: 'Microsoft', issue: 93814 }
+	} else if (/microsoft\//.test(repo)) {
+		return { repo: 'vscode-internalbacklog', owner: 'Microsoft', issue: 974 }
+	} else if (getInput('errorLogIssueNumber')) {
+		return { ...context.repo, issue: +getRequiredInput('errorLogIssueNumber') }
+	} else {
+		return undefined
+	}
+})()
+
 export const logErrorToIssue = async (message: string, ping: boolean, token: string): Promise<void> => {
 	// Attempt to wait out abuse detection timeout if present
 	await new Promise((resolve) => setTimeout(resolve, 10000))
-	const dest =
-		context.repo.repo === 'vscode-internalbacklog'
-			? { repo: 'vscode-internalbacklog', issue: 974 }
-			: { repo: 'vscode', issue: 93814 }
-	return new OctoKitIssue(token, { owner: 'Microsoft', repo: dest.repo }, { number: dest.issue })
+	const dest = errorLoggingIssue
+	if (!dest) return console.log('no error logging repo defined. swallowing error:', message)
+
+	return new OctoKitIssue(token, { owner: dest.owner, repo: dest.repo }, { number: dest.issue })
 		.postComment(`
 Workflow: ${context.workflow}
 

@@ -56,7 +56,7 @@ class Action {
         }
     }
     async run() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
         console.log('running ', this.id, 'with context', {
             ...github_1.context,
             payload: {
@@ -66,10 +66,18 @@ class Action {
                 sender: (_j = (_h = (_g = github_1.context.payload) === null || _g === void 0 ? void 0 : _g.sender) === null || _h === void 0 ? void 0 : _h.login) !== null && _j !== void 0 ? _j : (_l = (_k = github_1.context.payload) === null || _k === void 0 ? void 0 : _k.sender) === null || _l === void 0 ? void 0 : _l.type,
             },
         });
+        if (utils_1.errorLoggingIssue) {
+            const { repo, issue, owner } = utils_1.errorLoggingIssue;
+            if (github_1.context.repo.repo === repo &&
+                github_1.context.repo.owner === owner &&
+                ((_m = github_1.context.payload.issue) === null || _m === void 0 ? void 0 : _m.number) === issue) {
+                return console.log('refusing to run on error logging issue to prevent cascading errors');
+            }
+        }
         try {
             const token = utils_1.getRequiredInput('token');
             const readonly = !!core_1.getInput('readonly');
-            const issue = (_m = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _m === void 0 ? void 0 : _m.number;
+            const issue = (_o = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _o === void 0 ? void 0 : _o.number;
             if (issue) {
                 const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: issue }, { readonly });
                 if (github_1.context.eventName === 'issue_comment') {
