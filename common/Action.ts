@@ -121,7 +121,7 @@ export abstract class Action {
 		const token = getInput('token')
 		const rendered = JSON.stringify(details, null, 2)
 		if (token) {
-			await logErrorToIssue(rendered, false, token)
+			await logErrorToIssue(rendered, true, token)
 		}
 
 		if (aiHandle) {

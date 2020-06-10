@@ -112,7 +112,7 @@ class Action {
         const token = core_1.getInput('token');
         const rendered = JSON.stringify(details, null, 2);
         if (token) {
-            await utils_1.logErrorToIssue(rendered, false, token);
+            await utils_1.logErrorToIssue(rendered, true, token);
         }
         if (aiHandle) {
             aiHandle.trackException({ exception: error });
