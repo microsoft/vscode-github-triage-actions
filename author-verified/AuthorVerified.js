@@ -5,6 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../common/utils");
+const Action_1 = require("../common/Action");
 class AuthorVerifiedQueryer {
     constructor(github, comment, pendingReleaseLabel, authorVerificationRequestedLabel) {
         this.github = github;
@@ -58,6 +59,7 @@ Unable to locate closing commit in issue timeline. You can manually reference a 
             }
             let releaseContainsCommit = await this.github.releaseContainsCommit(latestRelease.version, closingInfo);
             if (releaseContainsCommit == 'yes') {
+                await Action_1.trackEvent('author-verified:verifiable');
                 await this.github.removeLabel(this.pendingReleaseLabel);
                 await this.github.postComment(this.comment
                     .replace('${commit}', latestRelease.version)
