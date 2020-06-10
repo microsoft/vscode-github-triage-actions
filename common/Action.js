@@ -44,6 +44,7 @@ class Action {
     }
     async run() {
         var _a;
+        console.log('running ', this.id, 'with context', github_1.context);
         try {
             const token = utils_1.getRequiredInput('token');
             const readonly = !!core_1.getInput('readonly');
