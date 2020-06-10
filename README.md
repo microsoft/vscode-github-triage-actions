@@ -190,11 +190,6 @@ inputs:
     required: true
 ```
 
-### Echoer
-Action that simply logs the `context` it recieves. Useful for testing.
-
-No input.
-
 ### English Please
 Action that identifies issues that are not in English and requests the author to translate them. It additionally labels the issues with a label like `translation-required-russian`, allowing community members to filter for issues they may be able to help translate.
 

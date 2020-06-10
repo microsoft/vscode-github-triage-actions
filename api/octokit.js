@@ -7,7 +7,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const child_process_1 = require("child_process");
-const utils_1 = require("../common/utils");
+let numRequests = 0;
+exports.getNumRequests = () => numRequests;
 class OctoKit {
     constructor(token, params, options = { readonly: false }) {
         this.token = token;
@@ -16,7 +17,11 @@ class OctoKit {
         // when in readonly mode, record labels just-created so at to not throw unneccesary errors
         this.mockLabels = new Set();
         this.writeAccessCache = {};
-        this.octokit = new github_1.GitHub(token);
+        this._octokit = new github_1.GitHub(token);
+    }
+    get octokit() {
+        numRequests++;
+        return this._octokit;
     }
     // TODO: just iterate over the issues in a page here instead of making caller do it
     async *query(query) {
@@ -42,7 +47,7 @@ class OctoKit {
         };
         for await (const pageResponse of this.octokit.paginate.iterator(options)) {
             await timeout();
-            await utils_1.logRateLimit(this.token);
+            numRequests++;
             const page = pageResponse.data;
             console.log(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`);
             yield page.map((issue) => new OctoKitIssue(this.token, this.params, this.octokitIssueToIssue(issue)));
@@ -248,6 +253,7 @@ class OctoKitIssue extends OctoKit {
             ...(last ? { per_page: 1, page: (await this.getIssue()).numComments } : {}),
         }));
         for await (const page of response) {
+            numRequests++;
             yield page.data.map((comment) => ({
                 author: { name: comment.user.login, isGitHubApp: comment.user.type === 'Bot' },
                 body: comment.body,
@@ -303,6 +309,7 @@ class OctoKitIssue extends OctoKit {
         let closingCommit;
         const crossReferencing = [];
         for await (const event of this.octokit.paginate.iterator(options)) {
+            numRequests++;
             const timelineEvents = event.data;
             for (const timelineEvent of timelineEvents) {
                 if ((timelineEvent.event === 'closed' || timelineEvent.event === 'merged') &&

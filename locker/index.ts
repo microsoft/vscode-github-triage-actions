@@ -3,30 +3,22 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as core from '@actions/core'
-import { context } from '@actions/github'
 import { OctoKit } from '../api/octokit'
-import { getInput, getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
+import { getInput, getRequiredInput } from '../common/utils'
 import { Locker } from './Locker'
+import { Action } from '../common/Action'
 
-const token = getRequiredInput('token')
+class LockerAction extends Action {
+	id = 'Locker'
 
-const main = async () => {
-	if (context.eventName === 'repository_dispatch' && context.payload.action !== 'trigger_locker') {
-		return
+	async onTriggered(github: OctoKit) {
+		await new Locker(
+			github,
+			+getRequiredInput('daysSinceClose'),
+			+getRequiredInput('daysSinceUpdate'),
+			getInput('ignoredLabel') || undefined,
+		).run()
 	}
-
-	await new Locker(
-		new OctoKit(token, context.repo),
-		+getRequiredInput('daysSinceClose'),
-		+getRequiredInput('daysSinceUpdate'),
-		getInput('ignoredLabel') || undefined,
-	).run()
 }
 
-main()
-	.then(() => logRateLimit(token))
-	.catch(async (error) => {
-		core.setFailed(error.message)
-		await logErrorToIssue(error, true, token)
-	})
+new LockerAction().run() // eslint-disable-line

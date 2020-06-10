@@ -3,33 +3,33 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as core from '@actions/core'
-import { getRequiredInput, logErrorToIssue } from '../../../common/utils'
+import { getRequiredInput } from '../../../common/utils'
 import { uploadBlobFile } from '../../blobStorage'
+import { Action } from '../../../common/Action'
 
-const token = getRequiredInput('token')
 const blobContainer = getRequiredInput('blobContainerName')
 const blobStorageKey = getRequiredInput('blobStoragekey')
 
-const main = async () => {
-	console.log('uploading area-model.pickle')
-	await uploadBlobFile('area-model.pickle', blobContainer, blobStorageKey)
-	console.log('done')
+class UploadModels extends Action {
+	id = 'Classifier/Train/UploadModels'
 
-	console.log('uploading area-model-config.json')
-	await uploadBlobFile('area-model-config.json', blobContainer, blobStorageKey)
-	console.log('done')
+	async onTriggered() {
+		console.log('uploading area-model.pickle')
+		await uploadBlobFile('area-model.pickle', blobContainer, blobStorageKey)
+		console.log('done')
 
-	console.log('uploading assignee-model.pickle')
-	await uploadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey)
-	console.log('done')
+		console.log('uploading area-model-config.json')
+		await uploadBlobFile('area-model-config.json', blobContainer, blobStorageKey)
+		console.log('done')
 
-	console.log('uploading assignee-model-config.json')
-	await uploadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey)
-	console.log('done')
+		console.log('uploading assignee-model.pickle')
+		await uploadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey)
+		console.log('done')
+
+		console.log('uploading assignee-model-config.json')
+		await uploadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey)
+		console.log('done')
+	}
 }
 
-main().catch(async (error) => {
-	core.setFailed(error.message)
-	await logErrorToIssue(error, true, token)
-})
+new UploadModels().run() // eslint-disable-line

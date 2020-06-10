@@ -3,48 +3,45 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as core from '@actions/core'
-import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../api/octokit'
-import { getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
+import { getRequiredInput } from '../common/utils'
 import { AuthorVerifiedLabeler, AuthorVerifiedQueryer } from './AuthorVerified'
+import { Action } from '../common/Action'
 
-const token = getRequiredInput('token')
+const requestVerificationComment = getRequiredInput('requestVerificationComment')
+const pendingReleaseLabel = getRequiredInput('pendingReleaseLabel')
+const authorVerificationRequestedLabel = getRequiredInput('authorVerificationRequestedLabel')
 
-const main = async () => {
-	if (context.eventName === 'repository_dispatch' && context.payload.action !== 'trigger_author_verified') {
-		return
-	}
+class AuthorVerified extends Action {
+	id = 'AuthorVerified'
 
-	const requestVerificationComment = getRequiredInput('requestVerificationComment')
-	const pendingReleaseLabel = getRequiredInput('pendingReleaseLabel')
-	const authorVerificationRequestedLabel = getRequiredInput('authorVerificationRequestedLabel')
-
-	if (context.eventName === 'schedule' || context.eventName === 'repository_dispatch') {
-		await new AuthorVerifiedQueryer(
-			new OctoKit(token, context.repo),
+	async onTriggered(octokit: OctoKit) {
+		return new AuthorVerifiedQueryer(
+			octokit,
 			requestVerificationComment,
 			pendingReleaseLabel,
 			authorVerificationRequestedLabel,
 		).run()
-	} else if (context.eventName === 'issues') {
-		if (
-			context.payload.action === 'closed' ||
-			context.payload.label.name === authorVerificationRequestedLabel
-		) {
-			await new AuthorVerifiedLabeler(
-				new OctoKitIssue(token, context.repo, { number: context.issue.number }),
-				requestVerificationComment,
-				pendingReleaseLabel,
-				authorVerificationRequestedLabel,
-			).run()
+	}
+
+	private runLabler(issue: OctoKitIssue) {
+		return new AuthorVerifiedLabeler(
+			issue,
+			requestVerificationComment,
+			pendingReleaseLabel,
+			authorVerificationRequestedLabel,
+		).run()
+	}
+
+	async onClosed(issue: OctoKitIssue) {
+		await this.runLabler(issue)
+	}
+
+	async onLabeled(issue: OctoKitIssue, label: string) {
+		if (label === authorVerificationRequestedLabel) {
+			await this.runLabler(issue)
 		}
 	}
 }
 
-main()
-	.then(() => logRateLimit(token))
-	.catch(async (error) => {
-		core.setFailed(error.message)
-		await logErrorToIssue(error, true, token)
-	})
+new AuthorVerified().run() // eslint-disable-line

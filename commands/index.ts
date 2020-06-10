@@ -3,35 +3,23 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as core from '@actions/core'
-import { context } from '@actions/github'
 import { OctoKitIssue } from '../api/octokit'
-import { getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
+import { getRequiredInput } from '../common/utils'
 import { Commands } from './Commands'
+import { Action } from '../common/Action'
 
-const token = getRequiredInput('token')
+class CommandsRunner extends Action {
+	id = 'Commands'
 
-const main = async () => {
-	const octokit = new OctoKitIssue(token, context.repo, {
-		number: context.issue.number,
-	})
+	async onCommented(issue: OctoKitIssue, comment: string, actor: string) {
+		const commands = await issue.readConfig(getRequiredInput('config-path'))
+		await new Commands(issue, commands, { comment, user: { name: actor } }).run()
+	}
 
-	const commands = await octokit.readConfig(getRequiredInput('config-path'))
-
-	const action =
-		context.eventName === 'issue_comment'
-			? {
-					comment: context.payload.comment.body,
-					user: { name: context.actor, isGitHubApp: undefined },
-			  }
-			: { label: context.payload.label.name }
-
-	await new Commands(octokit, commands, action).run()
+	async onLabeled(issue: OctoKitIssue, label: string) {
+		const commands = await issue.readConfig(getRequiredInput('config-path'))
+		await new Commands(issue, commands, { label }).run()
+	}
 }
 
-main()
-	.then(() => logRateLimit(token))
-	.catch(async (error) => {
-		core.setFailed(error.message)
-		await logErrorToIssue(error, true, token)
-	})
+new CommandsRunner().run() // eslint-disable-line

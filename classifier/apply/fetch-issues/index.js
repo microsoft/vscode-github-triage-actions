@@ -4,41 +4,38 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const core = require("@actions/core");
 const fs_1 = require("fs");
 const path_1 = require("path");
-const github_1 = require("@actions/github");
-const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../common/utils");
 const blobStorage_1 = require("../../blobStorage");
+const Action_1 = require("../../../common/Action");
 const minToDay = 0.0007;
-const token = utils_1.getRequiredInput('token');
 const from = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('from') * minToDay);
 const until = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('until') * minToDay);
 const blobContainer = utils_1.getRequiredInput('blobContainerName');
 const blobStorageKey = utils_1.getRequiredInput('blobStorageKey');
-const main = async () => {
-    const github = new octokit_1.OctoKit(token, github_1.context.repo);
-    const query = `created:>${from} updated:<${until} is:open`;
-    const data = [];
-    for await (const page of github.query({ q: query })) {
-        for (const issue of page) {
-            const issueData = await issue.getIssue();
-            const cleansed = utils_1.normalizeIssue(issueData);
-            data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
-        }
+class FetchIssues extends Action_1.Action {
+    constructor() {
+        super(...arguments);
+        this.id = 'Clasifier/Apply/FetchIssues';
     }
-    console.log('Got issues', JSON.stringify(data, null, 2));
-    fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
-    await blobStorage_1.downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlobFile('area-model-config.json', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey);
-    await blobStorage_1.downloadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey);
-};
-main()
-    .then(() => utils_1.logRateLimit(token))
-    .catch(async (error) => {
-    core.setFailed(error.message);
-    await utils_1.logErrorToIssue(error, true, token);
-});
+    async onTriggered(github) {
+        const query = `created:>${from} updated:<${until} is:open`;
+        const data = [];
+        for await (const page of github.query({ q: query })) {
+            for (const issue of page) {
+                const issueData = await issue.getIssue();
+                const cleansed = utils_1.normalizeIssue(issueData);
+                data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
+            }
+        }
+        console.log('Got issues', JSON.stringify(data, null, 2));
+        fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
+        await blobStorage_1.downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey);
+        await blobStorage_1.downloadBlobFile('area-model-config.json', blobContainer, blobStorageKey);
+        await blobStorage_1.downloadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey);
+        await blobStorage_1.downloadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey);
+    }
+}
+new FetchIssues().run(); // eslint-disable-line
 //# sourceMappingURL=index.js.map

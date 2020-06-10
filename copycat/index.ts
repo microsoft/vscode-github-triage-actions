@@ -3,25 +3,17 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as core from '@actions/core'
-import { context } from '@actions/github'
 import { OctoKitIssue } from '../api/octokit'
-import { getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
+import { getRequiredInput } from '../common/utils'
 import { CopyCat } from './CopyCat'
+import { Action } from '../common/Action'
 
-const token = getRequiredInput('token')
+class CopyCatAction extends Action {
+	id = 'CopyCat'
 
-const main = async () => {
-	await new CopyCat(
-		new OctoKitIssue(token, context.repo, { number: context.issue.number }),
-		getRequiredInput('owner'),
-		getRequiredInput('repo'),
-	).run()
+	async onOpened(issue: OctoKitIssue) {
+		await new CopyCat(issue, getRequiredInput('owner'), getRequiredInput('repo')).run()
+	}
 }
 
-main()
-	.then(() => logRateLimit(token))
-	.catch(async (error) => {
-		core.setFailed(error.message)
-		await logErrorToIssue(error, true, token)
-	})
+new CopyCatAction().run() // eslint-disable-line

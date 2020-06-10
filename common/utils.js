@@ -43,18 +43,13 @@ exports.normalizeIssue = (issue) => {
 exports.loadLatestRelease = async (quality) => (await axios_1.default.get(`https://vscode-update.azurewebsites.net/api/update/darwin/${quality}/latest`)).data;
 exports.daysAgoToTimestamp = (days) => +new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 exports.daysAgoToHumanReadbleDate = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}\w$/, '');
-exports.logRateLimit = async (token) => {
+exports.getRateLimit = async (token) => {
     const usageData = (await new github_1.GitHub(token).rateLimit.get()).data.resources;
+    const usage = {};
     ['core', 'graphql', 'search'].forEach(async (category) => {
-        const usage = 1 - usageData[category].remaining / usageData[category].limit;
-        const message = `Usage at ${usage} for ${category}`;
-        if (usage > 0) {
-            console.log(message);
-        }
-        if (usage > 0.5) {
-            await exports.logErrorToIssue(message, false, token);
-        }
+        usage[category] = 1 - usageData[category].remaining / usageData[category].limit;
     });
+    return usage;
 };
 exports.logErrorToIssue = async (message, ping, token) => {
     // Attempt to wait out abuse detection timeout if present

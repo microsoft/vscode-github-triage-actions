@@ -3,25 +3,23 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as core from '@actions/core'
 import { context } from '@actions/github'
 import { OctoKitIssue } from '../api/octokit'
-import { getInput, getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
+import { getInput, getRequiredInput } from '../common/utils'
 import { RegexFlagger } from './RegexLabeler'
+import { Action } from '../common/Action'
 
-const main = async () => {
-	await new RegexFlagger(
-		new OctoKitIssue(getRequiredInput('token'), context.repo, { number: context.issue.number }),
-		getInput('label'),
-		getInput('comment'),
-		getInput('mustMatch'),
-		getInput('mustNotMatch'),
-	).run()
+class RegexFlaggerActon extends Action {
+	id = 'RegexFlagger'
+	async onOpened() {
+		await new RegexFlagger(
+			new OctoKitIssue(getRequiredInput('token'), context.repo, { number: context.issue.number }),
+			getInput('label'),
+			getInput('comment'),
+			getInput('mustMatch'),
+			getInput('mustNotMatch'),
+		).run()
+	}
 }
 
-main()
-	.then(() => logRateLimit(getRequiredInput('token')))
-	.catch(async (error) => {
-		core.setFailed(error.message)
-		await logErrorToIssue(error, true, getRequiredInput('token'))
-	})
+new RegexFlaggerActon().run() // eslint-disable-line

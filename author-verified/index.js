@@ -4,33 +4,31 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const core = require("@actions/core");
-const github_1 = require("@actions/github");
-const octokit_1 = require("../api/octokit");
 const utils_1 = require("../common/utils");
 const AuthorVerified_1 = require("./AuthorVerified");
-const token = utils_1.getRequiredInput('token');
-const main = async () => {
-    if (github_1.context.eventName === 'repository_dispatch' && github_1.context.payload.action !== 'trigger_author_verified') {
-        return;
+const Action_1 = require("../common/Action");
+const requestVerificationComment = utils_1.getRequiredInput('requestVerificationComment');
+const pendingReleaseLabel = utils_1.getRequiredInput('pendingReleaseLabel');
+const authorVerificationRequestedLabel = utils_1.getRequiredInput('authorVerificationRequestedLabel');
+class AuthorVerified extends Action_1.Action {
+    constructor() {
+        super(...arguments);
+        this.id = 'AuthorVerified';
     }
-    const requestVerificationComment = utils_1.getRequiredInput('requestVerificationComment');
-    const pendingReleaseLabel = utils_1.getRequiredInput('pendingReleaseLabel');
-    const authorVerificationRequestedLabel = utils_1.getRequiredInput('authorVerificationRequestedLabel');
-    if (github_1.context.eventName === 'schedule' || github_1.context.eventName === 'repository_dispatch') {
-        await new AuthorVerified_1.AuthorVerifiedQueryer(new octokit_1.OctoKit(token, github_1.context.repo), requestVerificationComment, pendingReleaseLabel, authorVerificationRequestedLabel).run();
+    async onTriggered(octokit) {
+        return new AuthorVerified_1.AuthorVerifiedQueryer(octokit, requestVerificationComment, pendingReleaseLabel, authorVerificationRequestedLabel).run();
     }
-    else if (github_1.context.eventName === 'issues') {
-        if (github_1.context.payload.action === 'closed' ||
-            github_1.context.payload.label.name === authorVerificationRequestedLabel) {
-            await new AuthorVerified_1.AuthorVerifiedLabeler(new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: github_1.context.issue.number }), requestVerificationComment, pendingReleaseLabel, authorVerificationRequestedLabel).run();
+    runLabler(issue) {
+        return new AuthorVerified_1.AuthorVerifiedLabeler(issue, requestVerificationComment, pendingReleaseLabel, authorVerificationRequestedLabel).run();
+    }
+    async onClosed(issue) {
+        await this.runLabler(issue);
+    }
+    async onLabeled(issue, label) {
+        if (label === authorVerificationRequestedLabel) {
+            await this.runLabler(issue);
         }
     }
-};
-main()
-    .then(() => utils_1.logRateLimit(token))
-    .catch(async (error) => {
-    core.setFailed(error.message);
-    await utils_1.logErrorToIssue(error, true, token);
-});
+}
+new AuthorVerified().run(); // eslint-disable-line
 //# sourceMappingURL=index.js.map

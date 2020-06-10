@@ -1,24 +1,25 @@
-import * as core from '@actions/core'
-import { context } from '@actions/github'
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See LICENSE in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
 import { OctoKitIssue } from '../api/octokit'
-import { getRequiredInput, logErrorToIssue, logRateLimit } from '../common/utils'
+import { getRequiredInput } from '../common/utils'
 import { NewRelease } from './NewRelease'
+import { Action } from '../common/Action'
 
-const token = getRequiredInput('token')
+class NewReleaseAction extends Action {
+	id = 'NewRelease'
 
-const main = async () => {
-	await new NewRelease(
-		new OctoKitIssue(token, context.repo, { number: context.issue.number }),
-		getRequiredInput('label'),
-		getRequiredInput('labelColor'),
-		getRequiredInput('labelDescription'),
-		+getRequiredInput('days'),
-	).run()
+	async onOpened(issue: OctoKitIssue) {
+		await new NewRelease(
+			issue,
+			getRequiredInput('label'),
+			getRequiredInput('labelColor'),
+			getRequiredInput('labelDescription'),
+			+getRequiredInput('days'),
+		).run()
+	}
 }
 
-main()
-	.then(() => logRateLimit(token))
-	.catch(async (error) => {
-		core.setFailed(error.message)
-		await logErrorToIssue(error, true, token)
-	})
+new NewReleaseAction().run() // eslint-disable-line

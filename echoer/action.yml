@@ -1,5 +1,0 @@
-name: Echoer
-description: Echos back the context of all webhooks recieved. Use for debugging.
-runs:
-  using: 'node12'
-  main: 'index.js'

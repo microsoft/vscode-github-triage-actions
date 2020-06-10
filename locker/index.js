@@ -4,22 +4,17 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const core = require("@actions/core");
-const github_1 = require("@actions/github");
-const octokit_1 = require("../api/octokit");
 const utils_1 = require("../common/utils");
 const Locker_1 = require("./Locker");
-const token = utils_1.getRequiredInput('token');
-const main = async () => {
-    if (github_1.context.eventName === 'repository_dispatch' && github_1.context.payload.action !== 'trigger_locker') {
-        return;
+const Action_1 = require("../common/Action");
+class LockerAction extends Action_1.Action {
+    constructor() {
+        super(...arguments);
+        this.id = 'Locker';
     }
-    await new Locker_1.Locker(new octokit_1.OctoKit(token, github_1.context.repo), +utils_1.getRequiredInput('daysSinceClose'), +utils_1.getRequiredInput('daysSinceUpdate'), utils_1.getInput('ignoredLabel') || undefined).run();
-};
-main()
-    .then(() => utils_1.logRateLimit(token))
-    .catch(async (error) => {
-    core.setFailed(error.message);
-    await utils_1.logErrorToIssue(error, true, token);
-});
+    async onTriggered(github) {
+        await new Locker_1.Locker(github, +utils_1.getRequiredInput('daysSinceClose'), +utils_1.getRequiredInput('daysSinceUpdate'), utils_1.getInput('ignoredLabel') || undefined).run();
+    }
+}
+new LockerAction().run(); // eslint-disable-line
 //# sourceMappingURL=index.js.map

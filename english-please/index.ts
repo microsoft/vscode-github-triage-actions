@@ -1,42 +1,38 @@
-import { getRequiredInput, logRateLimit, logErrorToIssue } from '../common/utils'
+import { getRequiredInput } from '../common/utils'
 import { LanguageSpecificLabeler, EnglishPleaseLabler } from './EnglishPlease'
 import { OctoKitIssue } from '../api/octokit'
-import * as core from '@actions/core'
-import { context } from '@actions/github'
+import { Action } from '../common/Action'
 
-const token = getRequiredInput('token')
 const nonEnglishLabel = getRequiredInput('nonEnglishLabel')
 const needsMoreInfoLabel = getRequiredInput('needsMoreInfoLabel')
 const translatorRequestedLabelPrefix = getRequiredInput('translatorRequestedLabelPrefix')
 const translatorRequestedLabelColor = getRequiredInput('translatorRequestedLabelColor')
 const cognitiveServicesAPIKey = getRequiredInput('cognitiveServicesAPIKey')
 
-const main = async () => {
-	const issue = new OctoKitIssue(token, context.repo, { number: context.issue.number })
+class EnglishPlease extends Action {
+	id = 'EnglishPlease'
 
-	// uses rough heuristics to check if issue is in foreign language
-	const englishPleaseLabler = new EnglishPleaseLabler(issue, nonEnglishLabel)
+	async onOpened(issue: OctoKitIssue) {
+		await new EnglishPleaseLabler(issue, nonEnglishLabel).run()
+	}
 
-	// uses azure cognitive services text translator api to detect specific language and post comment in that language
-	const languageSpecificLabeler = new LanguageSpecificLabeler(
-		issue,
-		translatorRequestedLabelPrefix,
-		translatorRequestedLabelColor,
-		nonEnglishLabel,
-		needsMoreInfoLabel,
-		cognitiveServicesAPIKey,
-	)
+	async doLanguageSpecific(issue: OctoKitIssue) {
+		await new LanguageSpecificLabeler(
+			issue,
+			translatorRequestedLabelPrefix,
+			translatorRequestedLabelColor,
+			nonEnglishLabel,
+			needsMoreInfoLabel,
+			cognitiveServicesAPIKey,
+		).run()
+	}
 
-	if (context.payload.action === 'opened') {
-		await englishPleaseLabler.run()
-	} else if (context.payload.action === 'edited' || context.payload.label?.name === nonEnglishLabel) {
-		await languageSpecificLabeler.run()
+	async onEdited(issue: OctoKitIssue) {
+		await this.doLanguageSpecific(issue)
+	}
+	async onLabeled(issue: OctoKitIssue, label: string) {
+		if (label == nonEnglishLabel) await this.doLanguageSpecific(issue)
 	}
 }
 
-main()
-	.then(() => logRateLimit(token))
-	.catch(async (error) => {
-		core.setFailed(error.message)
-		await logErrorToIssue(error, true, token)
-	})
+new EnglishPlease().run() // eslint-disable-line

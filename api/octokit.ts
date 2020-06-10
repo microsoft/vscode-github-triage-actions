@@ -7,11 +7,18 @@ import { debug } from '@actions/core'
 import { GitHub as GitHubAPI } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import { exec } from 'child_process'
-import { logRateLimit } from '../common/utils'
 import { Comment, GitHub, GitHubIssue, Issue, Query, User } from './api'
 
+let numRequests = 0
+export const getNumRequests = () => numRequests
+
 export class OctoKit implements GitHub {
-	protected octokit: GitHubAPI
+	private _octokit: GitHubAPI
+	protected get octokit(): GitHubAPI {
+		numRequests++
+		return this._octokit
+	}
+
 	// when in readonly mode, record labels just-created so at to not throw unneccesary errors
 	protected mockLabels: Set<string> = new Set()
 
@@ -20,7 +27,7 @@ export class OctoKit implements GitHub {
 		protected params: { repo: string; owner: string },
 		protected options: { readonly: boolean } = { readonly: false },
 	) {
-		this.octokit = new GitHubAPI(token)
+		this._octokit = new GitHubAPI(token)
 	}
 
 	// TODO: just iterate over the issues in a page here instead of making caller do it
@@ -49,7 +56,7 @@ export class OctoKit implements GitHub {
 
 		for await (const pageResponse of this.octokit.paginate.iterator(options)) {
 			await timeout()
-			await logRateLimit(this.token)
+			numRequests++
 			const page: Array<Octokit.SearchIssuesAndPullRequestsResponseItemsItem> = pageResponse.data
 			console.log(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`)
 			yield page.map(
@@ -283,6 +290,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		)
 
 		for await (const page of response) {
+			numRequests++
 			yield (page.data as Octokit.IssuesListCommentsResponseItem[]).map((comment) => ({
 				author: { name: comment.user.login, isGitHubApp: comment.user.type === 'Bot' },
 				body: comment.body,
@@ -344,6 +352,8 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		let closingCommit: { hash: string | undefined; timestamp: number } | undefined
 		const crossReferencing: number[] = []
 		for await (const event of this.octokit.paginate.iterator(options)) {
+			numRequests++
+
 			const timelineEvents = event.data as Octokit.IssuesListEventsForTimelineResponseItem[]
 			for (const timelineEvent of timelineEvents) {
 				if (

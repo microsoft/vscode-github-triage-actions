@@ -4,29 +4,22 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const core = require("@actions/core");
-const github_1 = require("@actions/github");
-const octokit_1 = require("../api/octokit");
 const utils_1 = require("../common/utils");
 const Commands_1 = require("./Commands");
-const token = utils_1.getRequiredInput('token');
-const main = async () => {
-    const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, {
-        number: github_1.context.issue.number,
-    });
-    const commands = await octokit.readConfig(utils_1.getRequiredInput('config-path'));
-    const action = github_1.context.eventName === 'issue_comment'
-        ? {
-            comment: github_1.context.payload.comment.body,
-            user: { name: github_1.context.actor, isGitHubApp: undefined },
-        }
-        : { label: github_1.context.payload.label.name };
-    await new Commands_1.Commands(octokit, commands, action).run();
-};
-main()
-    .then(() => utils_1.logRateLimit(token))
-    .catch(async (error) => {
-    core.setFailed(error.message);
-    await utils_1.logErrorToIssue(error, true, token);
-});
+const Action_1 = require("../common/Action");
+class CommandsRunner extends Action_1.Action {
+    constructor() {
+        super(...arguments);
+        this.id = 'Commands';
+    }
+    async onCommented(issue, comment, actor) {
+        const commands = await issue.readConfig(utils_1.getRequiredInput('config-path'));
+        await new Commands_1.Commands(issue, commands, { comment, user: { name: actor } }).run();
+    }
+    async onLabeled(issue, label) {
+        const commands = await issue.readConfig(utils_1.getRequiredInput('config-path'));
+        await new Commands_1.Commands(issue, commands, { label }).run();
+    }
+}
+new CommandsRunner().run(); // eslint-disable-line
 //# sourceMappingURL=index.js.map

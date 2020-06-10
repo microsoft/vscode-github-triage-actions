@@ -67,18 +67,13 @@ export const daysAgoToTimestamp = (days: number): number => +new Date(Date.now()
 export const daysAgoToHumanReadbleDate = (days: number) =>
 	new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}\w$/, '')
 
-export const logRateLimit = async (token: string) => {
+export const getRateLimit = async (token: string) => {
 	const usageData = (await new GitHub(token).rateLimit.get()).data.resources
+	const usage = {} as { core: number; graphql: number; search: number }
 	;(['core', 'graphql', 'search'] as const).forEach(async (category) => {
-		const usage = 1 - usageData[category].remaining / usageData[category].limit
-		const message = `Usage at ${usage} for ${category}`
-		if (usage > 0) {
-			console.log(message)
-		}
-		if (usage > 0.5) {
-			await logErrorToIssue(message, false, token)
-		}
+		usage[category] = 1 - usageData[category].remaining / usageData[category].limit
 	})
+	return usage
 }
 
 export const logErrorToIssue = async (message: string, ping: boolean, token: string): Promise<void> => {
