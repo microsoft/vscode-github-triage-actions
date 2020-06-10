@@ -4,9 +4,6 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
-  appInsightsKey:
-    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
-    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   candidateMilestoneID:
     description: Numeric ID of the candidate issues milestone
     required: true

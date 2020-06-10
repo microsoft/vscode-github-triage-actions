@@ -4,9 +4,6 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
-  appInsightsKey:
-    description: Optional key to log to app insights. Defaults to the secret "TRIAGE_ACTIONS_APP_INSIGHTS"
-    default: ${{ secrets.TRIAGE_ACTIONS_APP_INSIGHTS }}
   requestVerificationComment:
     description: Comment to add whenn asking authors to verify the issue. ${commit} and ${author} will be substituted
     required: true
