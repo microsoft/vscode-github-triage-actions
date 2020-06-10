@@ -9,7 +9,6 @@ const github_1 = require("@actions/github");
 const utils_1 = require("./utils");
 const core_1 = require("@actions/core");
 const appInsights = require("applicationinsights");
-console.log('m');
 let aiHandle = undefined;
 const aiKey = core_1.getInput('appInsightsKey');
 if (aiKey) {
@@ -45,14 +44,11 @@ class Action {
     }
     async run() {
         var _a;
-        console.log('f');
         try {
             const token = utils_1.getRequiredInput('token');
             const readonly = !!core_1.getInput('readonly');
             const issue = (_a = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _a === void 0 ? void 0 : _a.number;
-            console.log('g');
             if (issue) {
-                console.log('h');
                 const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: issue }, { readonly });
                 if (github_1.context.eventName === 'issue_comment') {
                     await this.onCommented(octokit, github_1.context.payload.comment.body, github_1.context.actor);
@@ -87,7 +83,6 @@ class Action {
             }
         }
         catch (e) {
-            console.log('i');
             await this.error(e);
         }
         await this.trackMetric({ name: 'octokit_request_count', value: octokit_1.getNumRequests() });
@@ -97,7 +92,6 @@ class Action {
         await this.trackMetric({ name: 'usage_search', value: usage.search });
     }
     async error(message) {
-        console.log('j');
         const details = {
             message,
             repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,

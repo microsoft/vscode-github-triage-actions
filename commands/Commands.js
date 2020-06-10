@@ -31,10 +31,8 @@ class Commands {
     }
     async perform(command, issue) {
         var _a, _b;
-        console.log('e');
         if (!(await this.matches(command, issue)))
             return;
-        console.log('d');
         console.log(`Running command ${command.name}:`);
         const tasks = [];
         if ('comment' in this.action && (command.name === 'label' || command.name === 'assign')) {
@@ -89,7 +87,6 @@ class Commands {
         await Promise.all(tasks);
     }
     async run() {
-        console.log('c');
         const issue = await this.github.getIssue();
         return Promise.all(this.config.map((command) => this.perform(command, issue)));
     }
