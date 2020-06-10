@@ -50,7 +50,13 @@ export abstract class Action {
 	}
 
 	public async run() {
-		console.log('running ', this.id, 'with context', context)
+		console.log('running ', this.id, 'with context', {
+			...context,
+			issue: context.payload?.issue?.number,
+			label: context.payload?.label?.name,
+			repository: context.payload?.repository?.html_url,
+			sender: context.payload?.sender?.login ?? context.payload?.sender?.type,
+		})
 
 		try {
 			const token = getRequiredInput('token')
@@ -61,7 +67,7 @@ export abstract class Action {
 				const octokit = new OctoKitIssue(token, context.repo, { number: issue }, { readonly })
 				if (context.eventName === 'issue_comment') {
 					await this.onCommented(octokit, context.payload.comment.body, context.actor)
-				} else if (context.eventName === 'issue') {
+				} else if (context.eventName === 'issues') {
 					switch (context.payload.action) {
 						case 'opened':
 							await this.onOpened(octokit)

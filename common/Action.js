@@ -43,18 +43,24 @@ class Action {
         }
     }
     async run() {
-        var _a;
-        console.log('running ', this.id, 'with context', github_1.context);
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+        console.log('running ', this.id, 'with context', {
+            ...github_1.context,
+            issue: (_b = (_a = github_1.context.payload) === null || _a === void 0 ? void 0 : _a.issue) === null || _b === void 0 ? void 0 : _b.number,
+            label: (_d = (_c = github_1.context.payload) === null || _c === void 0 ? void 0 : _c.label) === null || _d === void 0 ? void 0 : _d.name,
+            repository: (_f = (_e = github_1.context.payload) === null || _e === void 0 ? void 0 : _e.repository) === null || _f === void 0 ? void 0 : _f.html_url,
+            sender: (_j = (_h = (_g = github_1.context.payload) === null || _g === void 0 ? void 0 : _g.sender) === null || _h === void 0 ? void 0 : _h.login) !== null && _j !== void 0 ? _j : (_l = (_k = github_1.context.payload) === null || _k === void 0 ? void 0 : _k.sender) === null || _l === void 0 ? void 0 : _l.type,
+        });
         try {
             const token = utils_1.getRequiredInput('token');
             const readonly = !!core_1.getInput('readonly');
-            const issue = (_a = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _a === void 0 ? void 0 : _a.number;
+            const issue = (_m = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _m === void 0 ? void 0 : _m.number;
             if (issue) {
                 const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: issue }, { readonly });
                 if (github_1.context.eventName === 'issue_comment') {
                     await this.onCommented(octokit, github_1.context.payload.comment.body, github_1.context.actor);
                 }
-                else if (github_1.context.eventName === 'issue') {
+                else if (github_1.context.eventName === 'issues') {
                     switch (github_1.context.payload.action) {
                         case 'opened':
                             await this.onOpened(octokit);
