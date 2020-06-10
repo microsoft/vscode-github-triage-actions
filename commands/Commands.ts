@@ -44,7 +44,10 @@ export class Commands {
 	}
 
 	private async perform(command: Command, issue: Issue) {
+		console.log('e')
 		if (!(await this.matches(command, issue))) return
+		console.log('d')
+
 		console.log(`Running command ${command.name}:`)
 
 		const tasks = []
@@ -119,6 +122,7 @@ export class Commands {
 	}
 
 	async run() {
+		console.log('c')
 		const issue = await this.github.getIssue()
 		return Promise.all(this.config.map((command) => this.perform(command, issue)))
 	}

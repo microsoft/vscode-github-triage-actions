@@ -17,9 +17,11 @@ class CommandsRunner extends Action_1.Action {
         await new Commands_1.Commands(issue, commands, { comment, user: { name: actor } }).run();
     }
     async onLabeled(issue, label) {
+        console.log('b');
         const commands = await issue.readConfig(utils_1.getRequiredInput('config-path'));
         await new Commands_1.Commands(issue, commands, { label }).run();
     }
 }
+console.log('a');
 new CommandsRunner().run(); // eslint-disable-line
 //# sourceMappingURL=index.js.map

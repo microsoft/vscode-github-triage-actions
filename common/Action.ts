@@ -9,6 +9,8 @@ import { getRequiredInput, logErrorToIssue, getRateLimit } from './utils'
 import { getInput, setFailed } from '@actions/core'
 import * as appInsights from 'applicationinsights'
 
+console.log('m')
+
 let aiHandle: appInsights.TelemetryClient | undefined = undefined
 const aiKey = getInput('appInsightsKey')
 if (aiKey) {
@@ -50,12 +52,16 @@ export abstract class Action {
 	}
 
 	public async run() {
+		console.log('f')
 		try {
 			const token = getRequiredInput('token')
 			const readonly = !!getInput('readonly')
 
 			const issue = context?.issue?.number
+			console.log('g')
+
 			if (issue) {
+				console.log('h')
 				const octokit = new OctoKitIssue(token, context.repo, { number: issue }, { readonly })
 				if (context.eventName === 'issue_comment') {
 					await this.onCommented(octokit, context.payload.comment.body, context.actor)
@@ -87,6 +93,7 @@ export abstract class Action {
 				await this.onTriggered(new OctoKit(token, context.repo, { readonly }))
 			}
 		} catch (e) {
+			console.log('i')
 			await this.error(e)
 		}
 
@@ -99,6 +106,8 @@ export abstract class Action {
 	}
 
 	private async error(message: string) {
+		console.log('j')
+
 		const details: any = {
 			message,
 			repo: `${context.repo.owner}/${context.repo.repo}`,

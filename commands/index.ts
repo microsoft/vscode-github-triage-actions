@@ -17,9 +17,10 @@ class CommandsRunner extends Action {
 	}
 
 	async onLabeled(issue: OctoKitIssue, label: string) {
+		console.log('b')
 		const commands = await issue.readConfig(getRequiredInput('config-path'))
 		await new Commands(issue, commands, { label }).run()
 	}
 }
-
+console.log('a')
 new CommandsRunner().run() // eslint-disable-line
