@@ -31,6 +31,7 @@ exports.trackEvent = async (event, props) => {
             name: event,
             properties: {
                 repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,
+                issue: '' + github_1.context.issue.number,
                 workflow: github_1.context.workflow,
                 ...props,
             },
@@ -49,6 +50,7 @@ class Action {
                 ...telemetry,
                 properties: {
                     repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,
+                    issue: '' + github_1.context.issue.number,
                     id: this.id,
                     user: await this.username,
                 },

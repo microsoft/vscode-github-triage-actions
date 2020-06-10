@@ -33,6 +33,7 @@ export const trackEvent = async (event: string, props?: Record<string, string>) 
 			name: event,
 			properties: {
 				repo: `${context.repo.owner}/${context.repo.repo}`,
+				issue: '' + context.issue.number,
 				workflow: context.workflow,
 				...props,
 			},
@@ -57,6 +58,7 @@ export abstract class Action {
 				...telemetry,
 				properties: {
 					repo: `${context.repo.owner}/${context.repo.repo}`,
+					issue: '' + context.issue.number,
 					id: this.id,
 					user: await this.username,
 				},
