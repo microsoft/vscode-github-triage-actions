@@ -110,19 +110,21 @@ export abstract class Action {
 
 	private async error(error: Error) {
 		const details: any = {
-			message: `${error.name}${error.message}\n${error.stack}`,
-			repo: `${context.repo.owner}/${context.repo.repo}`,
+			message: `${error.message}\n${error.stack}`,
 			id: this.id,
 			user: await this.username,
 		}
 
 		if (context.issue.number) details.issue = context.issue.number
 
-		const token = getInput('token')
-		const rendered = JSON.stringify(details, null, 2)
-		if (token) {
-			await logErrorToIssue(rendered, true, token)
-		}
+		const rendered = `
+Message: ${details.message}
+
+Actor: ${details.user}
+
+ID: ${details.id}
+`
+		await logErrorToIssue(rendered, true, this.token)
 
 		if (aiHandle) {
 			aiHandle.trackException({ exception: error })

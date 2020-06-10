@@ -102,18 +102,20 @@ class Action {
     }
     async error(error) {
         const details = {
-            message: `${error.name}${error.message}\n${error.stack}`,
-            repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,
+            message: `${error.message}\n${error.stack}`,
             id: this.id,
             user: await this.username,
         };
         if (github_1.context.issue.number)
             details.issue = github_1.context.issue.number;
-        const token = core_1.getInput('token');
-        const rendered = JSON.stringify(details, null, 2);
-        if (token) {
-            await utils_1.logErrorToIssue(rendered, true, token);
-        }
+        const rendered = `
+Message: ${details.message}
+
+Actor: ${details.user}
+
+ID: ${details.id}
+`;
+        await utils_1.logErrorToIssue(rendered, true, this.token);
         if (aiHandle) {
             aiHandle.trackException({ exception: error });
         }
