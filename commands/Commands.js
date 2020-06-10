@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const Action_1 = require("../common/Action");
 /* eslint-enable */
 class Commands {
     constructor(github, config, action) {
@@ -34,6 +35,7 @@ class Commands {
         if (!(await this.matches(command, issue)))
             return;
         console.log(`Running command ${command.name}:`);
+        await Action_1.trackEvent('command', { name: command.name });
         const tasks = [];
         if ('comment' in this.action && (command.name === 'label' || command.name === 'assign')) {
             const args = [];

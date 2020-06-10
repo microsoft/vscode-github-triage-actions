@@ -70,6 +70,7 @@ class ApplyLabels extends Action_1.Action {
                         : []),
                 ]);
             }
+            await Action_1.trackEvent('classification:performed', { assignee, label });
         }
     }
 }

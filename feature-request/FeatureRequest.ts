@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub, GitHubIssue } from '../api/api'
+import { trackEvent } from '../common/Action'
 
 export const CREATE_MARKER = '<!-- 6d457af9-96bd-47a8-a0e8-ecf120dfffc1 -->' // do not change, this is how we find the comments the bot made when assigning the issue was assigned to the candidate milestone
 export const WARN_MARKER = '<!-- 7e568b0a-a7ce-58b9-b1f9-fd0231e000d2 -->' // do not change, this is how we find the comments the bot made when writing a warning message
@@ -49,6 +50,7 @@ export class FeatureRequestQueryer {
 
 		if (issueData.reactions['+1'] >= this.config.upvotesRequired) {
 			console.log(`Issue #${issueData.number} sucessfully promoted`)
+			await trackEvent('feature-request:accepted')
 			await Promise.all([
 				issue.setMilestone(this.config.milestones.backlogID),
 				issue.postComment(ACCEPT_MARKER + '\n' + this.config.comments.accept),
@@ -84,6 +86,7 @@ export class FeatureRequestQueryer {
 				}
 			} else if (this.daysSince(state.warnTimestamp) > this.config.delays.warn) {
 				console.log(`Issue #${issueData.number} rejected`)
+				await trackEvent('feature-request:rejected')
 				await issue.postComment(REJECT_MARKER + '\n' + this.config.comments.reject)
 				await issue.closeIssue()
 			}

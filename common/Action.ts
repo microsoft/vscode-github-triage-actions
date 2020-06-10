@@ -25,6 +25,19 @@ if (aiKey) {
 	aiHandle = appInsights.defaultClient
 }
 
+export const trackEvent = async (event: string, props?: Record<string, string>) => {
+	if (aiHandle) {
+		aiHandle.trackEvent({
+			name: event,
+			properties: {
+				repo: `${context.repo.owner}/${context.repo.repo}`,
+				workflow: context.workflow,
+				...props,
+			},
+		})
+	}
+}
+
 export abstract class Action {
 	abstract id: string
 

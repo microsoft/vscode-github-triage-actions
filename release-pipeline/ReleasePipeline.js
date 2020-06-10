@@ -5,6 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../common/utils");
+const Action_1 = require("../common/Action");
 class ReleasePipeline {
     constructor(github, notYetReleasedLabel, insidersReleasedLabel) {
         this.github = github;
@@ -47,6 +48,7 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
             return 'unknown';
         });
         if (releaseContainsCommit === 'yes') {
+            await Action_1.trackEvent('insiders-released:released');
             await issue.removeLabel(this.notYetReleasedLabel);
             await issue.addLabel(this.insidersReleasedLabel);
         }
@@ -68,6 +70,10 @@ exports.enrollIssue = async (issue, notYetReleasedLabel) => {
     const closingHash = (_a = (await issue.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
     if (closingHash) {
         await issue.addLabel(notYetReleasedLabel);
+        await Action_1.trackEvent('insiders-released:unreleased');
+    }
+    else {
+        await Action_1.trackEvent('insiders-released:skipped');
     }
 };
 exports.unenrollIssue = async (issue, notYetReleasedLabel, insidersReleasedLabel) => {

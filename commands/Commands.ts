@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHubIssue, Issue, User } from '../api/api'
+import { trackEvent } from '../common/Action'
 
 /* eslint-disable */
 // confusing when eslint formats
@@ -46,6 +47,8 @@ export class Commands {
 	private async perform(command: Command, issue: Issue) {
 		if (!(await this.matches(command, issue))) return
 		console.log(`Running command ${command.name}:`)
+
+		await trackEvent('command', { name: command.name })
 
 		const tasks = []
 

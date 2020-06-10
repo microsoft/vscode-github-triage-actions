@@ -24,6 +24,18 @@ if (aiKey) {
         .start();
     aiHandle = appInsights.defaultClient;
 }
+exports.trackEvent = async (event, props) => {
+    if (aiHandle) {
+        aiHandle.trackEvent({
+            name: event,
+            properties: {
+                repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,
+                workflow: github_1.context.workflow,
+                ...props,
+            },
+        });
+    }
+};
 class Action {
     constructor() {
         this.token = utils_1.getRequiredInput('token');
