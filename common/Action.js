@@ -25,6 +25,7 @@ if (aiKey) {
     aiHandle = appInsights.defaultClient;
 }
 exports.trackEvent = async (event, props) => {
+    console.log('tracking event', event, props);
     if (aiHandle) {
         aiHandle.trackEvent({
             name: event,
