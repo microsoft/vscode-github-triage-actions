@@ -1,0 +1,57 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"additionalProperties": false,
+	"properties": {
+		"$schema": {
+			"type": "string"
+		},
+		"labels": {
+			"additionalProperties": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"targetAccuracy": {
+						"description": "Target accuracy (0-1.0) used to configure the classifier thresholds.",
+						"type": "number"
+					},
+					"applyLabel": {
+						"description": "Enables automatically applying this label to issues.",
+						"type": "boolean"
+					},
+					"comment": {
+						"description": "Comment to add to issues detected to be in this feature area",
+						"type": "string"
+					},
+					"assign": {
+						"description": "List of usernames to assign to issues detected to be in this feature area",
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			}
+		},
+		"assignees": {
+			"additionalProperties": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"targetAccuracy": {
+						"description": "Target accuracy (0-1.0) used to configure the classifier thresholds.",
+						"type": "number"
+					},
+					"assign": {
+						"description": "Enables automatically assigning this team member",
+						"type": "boolean"
+					},
+					"comment": {
+						"description": "Comment to add to issues detected to be assigned to this team member",
+						"type": "string"
+					}
+				}
+			}
+		}
+	}
+}

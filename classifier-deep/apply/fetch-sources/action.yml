@@ -1,0 +1,24 @@
+name: "Classifier: Fetch Sources"
+description: Collect the issues/models/etc which are needed for later stages
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  from:
+    description: Start point of collected issues (minutes ago)
+    required: true
+  until:
+    description: End point of collected issues (minutes ago)
+    required: true
+  blobContainerName:
+    description: Name of Azure Storage container
+    required: true
+  blobStorageKey:
+    description: Access string for blob storage account
+    required: true
+  configPath:
+    description: The PATH of a .github/PATH.json in the repo that describes what should be done per feature area
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'

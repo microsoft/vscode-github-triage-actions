@@ -1,0 +1,10 @@
+train_data
+*.pyc
+issues.json
+issue_data.json
+configuration.json
+issue_labels.json
+blobStorage/*.zip
+
+area_model
+assignee_model
