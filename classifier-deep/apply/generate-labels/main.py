@@ -33,7 +33,7 @@ def make_classifier(category, config):
         target_accuracy = str(0.8 if prediction not in config or 'targetAccuracy' not in config[prediction] else config[prediction]['targetAccuracy'])
 
         available_accuracies = thresholds[target_names[prediction]].keys()
-        if len(available_accuracies) === 0: return None
+        if len(available_accuracies) == 0: return None
 
         print({"available_accuracies": available_accuracies})
         target_accuracy = [accuracy for accuracy in available_accuracies if float(accuracy) > float(target_accuracy)][0]
