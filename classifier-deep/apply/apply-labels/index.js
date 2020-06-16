@@ -20,7 +20,7 @@ class ApplyLabels extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a, _b;
-        const config = await github.readConfig(utils_1.getRequiredInput('config-path'));
+        const config = await github.readConfig(utils_1.getRequiredInput('configPath'));
         const labelings = JSON.parse(fs_1.readFileSync(path_1.join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
         console.log('labelings:', labelings);
         for (const labeling of labelings) {

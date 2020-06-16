@@ -27,7 +27,7 @@ class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels'
 
 	async onTriggered(github: OctoKit) {
-		const config: ClassifierConfig = await github.readConfig(getRequiredInput('config-path'))
+		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'))
 		const labelings: { number: number; area: string; assignee: string }[] = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 		)
