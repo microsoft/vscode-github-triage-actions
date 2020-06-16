@@ -10,6 +10,7 @@ import { getRequiredInput, daysAgoToHumanReadbleDate, normalizeIssue } from '../
 import { downloadBlobFile } from '../../blobStorage'
 import { Action } from '../../../common/Action'
 import { execSync } from 'child_process'
+import { setFailed } from '@actions/core'
 
 const minToDay = 0.0007
 const from = daysAgoToHumanReadbleDate(+getRequiredInput('from') * minToDay)
@@ -51,4 +52,4 @@ class FetchIssues extends Action {
 	}
 }
 
-new FetchIssues().run() // eslint-disable-line
+new FetchIssues().run().catch((e) => setFailed(e))

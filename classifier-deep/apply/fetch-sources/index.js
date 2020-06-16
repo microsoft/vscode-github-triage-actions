@@ -10,6 +10,7 @@ const utils_1 = require("../../../common/utils");
 const blobStorage_1 = require("../../blobStorage");
 const Action_1 = require("../../../common/Action");
 const child_process_1 = require("child_process");
+const core_1 = require("@actions/core");
 const minToDay = 0.0007;
 const from = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('from') * minToDay);
 const until = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('until') * minToDay);
@@ -43,5 +44,5 @@ class FetchIssues extends Action_1.Action {
         child_process_1.execSync(`unzip -q ${path_1.join(blobStorage, 'assignee_model.zip')} -d ${(path_1.join(models), 'assignee_model')}`);
     }
 }
-new FetchIssues().run(); // eslint-disable-line
+new FetchIssues().run().catch((e) => core_1.setFailed(e));
 //# sourceMappingURL=index.js.map
