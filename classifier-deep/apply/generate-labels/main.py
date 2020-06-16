@@ -54,7 +54,7 @@ def main():
     with open(os.path.join(BASE_PATH, "configuration.json")) as f:
         configuration = json.load(f)
 
-    area_classifier = make_classifier('area', configuration['assignees'] in 'assignees' in configuration else {})
+    area_classifier = make_classifier('area', configuration['assignees'] if 'assignees' in configuration else {})
     assignee_classifier = make_classifier('assignee', configuration['labels'] if 'labels' in configuration else {})
 
     with open(os.path.join(BASE_PATH, "issue_data.json")) as f:
