@@ -30,7 +30,7 @@ def make_classifier(category, config):
         prediction = predictions[0]
         raw_output = raw_outputs[0]
 
-        target_accuracy = str(0.8 if prediction not in config or 'targetAccuracy' not in config[prediction] else config[prediction]['targetAccuracy'])
+        target_accuracy = str(0.75 if prediction not in config or 'targetAccuracy' not in config[prediction] else config[prediction]['targetAccuracy'])
 
         available_accuracies = thresholds[target_names[prediction]].keys()
         above_threshold_accuracies = [accuracy for accuracy in available_accuracies if float(accuracy) > float(target_accuracy)]
