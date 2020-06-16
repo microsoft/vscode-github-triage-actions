@@ -10,6 +10,8 @@ inputs:
   allowLabels:
     description: "Pipe (|) separated list of labels such that the bot should act even if those labels are already present (use for bot-applied labels/etc.)"
     default: ''
+  appInsightsKey:
+    description: Key for Azure App Insights to monitor application health
 runs:
   using: 'node12'
   main: 'index.js'
