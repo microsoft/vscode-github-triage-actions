@@ -33,10 +33,9 @@ def make_classifier(category, config):
         target_accuracy = str(0.8 if prediction not in config or 'targetAccuracy' not in config[prediction] else config[prediction]['targetAccuracy'])
 
         available_accuracies = thresholds[target_names[prediction]].keys()
-        if len(available_accuracies) == 0: return None
-
-        print({"available_accuracies": available_accuracies})
-        target_accuracy = [accuracy for accuracy in available_accuracies if float(accuracy) > float(target_accuracy)][0]
+        above_threshold_accuracies = [accuracy for accuracy in available_accuracies if float(accuracy) > float(target_accuracy)]
+        if len(above_threshold_accuracies) == 0: return None
+        target_accuracy = above_threshold_accuracies[0]
 
         if raw_output[prediction] < thresholds[target_names[prediction]][target_accuracy]['cutoff']:
             print('Below threshold:', target_names[prediction], raw_output[prediction], issue)
