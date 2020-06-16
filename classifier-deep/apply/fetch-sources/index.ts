@@ -52,4 +52,4 @@ class FetchIssues extends Action {
 	}
 }
 
-new FetchIssues().run().catch((e) => setFailed(e))
+new FetchIssues().run().catch((e) => setFailed(e.message))

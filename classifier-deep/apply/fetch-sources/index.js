@@ -44,5 +44,5 @@ class FetchIssues extends Action_1.Action {
         child_process_1.execSync(`unzip -q ${path_1.join(blobStorage, 'assignee_model.zip')} -d ${(path_1.join(models), 'assignee_model')}`);
     }
 }
-new FetchIssues().run().catch((e) => core_1.setFailed(e));
+new FetchIssues().run().catch((e) => core_1.setFailed(e.message));
 //# sourceMappingURL=index.js.map
