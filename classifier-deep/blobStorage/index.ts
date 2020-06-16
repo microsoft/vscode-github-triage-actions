@@ -15,9 +15,7 @@ export async function downloadBlobFile(name: string, container: string, key: str
 
 	const createContainerResponse = containerClient.getBlockBlobClient(name)
 
-	await createContainerResponse.downloadToFile(join(__dirname, name), undefined, undefined, {
-		onProgress: (data) => console.log(data),
-	})
+	await createContainerResponse.downloadToFile(join(__dirname, name))
 }
 
 export async function uploadBlobFile(name: string, container: string, key: string) {

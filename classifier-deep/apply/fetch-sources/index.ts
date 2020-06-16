@@ -40,14 +40,18 @@ class FetchIssues extends Action {
 		const config = await github.readConfig(getRequiredInput('configPath'))
 		writeFileSync(join(__dirname, '../configuration.json'), JSON.stringify(config))
 
+		console.log('dowloading area model')
 		await downloadBlobFile('area_model.zip', blobContainer, blobStorageKey)
+		console.log('dowloading assignee model')
 		await downloadBlobFile('assignee_model.zip', blobContainer, blobStorageKey)
 
 		const classifierDeepRoot = join(__dirname, '..', '..')
 		const blobStorage = join(classifierDeepRoot, 'blobStorage')
 		const models = join(classifierDeepRoot, 'apply')
 
+		console.log('unzipping area model')
 		execSync(`unzip -q ${join(blobStorage, 'area_model.zip')} -d ${(join(models), 'area_model')}`)
+		console.log('unzipping assignee model')
 		execSync(`unzip -q ${join(blobStorage, 'assignee_model.zip')} -d ${(join(models), 'assignee_model')}`)
 	}
 }
