@@ -43,9 +43,9 @@ class FetchIssues extends Action_1.Action {
         const blobStorage = path_1.join(classifierDeepRoot, 'blobStorage');
         const models = path_1.join(classifierDeepRoot, 'apply');
         console.log('unzipping area model');
-        child_process_1.execSync(`unzip -q ${path_1.join(blobStorage, 'area_model.zip')} -d ${(path_1.join(models), 'area_model')}`);
+        child_process_1.execSync(`unzip -q ${path_1.join(blobStorage, 'area_model.zip')} -d ${path_1.join(models, 'area_model')}`);
         console.log('unzipping assignee model');
-        child_process_1.execSync(`unzip -q ${path_1.join(blobStorage, 'assignee_model.zip')} -d ${(path_1.join(models), 'assignee_model')}`);
+        child_process_1.execSync(`unzip -q ${path_1.join(blobStorage, 'assignee_model.zip')} -d ${path_1.join(models, 'assignee_model')}`);
     }
 }
 new FetchIssues().run().catch((e) => core_1.setFailed(e.message));

@@ -50,9 +50,9 @@ class FetchIssues extends Action {
 		const models = join(classifierDeepRoot, 'apply')
 
 		console.log('unzipping area model')
-		execSync(`unzip -q ${join(blobStorage, 'area_model.zip')} -d ${(join(models), 'area_model')}`)
+		execSync(`unzip -q ${join(blobStorage, 'area_model.zip')} -d ${join(models, 'area_model')}`)
 		console.log('unzipping assignee model')
-		execSync(`unzip -q ${join(blobStorage, 'assignee_model.zip')} -d ${(join(models), 'assignee_model')}`)
+		execSync(`unzip -q ${join(blobStorage, 'assignee_model.zip')} -d ${join(models, 'assignee_model')}`)
 	}
 }
 
