@@ -7,10 +7,10 @@ import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { OctoKit } from '../../../api/octokit'
 import { getRequiredInput, daysAgoToHumanReadbleDate, normalizeIssue } from '../../../common/utils'
-import { downloadBlobFile } from '../../blobStorage'
 import { Action } from '../../../common/Action'
 import { execSync } from 'child_process'
 import { setFailed } from '@actions/core'
+import { downloadBlobFile } from '../../../classifier/blobStorage'
 
 const minToDay = 0.0007
 const from = daysAgoToHumanReadbleDate(+getRequiredInput('from') * minToDay)

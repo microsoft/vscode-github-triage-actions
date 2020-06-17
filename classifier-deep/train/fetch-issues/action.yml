@@ -4,10 +4,12 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
-  areas:
-    description: Pipe-seperated list of feature-areas to classify
-  assignees:
-    description: Pipe-seperated list of assignees to classify
+  blobContainerName:
+    description: Name of Azure Storage container
+    required: true
+  blobStorageKey:
+    description: Access string for blob storage account
+    required: true
 runs:
   using: 'node12'
   main: 'index.js'

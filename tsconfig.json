@@ -12,6 +12,7 @@
 		]
 	},
 	"exclude": [
-		"**/*.test.ts"
+		"**/*.test.ts",
+		"**/vm-filesystem/**"
 	]
 }

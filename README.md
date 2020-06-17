@@ -54,9 +54,17 @@ inputs:
     required: true
 ```
 
+### Deep Classifier
+
+This classifier generates assignees and lables using a deep-learning model stored in Azure Blob storage and generated using an Azure GPU instance. The model is created with help from [simpletransformers](https://simpletransformers.ai/) and [huggingface/transformers](https://github.com/huggingface/transformers).
+
+This setup is more involved and detailed in the [Action's README](/classifier-deep/README.md).
+
 ### Classifier
 
-The full classifier workflow is a 2-part process (Train, Apply), with each part consisting of several individual Actions.
+This classifier generates assignees and lables using a model stored in Azure Blob storage and generated using a GitHub Actions runner.
+
+The full classifier workflow is a 2-part process (Train, Apply), with each part consisting of several individual Actions. It maay be helpful to see how this is configured in the [vscode-remote-release repository](https://github.com/microsoft/vscode-remote-release/tree/master/.github/workflows).
 
 #### Train
 
@@ -70,6 +78,10 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  areas:
+    description: Pipe-seperated list of feature-areas to classify
+  assignees:
+    description: Pipe-seperated list of assignees to classify
 ```
 
 ##### generate-models
@@ -97,7 +109,7 @@ inputs:
 
 #### Apply
 
-In this part, the models generated in the Training phase get applied to issues. To save on bandwidth and compute, this is dont in batches. Every half hour, the issues in the past period are passed through the models and assigned a label.
+In this part, the models generated in the Training phase get applied to issues. To save on bandwidth and compute, this is done in batches. For example, every half hour, the issues in the past period are passed through the models and assigned a label.
 
 ##### fetch-issues
 Collect the issues which need to be labeled and write them to a file for later processing
