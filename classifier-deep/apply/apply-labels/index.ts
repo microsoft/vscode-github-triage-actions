@@ -64,9 +64,9 @@ class ApplyLabels extends Action {
 						await issue.addLabel(category)
 					}
 					await issue.postComment(
-						`confidence for label ${category}: ${confidence}. ${
+						`confidence for assignee ${category}: ${confidence}. ${
 							confident ? 'does' : 'does not'
-						} meet threshold}`,
+						} meet threshold`,
 					)
 				}
 
@@ -92,9 +92,9 @@ class ApplyLabels extends Action {
 						await issue.addLabel(category)
 					}
 					await issue.postComment(
-						`confidence for assignee ${category}: ${confidence}. ${
+						`confidence for label ${category}: ${confidence}. ${
 							confident ? 'does' : 'does not'
-						} meet threshold}`,
+						} meet threshold`,
 					)
 				}
 

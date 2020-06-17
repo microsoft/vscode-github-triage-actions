@@ -46,7 +46,7 @@ class ApplyLabels extends Action_1.Action {
                         }
                         await issue.addLabel(category);
                     }
-                    await issue.postComment(`confidence for label ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold}`);
+                    await issue.postComment(`confidence for assignee ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold`);
                 }
                 if (confident) {
                     console.log('has assignee');
@@ -68,7 +68,7 @@ class ApplyLabels extends Action_1.Action {
                         }
                         await issue.addLabel(category);
                     }
-                    await issue.postComment(`confidence for assignee ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold}`);
+                    await issue.postComment(`confidence for label ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold`);
                 }
                 if (confident) {
                     console.log(`adding label ${category} to issue ${issueData.number}`);
