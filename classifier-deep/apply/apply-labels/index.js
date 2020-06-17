@@ -58,6 +58,7 @@ class ApplyLabels extends Action_1.Action {
                         console.log(`creating label`);
                         await github.createLabel(label, 'f1d9ff', '');
                     }
+                    await issue.addLabel(label);
                 }
                 const labelConfig = (_b = config.labels) === null || _b === void 0 ? void 0 : _b[label];
                 await Promise.all([

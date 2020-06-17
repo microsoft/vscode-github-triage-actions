@@ -77,6 +77,7 @@ class ApplyLabels extends Action {
 						console.log(`creating label`)
 						await github.createLabel(label, 'f1d9ff', '')
 					}
+					await issue.addLabel(label)
 				}
 
 				const labelConfig = config.labels?.[label]
