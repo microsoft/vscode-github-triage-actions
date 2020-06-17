@@ -34,7 +34,7 @@ class FetchIssues extends Action_1.Action {
             }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        child_process_1.execSync(`zip -q ${path_1.join(__dirname, 'blobStorage', 'issues.json.zip')} ${path_1.join(__dirname, 'blobStorage', 'area_model')}`);
+        child_process_1.execSync(`zip -q ${path_1.join(__dirname, 'blobStorage', 'issues.json.zip')} ${path_1.join(__dirname, 'issues.json')}`);
         await blobStorage_1.uploadBlobFile('issues.json.zip', blobContainer, blobStorageKey);
     }
 }

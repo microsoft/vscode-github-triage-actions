@@ -33,11 +33,7 @@ class FetchIssues extends Action {
 		}
 		await new Promise((resolve) => setTimeout(resolve, 1000))
 		execSync(
-			`zip -q ${join(__dirname, 'blobStorage', 'issues.json.zip')} ${join(
-				__dirname,
-				'blobStorage',
-				'area_model',
-			)}`,
+			`zip -q ${join(__dirname, 'blobStorage', 'issues.json.zip')} ${join(__dirname, 'issues.json')}`,
 		)
 
 		await uploadBlobFile('issues.json.zip', blobContainer, blobStorageKey)
