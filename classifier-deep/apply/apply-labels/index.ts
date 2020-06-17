@@ -23,12 +23,15 @@ type ClassifierConfig = {
 	}
 }
 
+type Labeling = { confident: boolean; category: string; confidence: number }
+type LabelingsFile = { number: number; area: Labeling; assignee: Labeling }[]
+
 class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels'
 
 	async onTriggered(github: OctoKit) {
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'))
-		const labelings: { number: number; area: string; assignee: string }[] = JSON.parse(
+		const labelings: LabelingsFile = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 		)
 		console.log('labelings:', labelings)
@@ -50,45 +53,66 @@ class ApplyLabels extends Action {
 				number: labeling.number,
 			})
 
-			const assignee = labeling.assignee
-			if (assignee) {
-				console.log('has assignee')
-
+			{
+				const { category, confidence, confident } = labeling.assignee
 				if (debug) {
-					if (!(await github.repoHasLabel(assignee))) {
-						console.log(`creating assignee label`)
-						await github.createLabel(assignee, 'ffa5a1', '')
+					if (confident) {
+						if (!(await github.repoHasLabel(category))) {
+							console.log(`creating assignee label`)
+							await github.createLabel(category, 'ffa5a1', '')
+						}
+						await issue.addLabel(category)
 					}
-					await issue.addLabel(assignee)
+					await issue.postComment(
+						`confidence for label ${category}: ${confidence}. ${
+							confident ? 'does' : 'does not'
+						} meet threshold}`,
+					)
 				}
 
-				const assigneeConfig = config.assignees?.[assignee]
-				console.log({ assigneeConfig })
-
-				await Promise.all<any>([issue.addAssignee(assignee)])
+				if (confident) {
+					console.log('has assignee')
+					const assigneeConfig = config.assignees?.[category]
+					console.log({ assigneeConfig })
+					await issue.addAssignee(category)
+					await trackEvent('classification:performed', {
+						assignee: labeling.assignee.category,
+					})
+				}
 			}
 
-			const label = labeling.area
-			if (label) {
-				console.log(`adding label ${label} to issue ${issueData.number}`)
-
+			{
+				const { category, confidence, confident } = labeling.area
 				if (debug) {
-					if (!(await github.repoHasLabel(label))) {
-						console.log(`creating label`)
-						await github.createLabel(label, 'f1d9ff', '')
+					if (confident) {
+						if (!(await github.repoHasLabel(category))) {
+							console.log(`creating label`)
+							await github.createLabel(category, 'f1d9ff', '')
+						}
+						await issue.addLabel(category)
 					}
-					await issue.addLabel(label)
+					await issue.postComment(
+						`confidence for assignee ${category}: ${confidence}. ${
+							confident ? 'does' : 'does not'
+						} meet threshold}`,
+					)
 				}
 
-				const labelConfig = config.labels?.[label]
-				await Promise.all<any>([
-					...(labelConfig?.assign
-						? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
-						: []),
-				])
-			}
+				if (confident) {
+					console.log(`adding label ${category} to issue ${issueData.number}`)
 
-			await trackEvent('classification:performed', { assignee, label })
+					const labelConfig = config.labels?.[category]
+					await Promise.all<any>([
+						...(labelConfig?.assign
+							? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
+							: []),
+					])
+
+					await trackEvent('classification:performed', {
+						label: labeling.area.category,
+					})
+				}
+			}
 		}
 	}
 }

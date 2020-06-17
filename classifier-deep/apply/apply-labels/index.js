@@ -36,37 +36,52 @@ class ApplyLabels extends Action_1.Action {
                 area: labeling.area,
                 number: labeling.number,
             });
-            const assignee = labeling.assignee;
-            if (assignee) {
-                console.log('has assignee');
+            {
+                const { category, confidence, confident } = labeling.assignee;
                 if (debug) {
-                    if (!(await github.repoHasLabel(assignee))) {
-                        console.log(`creating assignee label`);
-                        await github.createLabel(assignee, 'ffa5a1', '');
+                    if (confident) {
+                        if (!(await github.repoHasLabel(category))) {
+                            console.log(`creating assignee label`);
+                            await github.createLabel(category, 'ffa5a1', '');
+                        }
+                        await issue.addLabel(category);
                     }
-                    await issue.addLabel(assignee);
+                    await issue.postComment(`confidence for label ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold}`);
                 }
-                const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[assignee];
-                console.log({ assigneeConfig });
-                await Promise.all([issue.addAssignee(assignee)]);
+                if (confident) {
+                    console.log('has assignee');
+                    const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[category];
+                    console.log({ assigneeConfig });
+                    await issue.addAssignee(category);
+                    await Action_1.trackEvent('classification:performed', {
+                        assignee: labeling.assignee.category,
+                    });
+                }
             }
-            const label = labeling.area;
-            if (label) {
-                console.log(`adding label ${label} to issue ${issueData.number}`);
+            {
+                const { category, confidence, confident } = labeling.area;
                 if (debug) {
-                    if (!(await github.repoHasLabel(label))) {
-                        console.log(`creating label`);
-                        await github.createLabel(label, 'f1d9ff', '');
+                    if (confident) {
+                        if (!(await github.repoHasLabel(category))) {
+                            console.log(`creating label`);
+                            await github.createLabel(category, 'f1d9ff', '');
+                        }
+                        await issue.addLabel(category);
                     }
-                    await issue.addLabel(label);
+                    await issue.postComment(`confidence for assignee ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold}`);
                 }
-                const labelConfig = (_b = config.labels) === null || _b === void 0 ? void 0 : _b[label];
-                await Promise.all([
-                    ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
-                        : []),
-                ]);
+                if (confident) {
+                    console.log(`adding label ${category} to issue ${issueData.number}`);
+                    const labelConfig = (_b = config.labels) === null || _b === void 0 ? void 0 : _b[category];
+                    await Promise.all([
+                        ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
+                            : []),
+                    ]);
+                    await Action_1.trackEvent('classification:performed', {
+                        label: labeling.area.category,
+                    });
+                }
             }
-            await Action_1.trackEvent('classification:performed', { assignee, label });
         }
     }
 }
