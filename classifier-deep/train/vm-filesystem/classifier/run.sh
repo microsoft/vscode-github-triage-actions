@@ -10,7 +10,6 @@ echo 'Getting latest issues dump'
 npx ts-node storage.ts download issues.json.zip BLOB_CONTAINER_NAME
 unzip blobs/issues.json.zip issues.json
 
-
 echo 'Generating models'
 python generateModels.py
 
