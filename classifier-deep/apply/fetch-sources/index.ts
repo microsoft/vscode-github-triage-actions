@@ -10,7 +10,7 @@ import { getRequiredInput, daysAgoToHumanReadbleDate, normalizeIssue } from '../
 import { Action } from '../../../common/Action'
 import { execSync } from 'child_process'
 import { setFailed } from '@actions/core'
-import { downloadBlobFile } from '../../../classifier/blobStorage'
+import { downloadBlobFile } from '../../blobStorage'
 
 const minToDay = 0.0007
 const from = daysAgoToHumanReadbleDate(+getRequiredInput('from') * minToDay)

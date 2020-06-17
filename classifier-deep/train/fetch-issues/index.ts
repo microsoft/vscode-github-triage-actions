@@ -8,9 +8,9 @@ import { getRequiredInput, getInput } from '../../../common/utils'
 import { statSync } from 'fs'
 import { join } from 'path'
 import { Action } from '../../../common/Action'
-import { download } from '../../../classifier/train/fetch-issues/download'
 import { execSync } from 'child_process'
-import { uploadBlobFile } from '../../../classifier/blobStorage'
+import { uploadBlobFile } from '../../blobStorage'
+import { download } from './download'
 
 const token = getRequiredInput('token')
 const endCursor = getInput('cursor')
@@ -33,7 +33,10 @@ class FetchIssues extends Action {
 		}
 		await new Promise((resolve) => setTimeout(resolve, 1000))
 		execSync(
-			`zip -q ${join(__dirname, 'blobStorage', 'issues.json.zip')} ${join(__dirname, 'issues.json')}`,
+			`zip -q ${join(__dirname, '..', '..', 'blobStorage', 'issues.json.zip')} ${join(
+				__dirname,
+				'issues.json',
+			)}`,
 		)
 
 		await uploadBlobFile('issues.json.zip', blobContainer, blobStorageKey)

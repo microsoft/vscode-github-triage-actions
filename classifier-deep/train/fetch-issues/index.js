@@ -9,9 +9,9 @@ const utils_1 = require("../../../common/utils");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const Action_1 = require("../../../common/Action");
-const download_1 = require("../../../classifier/train/fetch-issues/download");
 const child_process_1 = require("child_process");
-const blobStorage_1 = require("../../../classifier/blobStorage");
+const blobStorage_1 = require("../../blobStorage");
+const download_1 = require("./download");
 const token = utils_1.getRequiredInput('token');
 const endCursor = utils_1.getInput('cursor');
 const blobContainer = utils_1.getRequiredInput('blobContainerName');
@@ -34,7 +34,7 @@ class FetchIssues extends Action_1.Action {
             }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        child_process_1.execSync(`zip -q ${path_1.join(__dirname, 'blobStorage', 'issues.json.zip')} ${path_1.join(__dirname, 'issues.json')}`);
+        child_process_1.execSync(`zip -q ${path_1.join(__dirname, '..', '..', 'blobStorage', 'issues.json.zip')} ${path_1.join(__dirname, 'issues.json')}`);
         await blobStorage_1.uploadBlobFile('issues.json.zip', blobContainer, blobStorageKey);
     }
 }
