@@ -16,10 +16,10 @@ const debug = !!getInput('__debug')
 
 type ClassifierConfig = {
 	labels?: {
-		[area: string]: { applyLabel?: boolean; targetAccuracy?: number; comment?: string; assign?: [string] }
+		[area: string]: { accuracy?: number; assign?: [string] }
 	}
 	assignees?: {
-		[assignee: string]: { targetAccuracy?: number; comment?: string }
+		[assignee: string]: { accuracy?: number }
 	}
 }
 
@@ -65,10 +65,7 @@ class ApplyLabels extends Action {
 				const assigneeConfig = config.assignees?.[assignee]
 				console.log({ assigneeConfig })
 
-				await Promise.all<any>([
-					issue.addAssignee(assignee),
-					assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
-				])
+				await Promise.all<any>([issue.addAssignee(assignee)])
 			}
 
 			const label = labeling.area
@@ -84,8 +81,6 @@ class ApplyLabels extends Action {
 
 				const labelConfig = config.labels?.[label]
 				await Promise.all<any>([
-					labelConfig?.applyLabel || debug ? issue.addLabel(label) : Promise.resolve,
-					labelConfig?.comment ? issue.postComment(labelConfig.comment) : Promise.resolve(),
 					...(labelConfig?.assign
 						? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
 						: []),

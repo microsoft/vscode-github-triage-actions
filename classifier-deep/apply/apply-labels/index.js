@@ -48,10 +48,7 @@ class ApplyLabels extends Action_1.Action {
                 }
                 const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[assignee];
                 console.log({ assigneeConfig });
-                await Promise.all([
-                    issue.addAssignee(assignee),
-                    (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
-                ]);
+                await Promise.all([issue.addAssignee(assignee)]);
             }
             const label = labeling.area;
             if (label) {
@@ -64,8 +61,6 @@ class ApplyLabels extends Action_1.Action {
                 }
                 const labelConfig = (_b = config.labels) === null || _b === void 0 ? void 0 : _b[label];
                 await Promise.all([
-                    (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.applyLabel) || debug ? issue.addLabel(label) : Promise.resolve,
-                    (labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.comment) ? issue.postComment(labelConfig.comment) : Promise.resolve(),
                     ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
                         : []),
                 ]);

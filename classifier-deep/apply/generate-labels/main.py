@@ -10,7 +10,7 @@ import os.path
 BASE_PATH = os.path.join(os.path.dirname(__file__), "..")
 print("running with BASE_PATH:", BASE_PATH)
 
-def make_classifier(category, config):
+def make_classifier(category, config, default_target_accuracy):
     with open(os.path.join(BASE_PATH, category+'_model', 'target_names.json')) as fp:
         target_names = json.load(fp)
 
@@ -24,25 +24,32 @@ def make_classifier(category, config):
         use_cuda=False
     )
 
-
     def classify(issue):
         predictions, raw_outputs = model.predict([issue])
-        prediction = predictions[0]
         raw_output = raw_outputs[0]
+        prediction_index = predictions[0]
+        prediction_name = target_names[predictions[0]]
+        prediction_config = config.get(prediction_name, {})
 
-        target_accuracy = str(0.75 if prediction not in config or 'targetAccuracy' not in config[prediction] else config[prediction]['targetAccuracy'])
+        target_accuracy = prediction_config.get('accuracy', default_target_accuracy)
+        print('read config for ', prediction_name, 'as', prediction_config, 'setting target_accuracy', target_accuracy)
 
-        available_accuracies = thresholds[target_names[prediction]].keys()
-        above_threshold_accuracies = [accuracy for accuracy in available_accuracies if float(accuracy) > float(target_accuracy)]
-        if len(above_threshold_accuracies) == 0: return None
-        target_accuracy = above_threshold_accuracies[0]
+        available_accuracies = thresholds[prediction_name].keys()
+        above_target_accuracies = [accuracy for accuracy in available_accuracies if float(accuracy) >= float(target_accuracy)]
+        if len(above_target_accuracies) == 0: return None
+        target_accuracy = above_target_accuracies[0]
 
-        if raw_output[prediction] < thresholds[target_names[prediction]][target_accuracy]['cutoff']:
-            print('Below threshold:', target_names[prediction], raw_output[prediction], issue)
+        print('adjusted target accuracy', target_accuracy)
+        score = raw_output[prediction_index]
+        threshold = thresholds[prediction_name][target_accuracy]['cutoff']
+        print('score', score, 'threshold', threshold)
+
+        if score < threshold:
+            print('Below threshold:', prediction_name, score)
             return None
 
-        print('Above threshold:', target_names[prediction], raw_output[prediction], issue)
-        return target_names[prediction]
+        print('Above threshold:', prediction_name, score)
+        return prediction_name
 
     return classify
 
@@ -53,8 +60,8 @@ def main():
     with open(os.path.join(BASE_PATH, "configuration.json")) as f:
         configuration = json.load(f)
 
-    area_classifier = make_classifier('area', configuration['assignees'] if 'assignees' in configuration else {})
-    assignee_classifier = make_classifier('assignee', configuration['labels'] if 'labels' in configuration else {})
+    area_classifier = make_classifier('area', configuration.get('labels', {}), 0.70)
+    assignee_classifier = make_classifier('assignee', configuration.get('assignees', {}), 0.70)
 
     with open(os.path.join(BASE_PATH, "issue_data.json")) as f:
         issue_data = json.load(f)
