@@ -1,0 +1,14 @@
+name: "Classifier: Monitor"
+description: Alerts when assignees added by the bot are unassigned
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  botName:
+    description: The login of the bot
+    required: true
+  appInsightsKey:
+    description: Key for Azure App Insights to monitor application health
+runs:
+  using: 'node12'
+  main: 'index.js'

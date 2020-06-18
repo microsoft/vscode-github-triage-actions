@@ -313,6 +313,34 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			})
 	}
 
+	async getAssigner(assignee: string): Promise<string> {
+		const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
+			...this.params,
+			issue_number: this.issueData.number,
+		})
+
+		let assigner: string | undefined
+
+		for await (const event of this.octokit.paginate.iterator(options)) {
+			numRequests++
+			const timelineEvents = event.data as Octokit.IssuesListEventsForTimelineResponseItem[]
+			for (const timelineEvent of timelineEvents) {
+				if (
+					timelineEvent.event === 'assigned' &&
+					(timelineEvent as any).assignee.login === assignee
+				) {
+					assigner = timelineEvent.actor.login
+				}
+			}
+		}
+
+		if (!assigner) {
+			throw Error('Expected to find ' + assignee + ' in issue timeline but did not.')
+		}
+
+		return assigner
+	}
+
 	async removeLabel(name: string): Promise<void> {
 		debug(`Removing label ${name} from ${this.issueData.number}`)
 		try {

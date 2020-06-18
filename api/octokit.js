@@ -274,6 +274,27 @@ class OctoKitIssue extends OctoKit {
                 labels: [name],
             });
     }
+    async getAssigner(assignee) {
+        const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
+            ...this.params,
+            issue_number: this.issueData.number,
+        });
+        let assigner;
+        for await (const event of this.octokit.paginate.iterator(options)) {
+            numRequests++;
+            const timelineEvents = event.data;
+            for (const timelineEvent of timelineEvents) {
+                if (timelineEvent.event === 'assigned' &&
+                    timelineEvent.assignee.login === assignee) {
+                    assigner = timelineEvent.actor.login;
+                }
+            }
+        }
+        if (!assigner) {
+            throw Error('Expected to find ' + assignee + ' in issue timeline but did not.');
+        }
+        return assigner;
+    }
     async removeLabel(name) {
         core_1.debug(`Removing label ${name} from ${this.issueData.number}`);
         try {

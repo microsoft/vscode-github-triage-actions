@@ -156,6 +156,22 @@ inputs:
     default: ''
 ```
 
+#### Monitor
+
+This action monitors unaassign events and repors them back to app insights for analysis.
+
+```yaml
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  botName:
+    description: The login of the bot
+    required: true
+  appInsightsKey:
+    description: Key for Azure App Insights to monitor application health
+```
+
 ### Commands
 Respond to commands given in the form of either labels or comments by select groups of people.
 
