@@ -49,8 +49,7 @@ for category in categories:
     model = ClassificationModel(
         'bert',
         'finetuned',
-        num_labels=len(target_names),
-        output_dir=category+'_model'
+        num_labels=len(target_names)
     )
 
     # Train the model

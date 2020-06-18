@@ -110,8 +110,8 @@ for category in categories:
         total_correct = 0
 
         for data_target_name in data_target_names:
+            total_items += int(len([label for label in test_df['labels'] if data_target_names[label] == data_target_name]))
             if target_precision in thresholds[data_target_name]:
-                total_items += thresholds[data_target_name][target_precision]['num_total']
                 total_correct += thresholds[data_target_name][target_precision]['num_correct']
 
         print(
