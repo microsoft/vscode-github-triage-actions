@@ -8,36 +8,7 @@ const octokit_1 = require("../api/octokit");
 const github_1 = require("@actions/github");
 const utils_1 = require("./utils");
 const core_1 = require("@actions/core");
-const appInsights = require("applicationinsights");
-let aiHandle = undefined;
-const aiKey = core_1.getInput('appInsightsKey');
-if (aiKey) {
-    appInsights
-        .setup(aiKey)
-        .setAutoDependencyCorrelation(false)
-        .setAutoCollectRequests(false)
-        .setAutoCollectPerformance(false, false)
-        .setAutoCollectExceptions(false)
-        .setAutoCollectDependencies(false)
-        .setAutoCollectConsole(false)
-        .setUseDiskRetryCaching(false)
-        .start();
-    aiHandle = appInsights.defaultClient;
-}
-exports.trackEvent = async (event, props) => {
-    console.log('tracking event', event, props);
-    if (aiHandle) {
-        aiHandle.trackEvent({
-            name: event,
-            properties: {
-                repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,
-                issue: '' + github_1.context.issue.number,
-                workflow: github_1.context.workflow,
-                ...props,
-            },
-        });
-    }
-};
+const telemetry_1 = require("./telemetry");
 class Action {
     constructor() {
         this.token = utils_1.getRequiredInput('token');
@@ -45,8 +16,8 @@ class Action {
     }
     async trackMetric(telemetry) {
         console.log('tracking metric:', telemetry);
-        if (aiHandle) {
-            aiHandle.trackMetric({
+        if (telemetry_1.aiHandle) {
+            telemetry_1.aiHandle.trackMetric({
                 ...telemetry,
                 properties: {
                     repo: `${github_1.context.repo.owner}/${github_1.context.repo.repo}`,
@@ -142,8 +113,8 @@ Actor: ${details.user}
 ID: ${details.id}
 `;
         await utils_1.logErrorToIssue(rendered, true, this.token);
-        if (aiHandle) {
-            aiHandle.trackException({ exception: error });
+        if (telemetry_1.aiHandle) {
+            telemetry_1.aiHandle.trackException({ exception: error });
         }
         core_1.setFailed(error.message);
     }

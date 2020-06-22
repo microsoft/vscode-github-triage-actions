@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHubIssue, Issue, User } from '../api/api'
-import { trackEvent } from '../common/Action'
+import { trackEvent } from '../common/telemetry'
 
 /* eslint-disable */
 // confusing when eslint formats
@@ -36,7 +36,9 @@ export class Commands {
 		} else {
 			return (
 				command.type === 'comment' &&
-				!!this.action.comment.match(new RegExp(`(/|\\\\)${escapeRegExp(command.name)}(\\s|$)`)) &&
+				!!this.action.comment.match(
+					new RegExp(`(/|\\\\)${escapeRegExp(command.name)}(\\s|$)`, 'i'),
+				) &&
 				((await this.github.hasWriteAccess(this.action.user)) ||
 					command.allowUsers.includes(this.action.user.name) ||
 					(this.action.user.name === issue.author.name && command.allowUsers.includes('@author')))
@@ -48,7 +50,7 @@ export class Commands {
 		if (!(await this.matches(command, issue))) return
 		console.log(`Running command ${command.name}:`)
 
-		await trackEvent('command', { name: command.name })
+		await trackEvent(this.github, 'command', { name: command.name })
 
 		const tasks = []
 

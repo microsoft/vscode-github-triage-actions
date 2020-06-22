@@ -10,6 +10,7 @@ const github_1 = require("@actions/github");
 const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
+const telemetry_1 = require("../../../common/telemetry");
 const token = utils_1.getRequiredInput('token');
 const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
 const debug = !!utils_1.getInput('__debug');
@@ -70,7 +71,7 @@ class ApplyLabels extends Action_1.Action {
                         : []),
                 ]);
             }
-            await Action_1.trackEvent('classification:performed', { assignee, label });
+            await telemetry_1.trackEvent(issue, 'classification:performed', { assignee, label });
         }
     }
 }

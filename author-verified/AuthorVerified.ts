@@ -5,7 +5,7 @@
 
 import { GitHub, GitHubIssue } from '../api/api'
 import { loadLatestRelease } from '../common/utils'
-import { trackEvent } from '../common/Action'
+import { trackEvent } from '../common/telemetry'
 
 export class AuthorVerifiedQueryer {
 	constructor(
@@ -78,7 +78,7 @@ Unable to locate closing commit in issue timeline. You can manually reference a 
 			)
 
 			if (releaseContainsCommit == 'yes') {
-				await trackEvent('author-verified:verifiable')
+				await trackEvent(this.github, 'author-verified:verifiable')
 				await this.github.removeLabel(this.pendingReleaseLabel)
 				await this.github.postComment(
 					this.comment

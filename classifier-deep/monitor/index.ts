@@ -4,8 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OctoKitIssue } from '../../api/octokit'
-import { Action, trackEvent } from '../../common/Action'
+import { Action } from '../../common/Action'
 import { getRequiredInput } from '../../common/utils'
+import { trackEvent } from '../../common/telemetry'
 
 class DeepClassifierMonitor extends Action {
 	id = 'Classifier-Deep/Monitor'
@@ -13,7 +14,7 @@ class DeepClassifierMonitor extends Action {
 	async onUnassigned(issue: OctoKitIssue, assignee: string) {
 		const assigner = await issue.getAssigner(assignee)
 		if (assigner === getRequiredInput('botName')) {
-			await trackEvent('deep-classifier:unassigned', { assignee })
+			await trackEvent(issue, 'deep-classifier:unassigned', { assignee })
 		}
 	}
 }

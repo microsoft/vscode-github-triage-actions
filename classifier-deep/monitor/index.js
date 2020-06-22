@@ -6,6 +6,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Action_1 = require("../../common/Action");
 const utils_1 = require("../../common/utils");
+const telemetry_1 = require("../../common/telemetry");
 class DeepClassifierMonitor extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -14,7 +15,7 @@ class DeepClassifierMonitor extends Action_1.Action {
     async onUnassigned(issue, assignee) {
         const assigner = await issue.getAssigner(assignee);
         if (assigner === utils_1.getRequiredInput('botName')) {
-            await Action_1.trackEvent('deep-classifier:unassigned', { assignee });
+            await telemetry_1.trackEvent(issue, 'deep-classifier:unassigned', { assignee });
         }
     }
 }

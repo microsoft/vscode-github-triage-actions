@@ -6,7 +6,7 @@ import {
 	knownTranslations as _knownTranslations,
 	baseString,
 } from './translation-data.json'
-import { trackEvent } from '../common/Action'
+import { trackEvent } from '../common/telemetry'
 
 const commonNames: { [langCode: string]: string | undefined } = _commonNames
 const knownTranslations: { [langCode: string]: string | undefined } & { en: string } = _knownTranslations
@@ -117,7 +117,7 @@ export class LanguageSpecificLabeler {
 				}
 			}
 
-			await trackEvent('english-please-added', { language })
+			await trackEvent(this.issue, 'english-please-added', { language })
 
 			await this.issue.postComment(
 				`${targetLanguageComment}\n\n---\n${englishComment}\n<!-- translation_requested_comment -->`,

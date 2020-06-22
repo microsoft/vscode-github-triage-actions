@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const Action_1 = require("../common/Action");
+const telemetry_1 = require("../common/telemetry");
 /* eslint-enable */
 class Commands {
     constructor(github, config, action) {
@@ -24,7 +24,7 @@ class Commands {
         }
         else {
             return (command.type === 'comment' &&
-                !!this.action.comment.match(new RegExp(`(/|\\\\)${escapeRegExp(command.name)}(\\s|$)`)) &&
+                !!this.action.comment.match(new RegExp(`(/|\\\\)${escapeRegExp(command.name)}(\\s|$)`, 'i')) &&
                 ((await this.github.hasWriteAccess(this.action.user)) ||
                     command.allowUsers.includes(this.action.user.name) ||
                     (this.action.user.name === issue.author.name && command.allowUsers.includes('@author'))));
@@ -35,7 +35,7 @@ class Commands {
         if (!(await this.matches(command, issue)))
             return;
         console.log(`Running command ${command.name}:`);
-        await Action_1.trackEvent('command', { name: command.name });
+        await telemetry_1.trackEvent(this.github, 'command', { name: command.name });
         const tasks = [];
         if ('comment' in this.action && (command.name === 'label' || command.name === 'assign')) {
             const args = [];

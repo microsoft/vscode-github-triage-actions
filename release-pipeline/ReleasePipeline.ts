@@ -5,7 +5,7 @@
 
 import { GitHub, GitHubIssue } from '../api/api'
 import { loadLatestRelease, Release } from '../common/utils'
-import { trackEvent } from '../common/Action'
+import { trackEvent } from '../common/telemetry'
 
 export class ReleasePipeline {
 	constructor(
@@ -57,7 +57,7 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
 			})
 
 		if (releaseContainsCommit === 'yes') {
-			await trackEvent('insiders-released:released')
+			await trackEvent(issue, 'insiders-released:released')
 			await issue.removeLabel(this.notYetReleasedLabel)
 			await issue.addLabel(this.insidersReleasedLabel)
 		} else if (releaseContainsCommit === 'no') {
@@ -78,9 +78,9 @@ export const enrollIssue = async (issue: GitHubIssue, notYetReleasedLabel: strin
 	const closingHash = (await issue.getClosingInfo())?.hash
 	if (closingHash) {
 		await issue.addLabel(notYetReleasedLabel)
-		await trackEvent('insiders-released:unreleased')
+		await trackEvent(issue, 'insiders-released:unreleased')
 	} else {
-		await trackEvent('insiders-released:skipped')
+		await trackEvent(issue, 'insiders-released:skipped')
 	}
 }
 

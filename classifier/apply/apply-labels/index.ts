@@ -8,7 +8,8 @@ import { join } from 'path'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../../../api/octokit'
 import { getRequiredInput, getInput } from '../../../common/utils'
-import { Action, trackEvent } from '../../../common/Action'
+import { Action } from '../../../common/Action'
+import { trackEvent } from '../../../common/telemetry'
 
 const token = getRequiredInput('token')
 const allowLabels = (getInput('allowLabels') || '').split('|')
@@ -91,7 +92,7 @@ class ApplyLabels extends Action {
 				])
 			}
 
-			await trackEvent('classification:performed', { assignee, label })
+			await trackEvent(issue, 'classification:performed', { assignee, label })
 		}
 	}
 }

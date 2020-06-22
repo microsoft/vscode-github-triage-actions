@@ -7,39 +7,7 @@ import { OctoKit, OctoKitIssue, getNumRequests } from '../api/octokit'
 import { context, GitHub } from '@actions/github'
 import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue } from './utils'
 import { getInput, setFailed } from '@actions/core'
-import * as appInsights from 'applicationinsights'
-
-let aiHandle: appInsights.TelemetryClient | undefined = undefined
-const aiKey = getInput('appInsightsKey')
-if (aiKey) {
-	appInsights
-		.setup(aiKey)
-		.setAutoDependencyCorrelation(false)
-		.setAutoCollectRequests(false)
-		.setAutoCollectPerformance(false, false)
-		.setAutoCollectExceptions(false)
-		.setAutoCollectDependencies(false)
-		.setAutoCollectConsole(false)
-		.setUseDiskRetryCaching(false)
-		.start()
-	aiHandle = appInsights.defaultClient
-}
-
-export const trackEvent = async (event: string, props?: Record<string, string>) => {
-	console.log('tracking event', event, props)
-
-	if (aiHandle) {
-		aiHandle.trackEvent({
-			name: event,
-			properties: {
-				repo: `${context.repo.owner}/${context.repo.repo}`,
-				issue: '' + context.issue.number,
-				workflow: context.workflow,
-				...props,
-			},
-		})
-	}
-}
+import { aiHandle } from './telemetry'
 
 export abstract class Action {
 	abstract id: string
