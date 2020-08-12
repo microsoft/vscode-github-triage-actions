@@ -15,8 +15,9 @@ export const normalizeIssue = (issue: {
 	body: string
 	title: string
 }): { body: string; title: string; issueType: 'bug' | 'feature_request' | 'unknown' } => {
-	const { body, title } = issue
-
+	let { body, title } = issue
+	body = body ?? ''
+	title = title ?? ''
 	const isBug = body.includes('bug_report_template') || /Issue Type:.*Bug.*/.test(body)
 	const isFeatureRequest =
 		body.includes('feature_request_template') || /Issue Type:.*Feature Request.*/.test(body)

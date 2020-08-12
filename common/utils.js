@@ -11,7 +11,9 @@ const octokit_1 = require("../api/octokit");
 exports.getInput = (name) => core.getInput(name) || undefined;
 exports.getRequiredInput = (name) => core.getInput(name, { required: true });
 exports.normalizeIssue = (issue) => {
-    const { body, title } = issue;
+    let { body, title } = issue;
+    body = body !== null && body !== void 0 ? body : '';
+    title = title !== null && title !== void 0 ? title : '';
     const isBug = body.includes('bug_report_template') || /Issue Type:.*Bug.*/.test(body);
     const isFeatureRequest = body.includes('feature_request_template') || /Issue Type:.*Feature Request.*/.test(body);
     const cleanse = (str) => {
