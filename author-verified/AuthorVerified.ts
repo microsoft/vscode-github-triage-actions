@@ -13,6 +13,7 @@ export class AuthorVerifiedQueryer {
 		private comment: string,
 		private pendingReleaseLabel: string,
 		private authorVerificationRequestedLabel: string,
+		private verifiedLabel: string,
 	) {}
 
 	async run(): Promise<void> {
@@ -30,6 +31,7 @@ export class AuthorVerifiedQueryer {
 						this.comment,
 						this.pendingReleaseLabel,
 						this.authorVerificationRequestedLabel,
+						this.verifiedLabel,
 					).run()
 					await new Promise((resolve) => setTimeout(resolve, 1000))
 				} else {
@@ -49,6 +51,7 @@ export class AuthorVerifiedLabeler {
 		private comment: string,
 		private pendingReleaseLabel: string,
 		private authorVerificationRequestedLabel: string,
+		private verifiedLabel: string,
 	) {}
 
 	async run(): Promise<void> {
@@ -58,14 +61,20 @@ export class AuthorVerifiedLabeler {
 			return
 		}
 
-		if (issue.labels.find((label) => label === this.authorVerificationRequestedLabel)) {
+		const comment = async (comment: string) => {
+			if (!issue.labels.includes(this.verifiedLabel)) {
+				await this.github.postComment(comment)
+			}
+		}
+
+		if (issue.labels.includes(this.authorVerificationRequestedLabel)) {
 			const latestRelease = await loadLatestRelease('insider')
 			if (!latestRelease) throw Error('Error loading latest release')
 
 			const closingInfo = (await this.github.getClosingInfo())?.hash
 			if (!closingInfo) {
 				await this.github.removeLabel(this.authorVerificationRequestedLabel)
-				await this.github.postComment(
+				await comment(
 					`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
 Unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`.`,
 				)
@@ -80,7 +89,7 @@ Unable to locate closing commit in issue timeline. You can manually reference a 
 			if (releaseContainsCommit == 'yes') {
 				await trackEvent(this.github, 'author-verified:verifiable')
 				await this.github.removeLabel(this.pendingReleaseLabel)
-				await this.github.postComment(
+				await comment(
 					this.comment
 						.replace('${commit}', latestRelease.version)
 						.replace('${author}', issue.author.name),
@@ -89,7 +98,7 @@ Unable to locate closing commit in issue timeline. You can manually reference a 
 				await this.github.addLabel(this.pendingReleaseLabel)
 			} else {
 				await this.github.removeLabel(this.pendingReleaseLabel)
-				await this.github.postComment(
+				await comment(
 					`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
 	Issue marked as unreleased but unable to locate closing commit in repo history. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`${this.pendingReleaseLabel}\` label.`,
 				)

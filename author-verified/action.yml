@@ -10,6 +10,9 @@ inputs:
   pendingReleaseLabel:
     description: Label for Action to add for issue that authors can verify, but are not yet released
     required: true
+  verifiedLabel:
+    description: Label of issues that are laready verified and shouldn't be further interacted with
+    required: true
   authorVerificationRequestedLabel:
     description: Label added by issue fixer to signal that the author can verify the issue
     required: true

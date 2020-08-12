@@ -7,7 +7,7 @@ import { expect } from 'chai'
 import { Comment, Query } from '../api/api'
 import { Testbed, TestbedIssueConstructorArgs } from '../api/testbed'
 import { NeedsMoreInfoCloser } from './NeedsMoreInfoCloser'
-import { daysAgoToTimestamp } from '../utils/utils'
+import { daysAgoToTimestamp } from '../common/utils'
 
 describe('NeedsMoreInfoCloser', () => {
 	it('creates a reasonable query and closes the issues the query yields, but only if the last comment was a bot or contributor', async () => {

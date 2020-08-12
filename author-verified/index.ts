@@ -10,6 +10,7 @@ import { Action } from '../common/Action'
 
 const requestVerificationComment = getRequiredInput('requestVerificationComment')
 const pendingReleaseLabel = getRequiredInput('pendingReleaseLabel')
+const verifiedLabel = getRequiredInput('verifiedLabel')
 const authorVerificationRequestedLabel = getRequiredInput('authorVerificationRequestedLabel')
 
 class AuthorVerified extends Action {
@@ -21,6 +22,7 @@ class AuthorVerified extends Action {
 			requestVerificationComment,
 			pendingReleaseLabel,
 			authorVerificationRequestedLabel,
+			verifiedLabel,
 		).run()
 	}
 
@@ -30,6 +32,7 @@ class AuthorVerified extends Action {
 			requestVerificationComment,
 			pendingReleaseLabel,
 			authorVerificationRequestedLabel,
+			verifiedLabel,
 		).run()
 	}
 

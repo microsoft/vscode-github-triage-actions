@@ -54,17 +54,23 @@ exports.getRateLimit = async (token) => {
     return usage;
 };
 exports.errorLoggingIssue = (() => {
-    const repo = github_1.context.repo.owner.toLowerCase() + '/' + github_1.context.repo.repo.toLowerCase();
-    if (repo === 'microsoft/vscode' || repo === 'microsoft/vscode-remote-release') {
-        return { repo: 'vscode', owner: 'Microsoft', issue: 93814 };
+    try {
+        const repo = github_1.context.repo.owner.toLowerCase() + '/' + github_1.context.repo.repo.toLowerCase();
+        if (repo === 'microsoft/vscode' || repo === 'microsoft/vscode-remote-release') {
+            return { repo: 'vscode', owner: 'Microsoft', issue: 93814 };
+        }
+        else if (/microsoft\//.test(repo)) {
+            return { repo: 'vscode-internalbacklog', owner: 'Microsoft', issue: 974 };
+        }
+        else if (exports.getInput('errorLogIssueNumber')) {
+            return { ...github_1.context.repo, issue: +exports.getRequiredInput('errorLogIssueNumber') };
+        }
+        else {
+            return undefined;
+        }
     }
-    else if (/microsoft\//.test(repo)) {
-        return { repo: 'vscode-internalbacklog', owner: 'Microsoft', issue: 974 };
-    }
-    else if (exports.getInput('errorLogIssueNumber')) {
-        return { ...github_1.context.repo, issue: +exports.getRequiredInput('errorLogIssueNumber') };
-    }
-    else {
+    catch (e) {
+        console.error(e);
         return undefined;
     }
 })();

@@ -16,13 +16,25 @@ const setup = () =>
 describe('AuthorVerified', () => {
 	it('Does nothing to issues which have not yet been closed', async () => {
 		const testbed = new TestbedIssue({}, { labels: ['verify-plz'] })
-		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'pending-release', 'verify-plz').run()
+		await new AuthorVerifiedLabeler(
+			testbed,
+			'plz verify thx',
+			'pending-release',
+			'verify-plz',
+			'verified',
+		).run()
 		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
 	})
 
 	it('Does nothing to issues which arent labeled', async () => {
 		const testbed = new TestbedIssue({}, { labels: [], issue: { open: false } })
-		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'pending-release', 'verify-plz').run()
+		await new AuthorVerifiedLabeler(
+			testbed,
+			'plz verify thx',
+			'pending-release',
+			'verify-plz',
+			'verified',
+		).run()
 		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
 	})
 
@@ -36,7 +48,13 @@ describe('AuthorVerified', () => {
 				issue: { open: false },
 			},
 		)
-		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'pending-release', 'verify-plz').run()
+		await new AuthorVerifiedLabeler(
+			testbed,
+			'plz verify thx',
+			'pending-release',
+			'verify-plz',
+			'verified',
+		).run()
 
 		expect((await testbed.getIssue()).labels).not.to.contain('verify-plz')
 
@@ -58,7 +76,13 @@ describe('AuthorVerified', () => {
 				issue: { open: false },
 			},
 		)
-		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'pending-release', 'verify-plz').run()
+		await new AuthorVerifiedLabeler(
+			testbed,
+			'plz verify thx',
+			'pending-release',
+			'verify-plz',
+			'verified',
+		).run()
 		expect((await testbed.getIssue()).labels).to.contain('pending-release')
 	})
 
@@ -72,7 +96,13 @@ describe('AuthorVerified', () => {
 				issue: { open: false },
 			},
 		)
-		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'pending-release', 'verify-plz').run()
+		await new AuthorVerifiedLabeler(
+			testbed,
+			'plz verify thx',
+			'pending-release',
+			'verify-plz',
+			'verified',
+		).run()
 		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
 
 		const comments = []
@@ -80,5 +110,31 @@ describe('AuthorVerified', () => {
 			comments.push(...page)
 		}
 		expect(comments[0].body).to.equal('plz verify thx')
+	})
+
+	it('Does not add comment to issues which are verified already', async () => {
+		setup()
+		const testbed = new TestbedIssue(
+			{ releasedCommits: ['commit'] },
+			{
+				labels: ['verify-plz', 'pending-release', 'verified'],
+				closingCommit: { hash: 'commit', timestamp: 0 },
+				issue: { open: false },
+			},
+		)
+		await new AuthorVerifiedLabeler(
+			testbed,
+			'plz verify thx',
+			'pending-release',
+			'verify-plz',
+			'verified',
+		).run()
+		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
+
+		const comments = []
+		for await (const page of testbed.getComments()) {
+			comments.push(...page)
+		}
+		expect(comments[0]?.body).not.to.equal('plz verify thx')
 	})
 })
