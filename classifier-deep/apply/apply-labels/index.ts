@@ -16,6 +16,7 @@ const allowLabels = (getInput('allowLabels') || '').split('|')
 const debug = !!getInput('__debug')
 
 type ClassifierConfig = {
+	vacation?: string[]
 	labels?: {
 		[area: string]: { accuracy?: number; assign?: [string] }
 	}
@@ -39,6 +40,14 @@ class ApplyLabels extends Action {
 
 		for (const labeling of labelings) {
 			const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
+			const addAssignee = async (assignee: string) => {
+				if (config.vacation?.includes(assignee)) {
+					console.log('not assigning ', assignee, 'becuase they are on vacation')
+				} else {
+					await issue.addAssignee(assignee)
+				}
+			}
+
 			const issueData = await issue.getIssue()
 			if (
 				!debug &&
@@ -75,7 +84,7 @@ class ApplyLabels extends Action {
 					console.log('has assignee')
 					const assigneeConfig = config.assignees?.[category]
 					console.log({ assigneeConfig })
-					await issue.addAssignee(category)
+					await addAssignee(category)
 					await trackEvent(issue, 'classification:performed', {
 						assignee: labeling.assignee.category,
 					})
@@ -105,7 +114,7 @@ class ApplyLabels extends Action {
 					const labelConfig = config.labels?.[category]
 					await Promise.all<any>([
 						...(labelConfig?.assign
-							? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
+							? labelConfig.assign.map((assignee) => addAssignee(assignee))
 							: []),
 					])
 

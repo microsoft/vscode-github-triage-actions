@@ -26,6 +26,15 @@ class ApplyLabels extends Action_1.Action {
         console.log('labelings:', labelings);
         for (const labeling of labelings) {
             const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
+            const addAssignee = async (assignee) => {
+                var _a;
+                if ((_a = config.vacation) === null || _a === void 0 ? void 0 : _a.includes(assignee)) {
+                    console.log('not assigning ', assignee, 'becuase they are on vacation');
+                }
+                else {
+                    await issue.addAssignee(assignee);
+                }
+            };
             const issueData = await issue.getIssue();
             if (!debug &&
                 (issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))) {
@@ -53,7 +62,7 @@ class ApplyLabels extends Action_1.Action {
                     console.log('has assignee');
                     const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[category];
                     console.log({ assigneeConfig });
-                    await issue.addAssignee(category);
+                    await addAssignee(category);
                     await telemetry_1.trackEvent(issue, 'classification:performed', {
                         assignee: labeling.assignee.category,
                     });
@@ -75,7 +84,7 @@ class ApplyLabels extends Action_1.Action {
                     console.log(`adding label ${category} to issue ${issueData.number}`);
                     const labelConfig = (_b = config.labels) === null || _b === void 0 ? void 0 : _b[category];
                     await Promise.all([
-                        ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => issue.addAssignee(assignee))
+                        ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => addAssignee(assignee))
                             : []),
                     ]);
                     await telemetry_1.trackEvent(issue, 'classification:performed', {

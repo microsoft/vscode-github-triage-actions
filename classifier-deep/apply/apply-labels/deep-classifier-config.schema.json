@@ -6,6 +6,12 @@
 		"$schema": {
 			"type": "string"
 		},
+		"vacation": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
 		"labels": {
 			"additionalProperties": {
 				"type": "object",
