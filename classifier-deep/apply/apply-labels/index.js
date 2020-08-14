@@ -26,18 +26,14 @@ class ApplyLabels extends Action_1.Action {
         console.log('labelings:', labelings);
         for (const labeling of labelings) {
             const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
-            let hasAssigned = false;
+            const potentialAssignees = [];
             const addAssignee = async (assignee) => {
                 var _a;
                 if ((_a = config.vacation) === null || _a === void 0 ? void 0 : _a.includes(assignee)) {
                     console.log('not assigning ', assignee, 'becuase they are on vacation');
                 }
-                else if (!hasAssigned) {
-                    await issue.addAssignee(assignee);
-                    hasAssigned = true;
-                }
                 else {
-                    console.log('not assigning ', assignee, 'becuase someone has already been assigned');
+                    potentialAssignees.push(assignee);
                 }
             };
             const issueData = await issue.getIssue();
@@ -96,6 +92,10 @@ class ApplyLabels extends Action_1.Action {
                         assignee: labeling.assignee.category,
                     });
                 }
+            }
+            if (potentialAssignees.length) {
+                const pick = potentialAssignees[Math.floor(Math.random() * potentialAssignees.length)];
+                await issue.addAssignee(pick);
             }
         }
     }

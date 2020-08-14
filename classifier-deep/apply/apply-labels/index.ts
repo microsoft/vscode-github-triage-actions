@@ -40,15 +40,13 @@ class ApplyLabels extends Action {
 
 		for (const labeling of labelings) {
 			const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
-			let hasAssigned = false
+
+			const potentialAssignees: string[] = []
 			const addAssignee = async (assignee: string) => {
 				if (config.vacation?.includes(assignee)) {
 					console.log('not assigning ', assignee, 'becuase they are on vacation')
-				} else if (!hasAssigned) {
-					await issue.addAssignee(assignee)
-					hasAssigned = true
 				} else {
-					console.log('not assigning ', assignee, 'becuase someone has already been assigned')
+					potentialAssignees.push(assignee)
 				}
 			}
 
@@ -126,6 +124,11 @@ class ApplyLabels extends Action {
 						assignee: labeling.assignee.category,
 					})
 				}
+			}
+
+			if (potentialAssignees.length) {
+				const pick = potentialAssignees[Math.floor(Math.random() * potentialAssignees.length)]
+				await issue.addAssignee(pick)
 			}
 		}
 	}
