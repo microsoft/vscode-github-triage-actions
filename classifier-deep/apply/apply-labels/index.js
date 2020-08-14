@@ -26,13 +26,18 @@ class ApplyLabels extends Action_1.Action {
         console.log('labelings:', labelings);
         for (const labeling of labelings) {
             const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
+            let hasAssigned = false;
             const addAssignee = async (assignee) => {
                 var _a;
                 if ((_a = config.vacation) === null || _a === void 0 ? void 0 : _a.includes(assignee)) {
                     console.log('not assigning ', assignee, 'becuase they are on vacation');
                 }
-                else {
+                else if (!hasAssigned) {
                     await issue.addAssignee(assignee);
+                    hasAssigned = true;
+                }
+                else {
+                    console.log('not assigning ', assignee, 'becuase someone has already been assigned');
                 }
             };
             const issueData = await issue.getIssue();
@@ -47,28 +52,6 @@ class ApplyLabels extends Action_1.Action {
                 number: labeling.number,
             });
             {
-                const { category, confidence, confident } = labeling.assignee;
-                if (debug) {
-                    if (confident) {
-                        if (!(await github.repoHasLabel(category))) {
-                            console.log(`creating assignee label`);
-                            await github.createLabel(category, 'ffa5a1', '');
-                        }
-                        await issue.addLabel(category);
-                    }
-                    await issue.postComment(`confidence for assignee ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold`);
-                }
-                if (confident) {
-                    console.log('has assignee');
-                    const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[category];
-                    console.log({ assigneeConfig });
-                    await addAssignee(category);
-                    await telemetry_1.trackEvent(issue, 'classification:performed', {
-                        assignee: labeling.assignee.category,
-                    });
-                }
-            }
-            {
                 const { category, confidence, confident } = labeling.area;
                 if (debug) {
                     if (confident) {
@@ -82,13 +65,35 @@ class ApplyLabels extends Action_1.Action {
                 }
                 if (confident) {
                     console.log(`adding label ${category} to issue ${issueData.number}`);
-                    const labelConfig = (_b = config.labels) === null || _b === void 0 ? void 0 : _b[category];
+                    const labelConfig = (_a = config.labels) === null || _a === void 0 ? void 0 : _a[category];
                     await Promise.all([
                         ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => addAssignee(assignee))
                             : []),
                     ]);
                     await telemetry_1.trackEvent(issue, 'classification:performed', {
                         label: labeling.area.category,
+                    });
+                }
+            }
+            {
+                const { category, confidence, confident } = labeling.assignee;
+                if (debug) {
+                    if (confident) {
+                        if (!(await github.repoHasLabel(category))) {
+                            console.log(`creating assignee label`);
+                            await github.createLabel(category, 'ffa5a1', '');
+                        }
+                        await issue.addLabel(category);
+                    }
+                    await issue.postComment(`confidence for assignee ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold`);
+                }
+                if (confident) {
+                    console.log('has assignee');
+                    const assigneeConfig = (_b = config.assignees) === null || _b === void 0 ? void 0 : _b[category];
+                    console.log({ assigneeConfig });
+                    await addAssignee(category);
+                    await telemetry_1.trackEvent(issue, 'classification:performed', {
+                        assignee: labeling.assignee.category,
                     });
                 }
             }

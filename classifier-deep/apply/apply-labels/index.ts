@@ -40,11 +40,15 @@ class ApplyLabels extends Action {
 
 		for (const labeling of labelings) {
 			const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
+			let hasAssigned = false
 			const addAssignee = async (assignee: string) => {
 				if (config.vacation?.includes(assignee)) {
 					console.log('not assigning ', assignee, 'becuase they are on vacation')
-				} else {
+				} else if (!hasAssigned) {
 					await issue.addAssignee(assignee)
+					hasAssigned = true
+				} else {
+					console.log('not assigning ', assignee, 'becuase someone has already been assigned')
 				}
 			}
 
@@ -62,34 +66,6 @@ class ApplyLabels extends Action {
 				area: labeling.area,
 				number: labeling.number,
 			})
-
-			{
-				const { category, confidence, confident } = labeling.assignee
-				if (debug) {
-					if (confident) {
-						if (!(await github.repoHasLabel(category))) {
-							console.log(`creating assignee label`)
-							await github.createLabel(category, 'ffa5a1', '')
-						}
-						await issue.addLabel(category)
-					}
-					await issue.postComment(
-						`confidence for assignee ${category}: ${confidence}. ${
-							confident ? 'does' : 'does not'
-						} meet threshold`,
-					)
-				}
-
-				if (confident) {
-					console.log('has assignee')
-					const assigneeConfig = config.assignees?.[category]
-					console.log({ assigneeConfig })
-					await addAssignee(category)
-					await trackEvent(issue, 'classification:performed', {
-						assignee: labeling.assignee.category,
-					})
-				}
-			}
 
 			{
 				const { category, confidence, confident } = labeling.area
@@ -120,6 +96,34 @@ class ApplyLabels extends Action {
 
 					await trackEvent(issue, 'classification:performed', {
 						label: labeling.area.category,
+					})
+				}
+			}
+
+			{
+				const { category, confidence, confident } = labeling.assignee
+				if (debug) {
+					if (confident) {
+						if (!(await github.repoHasLabel(category))) {
+							console.log(`creating assignee label`)
+							await github.createLabel(category, 'ffa5a1', '')
+						}
+						await issue.addLabel(category)
+					}
+					await issue.postComment(
+						`confidence for assignee ${category}: ${confidence}. ${
+							confident ? 'does' : 'does not'
+						} meet threshold`,
+					)
+				}
+
+				if (confident) {
+					console.log('has assignee')
+					const assigneeConfig = config.assignees?.[category]
+					console.log({ assigneeConfig })
+					await addAssignee(category)
+					await trackEvent(issue, 'classification:performed', {
+						assignee: labeling.assignee.category,
 					})
 				}
 			}
