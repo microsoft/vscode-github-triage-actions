@@ -127,8 +127,7 @@ class ApplyLabels extends Action {
 			}
 
 			if (potentialAssignees.length) {
-				const pick = potentialAssignees[Math.floor(Math.random() * potentialAssignees.length)]
-				await issue.addAssignee(pick)
+				await issue.addAssignee(potentialAssignees[0])
 			}
 		}
 	}
