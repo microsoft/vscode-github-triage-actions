@@ -385,6 +385,19 @@ inputs:
     required: true
 ```
 
+### Topic Subscribe
+Subscribe a set of users to an issue when it gets a particular label.
+
+```yml
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  config-path:
+    description: Name of .json file (no extension) in .github/ directory of repo holding configuration for this action
+    required: true
+```
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
