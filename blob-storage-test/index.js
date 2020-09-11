@@ -7,6 +7,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../common/utils");
 const blobStorage_1 = require("../classifier/blobStorage");
 const Action_1 = require("../common/Action");
+const logger_1 = require("@azure/logger");
+logger_1.setLogLevel('info');
 const storageKey = utils_1.getRequiredInput('storageKey');
 class BlobTest extends Action_1.Action {
     constructor() {
