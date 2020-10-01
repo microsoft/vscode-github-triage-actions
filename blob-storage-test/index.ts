@@ -8,9 +8,6 @@ import { uploadBlobText } from '../classifier/blobStorage'
 import { Action } from '../common/Action'
 import { OctoKitIssue } from '../api/octokit'
 
-// import { setLogLevel } from '@azure/logger'
-// setLogLevel('info')
-
 const storageKey = getRequiredInput('storageKey')
 
 class BlobTest extends Action {

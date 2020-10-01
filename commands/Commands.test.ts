@@ -45,6 +45,20 @@ describe('Commands', () => {
 			expect((await testbed.getIssue()).open).to.equal(false)
 		})
 
+		it('Close (allowed all third parties)', async () => {
+			const testbed = new TestbedIssue()
+			const commands: Command[] = [
+				{ type: 'comment', action: 'close', allowUsers: ['*'], name: 'hello' },
+			]
+
+			expect((await testbed.getIssue()).open).to.equal(true)
+			await new Commands(testbed, commands, {
+				comment: '/hello',
+				user: { name: 'Rando' },
+			}).run()
+			expect((await testbed.getIssue()).open).to.equal(false)
+		})
+
 		it('Close (allowed author)', async () => {
 			const testbed = new TestbedIssue()
 			const commands: Command[] = [

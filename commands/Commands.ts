@@ -41,6 +41,7 @@ export class Commands {
 				) &&
 				((await this.github.hasWriteAccess(this.action.user)) ||
 					command.allowUsers.includes(this.action.user.name) ||
+					command.allowUsers.includes('*') ||
 					(this.action.user.name === issue.author.name && command.allowUsers.includes('@author')))
 			)
 		}

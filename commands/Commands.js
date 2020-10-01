@@ -27,6 +27,7 @@ class Commands {
                 !!this.action.comment.match(new RegExp(`(/|\\\\)${escapeRegExp(command.name)}(\\s|$)`, 'i')) &&
                 ((await this.github.hasWriteAccess(this.action.user)) ||
                     command.allowUsers.includes(this.action.user.name) ||
+                    command.allowUsers.includes('*') ||
                     (this.action.user.name === issue.author.name && command.allowUsers.includes('@author'))));
         }
     }
