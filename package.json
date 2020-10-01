@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/microsoft/vscode-github-triage-actions#readme",
   "dependencies": {
-    "@actions/core": "^1.2.3",
+    "@actions/core": "^1.2.6",
     "@actions/github": "^2.1.1",
     "applicationinsights": "^1.7.6",
     "axios": "^0.19.2"
