@@ -53,9 +53,12 @@ def make_classifier(category, config, default_target_accuracy):
         threshold = thresholds[prediction_name][target_accuracy]['cutoff']
         print('score', score, 'threshold', threshold)
 
-        confidence_estimate = max([float(accuracy)
+        confidence_estimate_list = [float(accuracy)
                                 for accuracy in available_accuracies
-                                if float(score) >= float(thresholds[prediction_name][accuracy]['cutoff'])])
+                                if float(score) >= float(thresholds[prediction_name][accuracy]['cutoff'])]
+        if len(confidence_estimate_list) == 0:
+             return {'confident': False, 'category': prediction_name, 'confidence': 0}
+        confidence_estimate = max(confidence_estimate_list)
 
         if score < threshold:
             print('Below threshold:', prediction_name, score)
