@@ -319,7 +319,7 @@ inputs:
 ```
 
 ### Needs More Info Closer
-Close issues that are marked `a needs more info` label and were last interacted with by a contributor or bot, after some time has passed.
+Close issues that are marked a `needs more info` label and were last interacted with by a contributor or bot, after some time has passed.
 
 Can also ping the assignee if the last comment was by someonne other than a team member or bot.
 
