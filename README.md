@@ -28,9 +28,9 @@ The `api` directory contains `api.ts`, which provides an interface for interacti
 The `utils` directory contains various commands to help with interacting with GitHub/other services, which do not have a corresponding mocked version. Thus when using these in code that will be unit tested, it is a good idea to manually mock the calls, using `nock` or similar.
 
 The rest of the directories contain three files:
-- `index.ts`: This file is the entry point for actions. It should be the only file in the directory to use Action-specific code, such as any imports from `@actions/`. In most cases it should simply gatehr any required config data, create an `octokit` instance (see `api` section above) and invoke the command. By keeping Action specific code seprate from the rest of the logic, it is easy to extend these commands to run via Apps, or even via webhooks to Azure Funtions or similar.
+- `index.ts`: This file is the entry point for actions. It should be the only file in the directory to use Action-specific code, such as any imports from `@actions/`. In most cases it should simply gather any required config data, create an `octokit` instance (see `api` section above) and invoke the command. By keeping Action specific code seprate from the rest of the logic, it is easy to extend these commands to run via Apps, or even via webhooks to Azure Funtions or similar.
 - `Command.ts`: This file contains the core logic for the command. The commands should operate on the Github interface in `api`, so that they may be run against either GitHub proper or the Testbed.
-- `Command.test.ts`: This file contains tests for the command. Tests should invoke the command using a `Testbed` instance, and preferably verify the command works by querying through the `Github` interface, though there are some convenience commands implemened directly on `Testbed` for ease of testing.
+- `Command.test.ts`: This file contains tests for the command. Tests should invoke the command using a `Testbed` instance, and preferably verify the command works by querying through the `Github` interface, though there are some convenience commands implemented directly on `Testbed` for ease of testing.
 - `cpi.ts`: This is not present in every directory, but when present allows for running the action via command line, by running `node action/cli.js` with appropriate flags.
 
 ## Action Descriptions
@@ -56,7 +56,7 @@ inputs:
 
 ### Deep Classifier
 
-This classifier generates assignees and lables using a deep-learning model stored in Azure Blob storage and generated using an Azure GPU instance. The model is created with help from [simpletransformers](https://simpletransformers.ai/) and [huggingface/transformers](https://github.com/huggingface/transformers).
+This classifier generates assignees and labels using a deep-learning model stored in Azure Blob storage and generated using an Azure GPU instance. The model is created with help from [simpletransformers](https://simpletransformers.ai/) and [huggingface/transformers](https://github.com/huggingface/transformers).
 
 This setup is more involved and detailed in the [Action's README](/classifier-deep/README.md).
 
@@ -158,7 +158,7 @@ inputs:
 
 #### Monitor
 
-This action monitors unaassign events and repors them back to app insights for analysis.
+This action monitors unassign events and reports them back to app insights for analysis.
 
 ```yaml
 inputs:
@@ -319,9 +319,9 @@ inputs:
 ```
 
 ### Needs More Info Closer
-Close issues that are marked a needs more info label and were last interacted with by a contributor or bot, after some time has passed.
+Close issues that are marked `a needs more info` label and were last interacted with by a contributor or bot, after some time has passed.
 
-Can aslo ping the assignee if the last comment was by someonne other than a team member or bot.
+Can also ping the assignee if the last comment was by someonne other than a team member or bot.
 
 ```yml
 inputs:
