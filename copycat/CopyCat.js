@@ -12,7 +12,7 @@ class CopyCat {
     }
     async run() {
         const issue = await this.github.getIssue();
-        console.log(`Mirroring issue \`${issue.title}\` to ${this.owner}/${this.repo}`);
+        console.log(`Mirroring issue \`${issue.number}\` to ${this.owner}/${this.repo}`);
         await this.github.createIssue(this.owner, this.repo, issue.title, issue.body.replace(/@|#|issues/g, '-').replace(/\/github.com\//g, '/github-com/'));
     }
 }
