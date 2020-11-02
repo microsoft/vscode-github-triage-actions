@@ -16,11 +16,11 @@ export abstract class Action {
 	private token = getRequiredInput('token')
 
 	constructor() {
+		console.log('::stop-commands::' + Math.random().toString(36).substring(7))
 		this.username = new GitHub(this.token).users.getAuthenticated().then((v) => v.data.name)
 	}
 
 	public async trackMetric(telemetry: { name: string; value: number }) {
-		console.log('tracking metric:', telemetry)
 		if (aiHandle) {
 			aiHandle.trackMetric({
 				...telemetry,

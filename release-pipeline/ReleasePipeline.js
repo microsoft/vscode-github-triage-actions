@@ -25,8 +25,7 @@ class ReleasePipeline {
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                 }
                 else {
-                    console.log('Query returned an invalid issue:' +
-                        JSON.stringify({ ...issueData, body: 'stripped' }));
+                    console.log('Query returned an invalid issue:' + issueData.number);
                 }
             }
         }

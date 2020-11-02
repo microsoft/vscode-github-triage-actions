@@ -20,10 +20,9 @@ class ApplyLabels extends Action_1.Action {
         this.id = 'Classifier-Deep/Apply/ApplyLabels';
     }
     async onTriggered(github) {
-        var _a, _b;
+        var _a;
         const config = await github.readConfig(utils_1.getRequiredInput('configPath'));
         const labelings = JSON.parse(fs_1.readFileSync(path_1.join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
-        console.log('labelings:', labelings);
         for (const labeling of labelings) {
             const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
             const potentialAssignees = [];
@@ -85,8 +84,6 @@ class ApplyLabels extends Action_1.Action {
                 }
                 if (confident) {
                     console.log('has assignee');
-                    const assigneeConfig = (_b = config.assignees) === null || _b === void 0 ? void 0 : _b[category];
-                    console.log({ assigneeConfig });
                     await addAssignee(category);
                     await telemetry_1.trackEvent(issue, 'classification:performed', {
                         assignee: labeling.assignee.category,

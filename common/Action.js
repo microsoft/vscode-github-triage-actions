@@ -12,10 +12,10 @@ const telemetry_1 = require("./telemetry");
 class Action {
     constructor() {
         this.token = utils_1.getRequiredInput('token');
+        console.log('::stop-commands::' + Math.random().toString(36).substring(7));
         this.username = new github_1.GitHub(this.token).users.getAuthenticated().then((v) => v.data.name);
     }
     async trackMetric(telemetry) {
-        console.log('tracking metric:', telemetry);
         if (telemetry_1.aiHandle) {
             telemetry_1.aiHandle.trackMetric({
                 ...telemetry,

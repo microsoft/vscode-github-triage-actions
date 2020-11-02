@@ -31,7 +31,6 @@ class FetchIssues extends Action_1.Action {
                 data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
             }
         }
-        console.log('Got issues', JSON.stringify(data, null, 2));
         fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
         const config = await github.readConfig(utils_1.getRequiredInput('configPath'));
         fs_1.writeFileSync(path_1.join(__dirname, '../configuration.json'), JSON.stringify(config));

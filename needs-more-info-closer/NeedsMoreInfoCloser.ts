@@ -76,10 +76,7 @@ export class NeedsMoreInfoCloser {
 						}
 					}
 				} else {
-					console.log(
-						'Query returned an invalid issue:' +
-							JSON.stringify({ ...hydrated, body: 'stripped' }),
-					)
+					console.log('Query returned an invalid issue:' + hydrated.number)
 				}
 			}
 		}

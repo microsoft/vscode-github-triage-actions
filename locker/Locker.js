@@ -33,8 +33,7 @@ class Locker {
                         console.log(`Issue ${hydrated.number} is already locked. Ignoring`);
                     }
                     else {
-                        console.log('Query returned an invalid issue:' +
-                            JSON.stringify({ ...hydrated, body: 'stripped' }));
+                        console.log('Query returned an invalid issue:' + hydrated.number);
                     }
                 }
             }));

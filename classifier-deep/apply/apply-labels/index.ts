@@ -36,7 +36,6 @@ class ApplyLabels extends Action {
 		const labelings: LabelingsFile = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 		)
-		console.log('labelings:', labelings)
 
 		for (const labeling of labelings) {
 			const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
@@ -117,8 +116,6 @@ class ApplyLabels extends Action {
 
 				if (confident) {
 					console.log('has assignee')
-					const assigneeConfig = config.assignees?.[category]
-					console.log({ assigneeConfig })
 					await addAssignee(category)
 					await trackEvent(issue, 'classification:performed', {
 						assignee: labeling.assignee.category,

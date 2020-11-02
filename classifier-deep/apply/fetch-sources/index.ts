@@ -34,7 +34,6 @@ class FetchIssues extends Action {
 			}
 		}
 
-		console.log('Got issues', JSON.stringify(data, null, 2))
 		writeFileSync(join(__dirname, '../issue_data.json'), JSON.stringify(data))
 
 		const config = await github.readConfig(getRequiredInput('configPath'))

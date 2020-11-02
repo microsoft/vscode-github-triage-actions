@@ -41,7 +41,6 @@ export class TestPlanItemValidator {
 
 		const errors = this.getErrors(issue)
 		if (errors) {
-			console.log('Found errors. Commenting. ' + errors)
 			tasks.push(this.github.postComment(`${commentTag}\n${this.comment}\n\n**Error:** ${errors}`))
 			tasks.push(this.github.addLabel(this.invalidLabel))
 			tasks.push(this.github.removeLabel(this.label))

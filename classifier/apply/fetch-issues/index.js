@@ -29,7 +29,6 @@ class FetchIssues extends Action_1.Action {
                 data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
             }
         }
-        console.log('Got issues', JSON.stringify(data, null, 2));
         fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
         await blobStorage_1.downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey);
         await blobStorage_1.downloadBlobFile('area-model-config.json', blobContainer, blobStorageKey);

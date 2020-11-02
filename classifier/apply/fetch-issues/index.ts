@@ -32,7 +32,6 @@ class FetchIssues extends Action {
 			}
 		}
 
-		console.log('Got issues', JSON.stringify(data, null, 2))
 		writeFileSync(join(__dirname, '../issue_data.json'), JSON.stringify(data))
 
 		await downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey)
