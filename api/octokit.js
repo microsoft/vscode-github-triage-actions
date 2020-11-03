@@ -4,7 +4,6 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const child_process_1 = require("child_process");
 const utils_1 = require("../common/utils");
@@ -54,7 +53,7 @@ class OctoKit {
         }
     }
     async createIssue(owner, repo, title, body) {
-        core_1.debug(`Creating issue \`${title}\` on ${owner}/${repo}`);
+        utils_1.safeLog(`Creating issue \`${title}\` on ${owner}/${repo}`);
         if (!this.options.readonly)
             await this.octokit.issues.create({ owner, repo, title, body });
     }
@@ -79,10 +78,10 @@ class OctoKit {
     }
     async hasWriteAccess(user) {
         if (user.name in this.writeAccessCache) {
-            core_1.debug('Got permissions from cache for ' + user);
+            utils_1.safeLog('Got permissions from cache for ' + user);
             return this.writeAccessCache[user.name];
         }
-        core_1.debug('Fetching permissions for ' + user);
+        utils_1.safeLog('Fetching permissions for ' + user);
         const permissions = (await this.octokit.repos.getCollaboratorPermissionLevel({
             ...this.params,
             username: user.name,
@@ -102,14 +101,14 @@ class OctoKit {
         }
     }
     async createLabel(name, color, description) {
-        core_1.debug('Creating label ' + name);
+        utils_1.safeLog('Creating label ' + name);
         if (!this.options.readonly)
             await this.octokit.issues.createLabel({ ...this.params, color, description, name });
         else
             this.mockLabels.add(name);
     }
     async deleteLabel(name) {
-        core_1.debug('Deleting label ' + name);
+        utils_1.safeLog('Deleting label ' + name);
         try {
             if (!this.options.readonly)
                 await this.octokit.issues.deleteLabel({ ...this.params, name });
@@ -122,7 +121,7 @@ class OctoKit {
         }
     }
     async readConfig(path) {
-        core_1.debug('Reading config at ' + path);
+        utils_1.safeLog('Reading config at ' + path);
         const repoPath = `.github/${path}.json`;
         try {
             const data = (await this.octokit.repos.getContents({ ...this.params, path: repoPath })).data;
@@ -157,7 +156,7 @@ class OctoKit {
         }));
     }
     async dispatch(title) {
-        core_1.debug('Dispatching ' + title);
+        utils_1.safeLog('Dispatching ' + title);
         if (!this.options.readonly)
             await this.octokit.repos.createDispatchEvent({ ...this.params, event_type: title });
     }
@@ -171,7 +170,7 @@ class OctoKitIssue extends OctoKit {
         utils_1.safeLog('running bot on issue', issueData.number);
     }
     async addAssignee(assignee) {
-        core_1.debug('Adding assignee ' + assignee + ' to ' + this.issueData.number);
+        utils_1.safeLog('Adding assignee ' + assignee + ' to ' + this.issueData.number);
         if (!this.options.readonly) {
             await this.octokit.issues.addAssignees({
                 ...this.params,
@@ -181,7 +180,7 @@ class OctoKitIssue extends OctoKit {
         }
     }
     async removeAssignee(assignee) {
-        core_1.debug('Removing assignee ' + assignee + ' to ' + this.issueData.number);
+        utils_1.safeLog('Removing assignee ' + assignee + ' to ' + this.issueData.number);
         if (!this.options.readonly) {
             await this.octokit.issues.removeAssignees({
                 ...this.params,
@@ -191,7 +190,7 @@ class OctoKitIssue extends OctoKit {
         }
     }
     async closeIssue() {
-        core_1.debug('Closing issue ' + this.issueData.number);
+        utils_1.safeLog('Closing issue ' + this.issueData.number);
         if (!this.options.readonly)
             await this.octokit.issues.update({
                 ...this.params,
@@ -200,13 +199,13 @@ class OctoKitIssue extends OctoKit {
             });
     }
     async lockIssue() {
-        core_1.debug('Locking issue ' + this.issueData.number);
+        utils_1.safeLog('Locking issue ' + this.issueData.number);
         if (!this.options.readonly)
             await this.octokit.issues.lock({ ...this.params, issue_number: this.issueData.number });
     }
     async getIssue() {
         if (isIssue(this.issueData)) {
-            core_1.debug('Got issue data from query result ' + this.issueData.number);
+            utils_1.safeLog('Got issue data from query result ' + this.issueData.number);
             return this.issueData;
         }
         utils_1.safeLog('Fetching issue ' + this.issueData.number);
@@ -218,7 +217,7 @@ class OctoKitIssue extends OctoKit {
         return (this.issueData = this.octokitIssueToIssue(issue));
     }
     async postComment(body) {
-        core_1.debug(`Posting comment on ${this.issueData.number}`);
+        utils_1.safeLog(`Posting comment on ${this.issueData.number}`);
         if (!this.options.readonly)
             await this.octokit.issues.createComment({
                 ...this.params,
@@ -227,7 +226,7 @@ class OctoKitIssue extends OctoKit {
             });
     }
     async deleteComment(id) {
-        core_1.debug(`Deleting comment ${id} on ${this.issueData.number}`);
+        utils_1.safeLog(`Deleting comment ${id} on ${this.issueData.number}`);
         if (!this.options.readonly)
             await this.octokit.issues.deleteComment({
                 owner: this.params.owner,
@@ -236,7 +235,7 @@ class OctoKitIssue extends OctoKit {
             });
     }
     async setMilestone(milestoneId) {
-        core_1.debug(`Setting milestone for ${this.issueData.number} to ${milestoneId}`);
+        utils_1.safeLog(`Setting milestone for ${this.issueData.number} to ${milestoneId}`);
         if (!this.options.readonly)
             await this.octokit.issues.update({
                 ...this.params,
@@ -245,7 +244,7 @@ class OctoKitIssue extends OctoKit {
             });
     }
     async *getComments(last) {
-        core_1.debug('Fetching comments for ' + this.issueData.number);
+        utils_1.safeLog('Fetching comments for ' + this.issueData.number);
         const response = this.octokit.paginate.iterator(this.octokit.issues.listComments.endpoint.merge({
             ...this.params,
             issue_number: this.issueData.number,
@@ -263,7 +262,7 @@ class OctoKitIssue extends OctoKit {
         }
     }
     async addLabel(name) {
-        core_1.debug(`Adding label ${name} to ${this.issueData.number}`);
+        utils_1.safeLog(`Adding label ${name} to ${this.issueData.number}`);
         if (!(await this.repoHasLabel(name))) {
             throw Error(`Action could not execute becuase label ${name} is not defined.`);
         }
@@ -296,7 +295,7 @@ class OctoKitIssue extends OctoKit {
         return assigner;
     }
     async removeLabel(name) {
-        core_1.debug(`Removing label ${name} from ${this.issueData.number}`);
+        utils_1.safeLog(`Removing label ${name} from ${this.issueData.number}`);
         try {
             if (!this.options.readonly)
                 await this.octokit.issues.removeLabel({

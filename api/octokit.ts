@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { debug } from '@actions/core'
 import { GitHub as GitHubAPI } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import { exec } from 'child_process'
@@ -66,7 +65,7 @@ export class OctoKit implements GitHub {
 	}
 
 	async createIssue(owner: string, repo: string, title: string, body: string): Promise<void> {
-		debug(`Creating issue \`${title}\` on ${owner}/${repo}`)
+		safeLog(`Creating issue \`${title}\` on ${owner}/${repo}`)
 		if (!this.options.readonly) await this.octokit.issues.create({ owner, repo, title, body })
 	}
 
@@ -94,10 +93,10 @@ export class OctoKit implements GitHub {
 	private writeAccessCache: Record<string, boolean> = {}
 	async hasWriteAccess(user: User): Promise<boolean> {
 		if (user.name in this.writeAccessCache) {
-			debug('Got permissions from cache for ' + user)
+			safeLog('Got permissions from cache for ' + user)
 			return this.writeAccessCache[user.name]
 		}
-		debug('Fetching permissions for ' + user)
+		safeLog('Fetching permissions for ' + user)
 		const permissions = (
 			await this.octokit.repos.getCollaboratorPermissionLevel({
 				...this.params,
@@ -120,14 +119,14 @@ export class OctoKit implements GitHub {
 	}
 
 	async createLabel(name: string, color: string, description: string): Promise<void> {
-		debug('Creating label ' + name)
+		safeLog('Creating label ' + name)
 		if (!this.options.readonly)
 			await this.octokit.issues.createLabel({ ...this.params, color, description, name })
 		else this.mockLabels.add(name)
 	}
 
 	async deleteLabel(name: string): Promise<void> {
-		debug('Deleting label ' + name)
+		safeLog('Deleting label ' + name)
 		try {
 			if (!this.options.readonly) await this.octokit.issues.deleteLabel({ ...this.params, name })
 		} catch (err) {
@@ -139,7 +138,7 @@ export class OctoKit implements GitHub {
 	}
 
 	async readConfig(path: string): Promise<any> {
-		debug('Reading config at ' + path)
+		safeLog('Reading config at ' + path)
 		const repoPath = `.github/${path}.json`
 		try {
 			const data = (await this.octokit.repos.getContents({ ...this.params, path: repoPath })).data
@@ -175,7 +174,7 @@ export class OctoKit implements GitHub {
 	}
 
 	async dispatch(title: string): Promise<void> {
-		debug('Dispatching ' + title)
+		safeLog('Dispatching ' + title)
 		if (!this.options.readonly)
 			await this.octokit.repos.createDispatchEvent({ ...this.params, event_type: title })
 	}
@@ -193,7 +192,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async addAssignee(assignee: string): Promise<void> {
-		debug('Adding assignee ' + assignee + ' to ' + this.issueData.number)
+		safeLog('Adding assignee ' + assignee + ' to ' + this.issueData.number)
 		if (!this.options.readonly) {
 			await this.octokit.issues.addAssignees({
 				...this.params,
@@ -204,7 +203,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async removeAssignee(assignee: string): Promise<void> {
-		debug('Removing assignee ' + assignee + ' to ' + this.issueData.number)
+		safeLog('Removing assignee ' + assignee + ' to ' + this.issueData.number)
 		if (!this.options.readonly) {
 			await this.octokit.issues.removeAssignees({
 				...this.params,
@@ -215,7 +214,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async closeIssue(): Promise<void> {
-		debug('Closing issue ' + this.issueData.number)
+		safeLog('Closing issue ' + this.issueData.number)
 		if (!this.options.readonly)
 			await this.octokit.issues.update({
 				...this.params,
@@ -225,14 +224,14 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async lockIssue(): Promise<void> {
-		debug('Locking issue ' + this.issueData.number)
+		safeLog('Locking issue ' + this.issueData.number)
 		if (!this.options.readonly)
 			await this.octokit.issues.lock({ ...this.params, issue_number: this.issueData.number })
 	}
 
 	async getIssue(): Promise<Issue> {
 		if (isIssue(this.issueData)) {
-			debug('Got issue data from query result ' + this.issueData.number)
+			safeLog('Got issue data from query result ' + this.issueData.number)
 			return this.issueData
 		}
 
@@ -248,7 +247,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async postComment(body: string): Promise<void> {
-		debug(`Posting comment on ${this.issueData.number}`)
+		safeLog(`Posting comment on ${this.issueData.number}`)
 		if (!this.options.readonly)
 			await this.octokit.issues.createComment({
 				...this.params,
@@ -258,7 +257,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async deleteComment(id: number): Promise<void> {
-		debug(`Deleting comment ${id} on ${this.issueData.number}`)
+		safeLog(`Deleting comment ${id} on ${this.issueData.number}`)
 		if (!this.options.readonly)
 			await this.octokit.issues.deleteComment({
 				owner: this.params.owner,
@@ -268,7 +267,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async setMilestone(milestoneId: number) {
-		debug(`Setting milestone for ${this.issueData.number} to ${milestoneId}`)
+		safeLog(`Setting milestone for ${this.issueData.number} to ${milestoneId}`)
 		if (!this.options.readonly)
 			await this.octokit.issues.update({
 				...this.params,
@@ -278,7 +277,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async *getComments(last?: boolean): AsyncIterableIterator<Comment[]> {
-		debug('Fetching comments for ' + this.issueData.number)
+		safeLog('Fetching comments for ' + this.issueData.number)
 
 		const response = this.octokit.paginate.iterator(
 			this.octokit.issues.listComments.endpoint.merge({
@@ -301,7 +300,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async addLabel(name: string): Promise<void> {
-		debug(`Adding label ${name} to ${this.issueData.number}`)
+		safeLog(`Adding label ${name} to ${this.issueData.number}`)
 		if (!(await this.repoHasLabel(name))) {
 			throw Error(`Action could not execute becuase label ${name} is not defined.`)
 		}
@@ -342,7 +341,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async removeLabel(name: string): Promise<void> {
-		debug(`Removing label ${name} from ${this.issueData.number}`)
+		safeLog(`Removing label ${name} from ${this.issueData.number}`)
 		try {
 			if (!this.options.readonly)
 				await this.octokit.issues.removeLabel({

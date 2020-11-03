@@ -35,7 +35,7 @@ class Action {
             if (github_1.context.repo.repo === repo &&
                 github_1.context.repo.owner === owner &&
                 ((_a = github_1.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number) === issue) {
-                return console.log('refusing to run on error logging issue to prevent cascading errors');
+                return utils_1.safeLog('refusing to run on error logging issue to prevent cascading errors');
             }
         }
         try {

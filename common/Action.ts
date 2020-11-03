@@ -5,7 +5,7 @@
 
 import { OctoKit, OctoKitIssue, getNumRequests } from '../api/octokit'
 import { context, GitHub } from '@actions/github'
-import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue } from './utils'
+import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue, safeLog } from './utils'
 import { getInput, setFailed } from '@actions/core'
 import { aiHandle } from './telemetry'
 
@@ -42,7 +42,7 @@ export abstract class Action {
 				context.repo.owner === owner &&
 				context.payload.issue?.number === issue
 			) {
-				return console.log('refusing to run on error logging issue to prevent cascading errors')
+				return safeLog('refusing to run on error logging issue to prevent cascading errors')
 			}
 		}
 
