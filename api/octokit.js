@@ -218,7 +218,7 @@ class OctoKitIssue extends OctoKit {
         return (this.issueData = this.octokitIssueToIssue(issue));
     }
     async postComment(body) {
-        core_1.debug(`Posting comment ${body} on ${this.issueData.number}`);
+        core_1.debug(`Posting comment on ${this.issueData.number}`);
         if (!this.options.readonly)
             await this.octokit.issues.createComment({
                 ...this.params,

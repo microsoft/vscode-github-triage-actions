@@ -248,7 +248,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	}
 
 	async postComment(body: string): Promise<void> {
-		debug(`Posting comment ${body} on ${this.issueData.number}`)
+		debug(`Posting comment on ${this.issueData.number}`)
 		if (!this.options.readonly)
 			await this.octokit.issues.createComment({
 				...this.params,
