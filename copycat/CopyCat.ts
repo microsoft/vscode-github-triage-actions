@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHubIssue } from '../api/api'
+import { safeLog } from '../common/utils'
 
 export class CopyCat {
 	constructor(private github: GitHubIssue, private owner: string, private repo: string) {}
 
 	async run() {
 		const issue = await this.github.getIssue()
-		console.log(`Mirroring issue \`${issue.number}\` to ${this.owner}/${this.repo}`)
+		safeLog(`Mirroring issue \`${issue.number}\` to ${this.owner}/${this.repo}`)
 		await this.github.createIssue(
 			this.owner,
 			this.repo,

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Comment, GitHubIssue, Issue } from '../api/api'
+import { safeLog } from '../common/utils'
 import { parseTestPlanItem } from './validator'
 
 const commentTag = '<!-- INVALID TEST PLAN ITEM -->'
@@ -19,7 +20,7 @@ export class TestPlanItemValidator {
 	async run() {
 		const issue = await this.github.getIssue()
 		if (!(issue.labels.includes(this.label) || issue.labels.includes(this.invalidLabel))) {
-			console.log(
+			safeLog(
 				`Labels ${this.label}/${this.invalidLabel} not in issue labels ${issue.labels.join(
 					',',
 				)}. Aborting.`,
@@ -33,7 +34,7 @@ export class TestPlanItemValidator {
 		for await (const page of this.github.getComments()) {
 			priorComments = page.filter((comment) => comment.body.indexOf(commentTag) !== -1)
 			if (priorComments) {
-				console.log('Found prior comment. Deleting.')
+				safeLog('Found prior comment. Deleting.')
 				tasks.push(...priorComments.map((comment) => this.github.deleteComment(comment.id)))
 			}
 			break
@@ -45,7 +46,7 @@ export class TestPlanItemValidator {
 			tasks.push(this.github.addLabel(this.invalidLabel))
 			tasks.push(this.github.removeLabel(this.label))
 		} else {
-			console.log('All good!')
+			safeLog('All good!')
 			tasks.push(this.github.removeLabel(this.invalidLabel))
 			tasks.push(this.github.addLabel(this.label))
 		}

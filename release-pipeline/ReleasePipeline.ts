@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub, GitHubIssue } from '../api/api'
-import { loadLatestRelease, Release } from '../common/utils'
+import { loadLatestRelease, Release, safeLog } from '../common/utils'
 import { trackEvent } from '../common/telemetry'
 
 export class ReleasePipeline {
@@ -27,7 +27,7 @@ export class ReleasePipeline {
 					await this.update(issue, latestRelease)
 					await new Promise((resolve) => setTimeout(resolve, 1000))
 				} else {
-					console.log('Query returned an invalid issue:' + issueData.number)
+					safeLog('Query returned an invalid issue:' + issueData.number)
 				}
 			}
 		}

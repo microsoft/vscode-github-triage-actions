@@ -28,21 +28,21 @@ class ApplyLabels extends Action_1.Action {
             const issueData = await issue.getIssue();
             if (!debug &&
                 (issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))) {
-                console.log('skipping');
+                utils_1.safeLog('skipping');
                 continue;
             }
             const assignee = labeling.assignee;
             if (assignee) {
-                console.log('has assignee');
+                utils_1.safeLog('has assignee');
                 if (debug) {
                     if (!(await github.repoHasLabel(assignee))) {
-                        console.log(`creating assignee label`);
+                        utils_1.safeLog(`creating assignee label`);
                         await github.createLabel(assignee, 'ffa5a1', '');
                     }
                     await issue.addLabel(assignee);
                 }
                 const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[assignee];
-                console.log({ assigneeConfig });
+                utils_1.safeLog(JSON.stringify({ assigneeConfig }));
                 await Promise.all([
                     (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) ? issue.addAssignee(assignee) : Promise.resolve(),
                     (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
@@ -50,10 +50,10 @@ class ApplyLabels extends Action_1.Action {
             }
             const label = labeling.area;
             if (label) {
-                console.log(`adding label ${label} to issue ${issueData.number}`);
+                utils_1.safeLog(`adding label ${label} to issue ${issueData.number}`);
                 if (debug) {
                     if (!(await github.repoHasLabel(label))) {
-                        console.log(`creating label`);
+                        utils_1.safeLog(`creating label`);
                         await github.createLabel(label, 'f1d9ff', '');
                     }
                 }

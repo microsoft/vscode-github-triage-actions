@@ -5,6 +5,7 @@
 
 import { GitHubIssue, Issue, User } from '../api/api'
 import { trackEvent } from '../common/telemetry'
+import { safeLog } from '../common/utils'
 
 /* eslint-disable */
 // confusing when eslint formats
@@ -49,7 +50,7 @@ export class Commands {
 
 	private async perform(command: Command, issue: Issue) {
 		if (!(await this.matches(command, issue))) return
-		console.log(`Running command ${command.name}:`)
+		safeLog(`Running command ${command.name}:`)
 
 		await trackEvent(this.github, 'command', { name: command.name })
 

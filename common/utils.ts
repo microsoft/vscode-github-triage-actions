@@ -119,3 +119,8 @@ ${JSON.stringify(context, null, 2)
 -->
 `)
 }
+
+export const safeLog = (message: string, ...args: any[]): void => {
+	const clean = (val: any) => ('' + val).replace(/:|#/g, '')
+	console.log(clean(message), ...args.map(clean))
+}

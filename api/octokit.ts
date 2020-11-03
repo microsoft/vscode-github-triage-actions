@@ -7,6 +7,7 @@ import { debug } from '@actions/core'
 import { GitHub as GitHubAPI } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import { exec } from 'child_process'
+import { safeLog } from '../common/utils'
 import { Comment, GitHub, GitHubIssue, Issue, Query, User } from './api'
 
 let numRequests = 0
@@ -57,7 +58,7 @@ export class OctoKit implements GitHub {
 			await timeout()
 			numRequests++
 			const page: Array<Octokit.SearchIssuesAndPullRequestsResponseItemsItem> = pageResponse.data
-			console.log(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`)
+			safeLog(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`)
 			yield page.map(
 				(issue) => new OctoKitIssue(this.token, this.params, this.octokitIssueToIssue(issue)),
 			)
@@ -188,7 +189,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		options: { readonly: boolean } = { readonly: false },
 	) {
 		super(token, params, options)
-		console.log('running bot on issue', issueData.number)
+		safeLog('running bot on issue', issueData.number)
 	}
 
 	async addAssignee(assignee: string): Promise<void> {
@@ -235,7 +236,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			return this.issueData
 		}
 
-		console.log('Fetching issue ' + this.issueData.number)
+		safeLog('Fetching issue ' + this.issueData.number)
 		const issue = (
 			await this.octokit.issues.get({
 				...this.params,
@@ -351,7 +352,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 				})
 		} catch (err) {
 			if (err.status === 404) {
-				console.log(`Label ${name} not found on issue`)
+				safeLog(`Label ${name} not found on issue`)
 				return
 			}
 			throw err
@@ -437,7 +438,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			}
 		}
 
-		console.log(`Got ${JSON.stringify(closingCommit)} as closing commit of ${this.issueData.number}`)
+		safeLog(`Got ${JSON.stringify(closingCommit)} as closing commit of ${this.issueData.number}`)
 		return closingCommit
 	}
 }

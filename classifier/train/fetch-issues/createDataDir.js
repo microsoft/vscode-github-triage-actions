@@ -81,7 +81,7 @@ exports.createDataDirectories = async (areas, assignees) => {
                 seen[category]++;
             }
         }
-        console.log('Ignored', ignoredLabels);
+        utils_1.safeLog('Ignored', ignoredLabels);
     }
 };
 //# sourceMappingURL=createDataDir.js.map

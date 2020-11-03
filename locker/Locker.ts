@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub } from '../api/api'
-import { daysAgoToHumanReadbleDate } from '../common/utils'
+import { daysAgoToHumanReadbleDate, safeLog } from '../common/utils'
 
 export class Locker {
 	constructor(
@@ -33,13 +33,13 @@ export class Locker {
 						(!this.label || !hydrated.labels.includes(this.label))
 						// TODO: Verify closed and updated timestamps
 					) {
-						console.log(`Locking issue ${hydrated.number}`)
+						safeLog(`Locking issue ${hydrated.number}`)
 						await issue.lockIssue()
 					} else {
 						if (hydrated.locked) {
-							console.log(`Issue ${hydrated.number} is already locked. Ignoring`)
+							safeLog(`Issue ${hydrated.number} is already locked. Ignoring`)
 						} else {
-							console.log('Query returned an invalid issue:' + hydrated.number)
+							safeLog('Query returned an invalid issue:' + hydrated.number)
 						}
 					}
 				}),

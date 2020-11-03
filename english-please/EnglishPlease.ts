@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { GitHubIssue } from '../api/api'
-import { normalizeIssue } from '../common/utils'
+import { normalizeIssue, safeLog } from '../common/utils'
 import {
 	commonNames as _commonNames,
 	knownTranslations as _knownTranslations,
@@ -95,7 +95,7 @@ export class LanguageSpecificLabeler {
 		} else if (language) {
 			const label = this.translatorRequestedLabelPrefix + commonNames[language]
 			if (!(await this.issue.repoHasLabel(label))) {
-				console.log('Globally creating label ' + label)
+				safeLog('Globally creating label ' + label)
 				await this.issue.createLabel(label, this.translatorRequestedLabelColor, '')
 			}
 			await this.issue.addLabel(label)

@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { safeLog } from '../common/utils'
 import { Comment, GitHub, GitHubIssue, Issue, Query, User } from './api'
 
 type TestbedConfig = {
@@ -69,7 +70,7 @@ export class Testbed implements GitHub {
 	}
 
 	async dispatch(title: string): Promise<void> {
-		console.log('dispatching for', title)
+		safeLog('dispatching for', title)
 	}
 }
 

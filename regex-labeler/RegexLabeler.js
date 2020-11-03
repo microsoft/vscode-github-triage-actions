@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../common/utils");
 class RegexFlagger {
     constructor(github, label, comment, mustMatch, mustNotMatch) {
         this.github = github;
@@ -17,7 +18,7 @@ class RegexFlagger {
         const stripped = issue.body.replace(/<!--.*?-->/g, '');
         if ((this.mustNotMatch && new RegExp(this.mustNotMatch, 'i').test(stripped)) ||
             (this.mustMatch && !new RegExp(this.mustMatch, 'i').test(stripped))) {
-            console.log('Flagging');
+            utils_1.safeLog('Flagging');
             if (this.label) {
                 await this.github.addLabel(this.label);
             }

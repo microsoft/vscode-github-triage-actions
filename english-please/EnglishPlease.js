@@ -78,7 +78,7 @@ class LanguageSpecificLabeler {
         else if (language) {
             const label = this.translatorRequestedLabelPrefix + commonNames[language];
             if (!(await this.issue.repoHasLabel(label))) {
-                console.log('Globally creating label ' + label);
+                utils_1.safeLog('Globally creating label ' + label);
                 await this.issue.createLabel(label, this.translatorRequestedLabelColor, '');
             }
             await this.issue.addLabel(label);

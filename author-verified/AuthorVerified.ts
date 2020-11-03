@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub, GitHubIssue } from '../api/api'
-import { loadLatestRelease } from '../common/utils'
+import { loadLatestRelease, safeLog } from '../common/utils'
 import { trackEvent } from '../common/telemetry'
 
 export class AuthorVerifiedQueryer {
@@ -35,7 +35,7 @@ export class AuthorVerifiedQueryer {
 					).run()
 					await new Promise((resolve) => setTimeout(resolve, 1000))
 				} else {
-					console.log('Query returned an invalid issue:' + issueData.number)
+					safeLog('Query returned an invalid issue:' + issueData.number)
 				}
 			}
 		}

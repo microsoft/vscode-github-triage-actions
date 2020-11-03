@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHubIssue } from '../api/api'
-import { loadLatestRelease } from '../common/utils'
+import { loadLatestRelease, safeLog } from '../common/utils'
 
 export class NewRelease {
 	constructor(
@@ -22,7 +22,7 @@ export class NewRelease {
 
 		if (daysSinceRelease > this.days) {
 			// delete the label from the repo as a whole to remove it from all issues
-			console.log('New release window passed. Globally deleting label ' + this.label)
+			safeLog('New release window passed. Globally deleting label ' + this.label)
 			return this.github.deleteLabel(this.label)
 		}
 
@@ -37,11 +37,11 @@ export class NewRelease {
 			).test(cleansed)
 		) {
 			if (!(await this.github.repoHasLabel(this.label))) {
-				console.log('First release issue found. Globally creating label ' + this.label)
+				safeLog('First release issue found. Globally creating label ' + this.label)
 				await this.github.createLabel(this.label, this.labelColor, this.labelDescription)
 			}
 
-			console.log('New release issue found. Adding label ' + this.label)
+			safeLog('New release issue found. Adding label ' + this.label)
 			await this.github.addLabel(this.label)
 		}
 	}

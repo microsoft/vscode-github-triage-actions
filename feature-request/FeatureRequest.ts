@@ -5,6 +5,7 @@
 
 import { GitHub, GitHubIssue } from '../api/api'
 import { trackEvent } from '../common/telemetry'
+import { safeLog } from '../common/utils'
 
 export const CREATE_MARKER = '<!-- 6d457af9-96bd-47a8-a0e8-ecf120dfffc1 -->' // do not change, this is how we find the comments the bot made when assigning the issue was assigned to the candidate milestone
 export const WARN_MARKER = '<!-- 7e568b0a-a7ce-58b9-b1f9-fd0231e000d2 -->' // do not change, this is how we find the comments the bot made when writing a warning message
@@ -35,7 +36,7 @@ export class FeatureRequestQueryer {
 				) {
 					await this.actOn(issue)
 				} else {
-					console.log('Query returned an invalid issue:', issueData.number)
+					safeLog('Query returned an invalid issue:', issueData.number)
 				}
 			}
 		}
@@ -46,7 +47,7 @@ export class FeatureRequestQueryer {
 		if (!issueData.reactions) throw Error('No reaction data in issue ' + JSON.stringify(issueData))
 
 		if (issueData.reactions['+1'] >= this.config.upvotesRequired) {
-			console.log(`Issue #${issueData.number} sucessfully promoted`)
+			safeLog(`Issue #${issueData.number} sucessfully promoted`)
 			await trackEvent(issue, 'feature-request:accepted')
 			await Promise.all([
 				issue.setMilestone(this.config.milestones.backlogID),
@@ -78,17 +79,17 @@ export class FeatureRequestQueryer {
 					this.daysSince(state.initTimestamp) >
 					this.config.delays.close - this.config.delays.warn
 				) {
-					console.log(`Issue #${issueData.number} nearing rejection`)
+					safeLog(`Issue #${issueData.number} nearing rejection`)
 					await issue.postComment(WARN_MARKER + '\n' + this.config.comments.warn)
 				}
 			} else if (this.daysSince(state.warnTimestamp) > this.config.delays.warn) {
-				console.log(`Issue #${issueData.number} rejected`)
+				safeLog(`Issue #${issueData.number} rejected`)
 				await trackEvent(issue, 'feature-request:rejected')
 				await issue.postComment(REJECT_MARKER + '\n' + this.config.comments.reject)
 				await issue.closeIssue()
 			}
 		} else {
-			console.log(`Issue #${issueData.number} has hot discussion. Ignoring.`)
+			safeLog(`Issue #${issueData.number} has hot discussion. Ignoring.`)
 		}
 	}
 

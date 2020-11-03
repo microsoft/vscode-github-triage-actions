@@ -9,7 +9,6 @@ import os.path
 import logging
 
 BASE_PATH = os.path.join(os.path.dirname(__file__), "..")
-print("running with BASE_PATH:", BASE_PATH)
 
 logging.basicConfig(level=logging.WARN)
 transformers_logger = logging.getLogger("transformers")
@@ -37,10 +36,8 @@ def make_classifier(category, config, default_target_accuracy):
         prediction_name = target_names[predictions[0]]
         prediction_config = config.get(prediction_name, {})
 
-        print('got', category, prediction_name)
 
         target_accuracy = prediction_config.get('accuracy', default_target_accuracy)
-        print('read config for ', prediction_name, 'as', prediction_config, 'setting target_accuracy', target_accuracy)
 
         available_accuracies = thresholds[prediction_name].keys()
         above_target_accuracies = [accuracy for accuracy in available_accuracies if float(accuracy) >= float(target_accuracy)]
@@ -48,10 +45,8 @@ def make_classifier(category, config, default_target_accuracy):
             return {'confident': False, 'category': prediction_name, 'confidence': 0}
         target_accuracy = above_target_accuracies[0]
 
-        print('adjusted target accuracy', target_accuracy)
         score = raw_output[prediction_index]
         threshold = thresholds[prediction_name][target_accuracy]['cutoff']
-        print('score', score, 'threshold', threshold)
 
         confidence_estimate_list = [float(accuracy)
                                 for accuracy in available_accuracies
@@ -61,10 +56,8 @@ def make_classifier(category, config, default_target_accuracy):
         confidence_estimate = max(confidence_estimate_list)
 
         if score < threshold:
-            print('Below threshold:', prediction_name, score)
             return {'confident': False, 'category': prediction_name, 'confidence': confidence_estimate}
         else:
-            print('Above threshold:', prediction_name, score)
             return {'confident': True, 'category': prediction_name, 'confidence': confidence_estimate}
 
     return classify
@@ -82,7 +75,6 @@ def main():
     with open(os.path.join(BASE_PATH, "issue_data.json")) as f:
         issue_data = json.load(f)
         for issue in issue_data:
-            print("classifying", issue["number"], issue["contents"][:30].replace('\n', ' ').replace('\r', ' '))
             results.append(
                 {
                     "number": issue["number"],
@@ -92,9 +84,7 @@ def main():
                 }
             )
 
-    print("Generated labels: ")
     for issue in results:
-        print(issue["number"], ": ", "-", issue["area"], issue["assignee"])
 
     with open(os.path.join(BASE_PATH, "issue_labels.json"), "w") as f:
         json.dump(results, f)

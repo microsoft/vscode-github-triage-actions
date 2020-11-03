@@ -29,7 +29,7 @@ class ApplyLabels extends Action_1.Action {
             const addAssignee = async (assignee) => {
                 var _a;
                 if ((_a = config.vacation) === null || _a === void 0 ? void 0 : _a.includes(assignee)) {
-                    console.log('not assigning ', assignee, 'becuase they are on vacation');
+                    utils_1.safeLog('not assigning ', assignee, 'becuase they are on vacation');
                 }
                 else {
                     potentialAssignees.push(assignee);
@@ -38,10 +38,10 @@ class ApplyLabels extends Action_1.Action {
             const issueData = await issue.getIssue();
             if (!debug &&
                 (issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))) {
-                console.log('skipping');
+                utils_1.safeLog('skipping');
                 continue;
             }
-            console.log('not skipping', {
+            utils_1.safeLog('not skipping', {
                 assignee: labeling.assignee,
                 area: labeling.area,
                 number: labeling.number,
@@ -51,7 +51,7 @@ class ApplyLabels extends Action_1.Action {
                 if (debug) {
                     if (confident) {
                         if (!(await github.repoHasLabel(category))) {
-                            console.log(`creating label`);
+                            utils_1.safeLog(`creating label`);
                             await github.createLabel(category, 'f1d9ff', '');
                         }
                         await issue.addLabel(category);
@@ -59,7 +59,7 @@ class ApplyLabels extends Action_1.Action {
                     await issue.postComment(`confidence for label ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold`);
                 }
                 if (confident) {
-                    console.log(`adding label ${category} to issue ${issueData.number}`);
+                    utils_1.safeLog(`adding label ${category} to issue ${issueData.number}`);
                     const labelConfig = (_a = config.labels) === null || _a === void 0 ? void 0 : _a[category];
                     await Promise.all([
                         ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign) ? labelConfig.assign.map((assignee) => addAssignee(assignee))
@@ -75,7 +75,7 @@ class ApplyLabels extends Action_1.Action {
                 if (debug) {
                     if (confident) {
                         if (!(await github.repoHasLabel(category))) {
-                            console.log(`creating assignee label`);
+                            utils_1.safeLog(`creating assignee label`);
                             await github.createLabel(category, 'ffa5a1', '');
                         }
                         await issue.addLabel(category);
@@ -83,7 +83,7 @@ class ApplyLabels extends Action_1.Action {
                     await issue.postComment(`confidence for assignee ${category}: ${confidence}. ${confident ? 'does' : 'does not'} meet threshold`);
                 }
                 if (confident) {
-                    console.log('has assignee');
+                    utils_1.safeLog('has assignee');
                     await addAssignee(category);
                     await telemetry_1.trackEvent(issue, 'classification:performed', {
                         assignee: labeling.assignee.category,

@@ -6,7 +6,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { JSONOutputLine } from './download'
-import { normalizeIssue } from '../../../common/utils'
+import { normalizeIssue, safeLog } from '../../../common/utils'
 
 interface Classification {
 	name: string
@@ -123,6 +123,6 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 				seen[category]++
 			}
 		}
-		console.log('Ignored', ignoredLabels)
+		safeLog('Ignored', ignoredLabels)
 	}
 }

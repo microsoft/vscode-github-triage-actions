@@ -34,16 +34,16 @@ class FetchIssues extends Action_1.Action {
         fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
         const config = await github.readConfig(utils_1.getRequiredInput('configPath'));
         fs_1.writeFileSync(path_1.join(__dirname, '../configuration.json'), JSON.stringify(config));
-        console.log('dowloading area model');
+        utils_1.safeLog('dowloading area model');
         await blobStorage_1.downloadBlobFile('area_model.zip', blobContainer, blobStorageKey);
-        console.log('dowloading assignee model');
+        utils_1.safeLog('dowloading assignee model');
         await blobStorage_1.downloadBlobFile('assignee_model.zip', blobContainer, blobStorageKey);
         const classifierDeepRoot = path_1.join(__dirname, '..', '..');
         const blobStorage = path_1.join(classifierDeepRoot, 'blobStorage');
         const models = path_1.join(classifierDeepRoot, 'apply');
-        console.log('unzipping area model');
+        utils_1.safeLog('unzipping area model');
         child_process_1.execSync(`unzip -q ${path_1.join(blobStorage, 'area_model.zip')} -d ${path_1.join(models, 'area_model')}`);
-        console.log('unzipping assignee model');
+        utils_1.safeLog('unzipping assignee model');
         child_process_1.execSync(`unzip -q ${path_1.join(blobStorage, 'assignee_model.zip')} -d ${path_1.join(models, 'assignee_model')}`);
     }
 }

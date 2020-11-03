@@ -15,18 +15,18 @@ class UploadModels extends Action_1.Action {
         this.id = 'Classifier/Train/UploadModels';
     }
     async onTriggered() {
-        console.log('uploading area-model.pickle');
+        utils_1.safeLog('uploading area-model.pickle');
         await blobStorage_1.uploadBlobFile('area-model.pickle', blobContainer, blobStorageKey);
-        console.log('done');
-        console.log('uploading area-model-config.json');
+        utils_1.safeLog('done');
+        utils_1.safeLog('uploading area-model-config.json');
         await blobStorage_1.uploadBlobFile('area-model-config.json', blobContainer, blobStorageKey);
-        console.log('done');
-        console.log('uploading assignee-model.pickle');
+        utils_1.safeLog('done');
+        utils_1.safeLog('uploading assignee-model.pickle');
         await blobStorage_1.uploadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey);
-        console.log('done');
-        console.log('uploading assignee-model-config.json');
+        utils_1.safeLog('done');
+        utils_1.safeLog('uploading assignee-model-config.json');
         await blobStorage_1.uploadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey);
-        console.log('done');
+        utils_1.safeLog('done');
     }
 }
 new UploadModels().run(); // eslint-disable-line

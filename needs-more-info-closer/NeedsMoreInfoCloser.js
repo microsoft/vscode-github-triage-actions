@@ -37,10 +37,10 @@ class NeedsMoreInfoCloser {
                         this.additionalTeam.includes(lastComment.author.name) ||
                         (await issue.hasWriteAccess(lastComment.author))) {
                         if (lastComment) {
-                            console.log(`Last comment on ${hydrated.number} by rando. Closing.`);
+                            utils_1.safeLog(`Last comment on ${hydrated.number} by rando. Closing.`);
                         }
                         else {
-                            console.log(`No comments on ${hydrated.number}. Closing.`);
+                            utils_1.safeLog(`No comments on ${hydrated.number}. Closing.`);
                         }
                         if (this.closeComment) {
                             await issue.postComment(this.closeComment);
@@ -49,7 +49,7 @@ class NeedsMoreInfoCloser {
                     }
                     else {
                         if (hydrated.updatedAt < pingTimestamp && hydrated.assignee) {
-                            console.log(`Last comment on ${hydrated.number} by rando. Pinging @${hydrated.assignee}`);
+                            utils_1.safeLog(`Last comment on ${hydrated.number} by rando. Pinging @${hydrated.assignee}`);
                             if (this.pingComment) {
                                 await issue.postComment(this.pingComment
                                     .replace('${assignee}', hydrated.assignee)
@@ -57,12 +57,12 @@ class NeedsMoreInfoCloser {
                             }
                         }
                         else {
-                            console.log(`Last comment on ${hydrated.number} by rando. Skipping.${hydrated.assignee ? ' cc @' + hydrated.assignee : ''}`);
+                            utils_1.safeLog(`Last comment on ${hydrated.number} by rando. Skipping.${hydrated.assignee ? ' cc @' + hydrated.assignee : ''}`);
                         }
                     }
                 }
                 else {
-                    console.log('Query returned an invalid issue:' + hydrated.number);
+                    utils_1.safeLog('Query returned an invalid issue:' + hydrated.number);
                 }
             }
         }

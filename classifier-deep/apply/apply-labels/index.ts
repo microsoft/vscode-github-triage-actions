@@ -7,7 +7,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../../../api/octokit'
-import { getRequiredInput, getInput } from '../../../common/utils'
+import { getRequiredInput, getInput, safeLog } from '../../../common/utils'
 import { Action } from '../../../common/Action'
 import { trackEvent } from '../../../common/telemetry'
 
@@ -43,7 +43,7 @@ class ApplyLabels extends Action {
 			const potentialAssignees: string[] = []
 			const addAssignee = async (assignee: string) => {
 				if (config.vacation?.includes(assignee)) {
-					console.log('not assigning ', assignee, 'becuase they are on vacation')
+					safeLog('not assigning ', assignee, 'becuase they are on vacation')
 				} else {
 					potentialAssignees.push(assignee)
 				}
@@ -54,11 +54,11 @@ class ApplyLabels extends Action {
 				!debug &&
 				(issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))
 			) {
-				console.log('skipping')
+				safeLog('skipping')
 				continue
 			}
 
-			console.log('not skipping', {
+			safeLog('not skipping', {
 				assignee: labeling.assignee,
 				area: labeling.area,
 				number: labeling.number,
@@ -69,7 +69,7 @@ class ApplyLabels extends Action {
 				if (debug) {
 					if (confident) {
 						if (!(await github.repoHasLabel(category))) {
-							console.log(`creating label`)
+							safeLog(`creating label`)
 							await github.createLabel(category, 'f1d9ff', '')
 						}
 						await issue.addLabel(category)
@@ -82,7 +82,7 @@ class ApplyLabels extends Action {
 				}
 
 				if (confident) {
-					console.log(`adding label ${category} to issue ${issueData.number}`)
+					safeLog(`adding label ${category} to issue ${issueData.number}`)
 
 					const labelConfig = config.labels?.[category]
 					await Promise.all<any>([
@@ -102,7 +102,7 @@ class ApplyLabels extends Action {
 				if (debug) {
 					if (confident) {
 						if (!(await github.repoHasLabel(category))) {
-							console.log(`creating assignee label`)
+							safeLog(`creating assignee label`)
 							await github.createLabel(category, 'ffa5a1', '')
 						}
 						await issue.addLabel(category)
@@ -115,7 +115,7 @@ class ApplyLabels extends Action {
 				}
 
 				if (confident) {
-					console.log('has assignee')
+					safeLog('has assignee')
 					await addAssignee(category)
 					await trackEvent(issue, 'classification:performed', {
 						assignee: labeling.assignee.category,

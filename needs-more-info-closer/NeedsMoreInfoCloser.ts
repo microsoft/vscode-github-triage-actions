@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub } from '../api/api'
-import { daysAgoToHumanReadbleDate, daysAgoToTimestamp } from '../common/utils'
+import { daysAgoToHumanReadbleDate, daysAgoToTimestamp, safeLog } from '../common/utils'
 
 export class NeedsMoreInfoCloser {
 	constructor(
@@ -45,9 +45,9 @@ export class NeedsMoreInfoCloser {
 						(await issue.hasWriteAccess(lastComment.author))
 					) {
 						if (lastComment) {
-							console.log(`Last comment on ${hydrated.number} by rando. Closing.`)
+							safeLog(`Last comment on ${hydrated.number} by rando. Closing.`)
 						} else {
-							console.log(`No comments on ${hydrated.number}. Closing.`)
+							safeLog(`No comments on ${hydrated.number}. Closing.`)
 						}
 						if (this.closeComment) {
 							await issue.postComment(this.closeComment)
@@ -55,7 +55,7 @@ export class NeedsMoreInfoCloser {
 						await issue.closeIssue()
 					} else {
 						if (hydrated.updatedAt < pingTimestamp && hydrated.assignee) {
-							console.log(
+							safeLog(
 								`Last comment on ${hydrated.number} by rando. Pinging @${hydrated.assignee}`,
 							)
 							if (this.pingComment) {
@@ -66,7 +66,7 @@ export class NeedsMoreInfoCloser {
 								)
 							}
 						} else {
-							console.log(
+							safeLog(
 								`Last comment on ${hydrated.number} by rando. Skipping.${
 									hydrated.assignee ? ' cc @' + hydrated.assignee : ''
 								}`,
@@ -74,7 +74,7 @@ export class NeedsMoreInfoCloser {
 						}
 					}
 				} else {
-					console.log('Query returned an invalid issue:' + hydrated.number)
+					safeLog('Query returned an invalid issue:' + hydrated.number)
 				}
 			}
 		}

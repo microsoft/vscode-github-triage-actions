@@ -5,6 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const telemetry_1 = require("../common/telemetry");
+const utils_1 = require("../common/utils");
 /* eslint-enable */
 class Commands {
     constructor(github, config, action) {
@@ -35,7 +36,7 @@ class Commands {
         var _a, _b;
         if (!(await this.matches(command, issue)))
             return;
-        console.log(`Running command ${command.name}:`);
+        utils_1.safeLog(`Running command ${command.name}:`);
         await telemetry_1.trackEvent(this.github, 'command', { name: command.name });
         const tasks = [];
         if ('comment' in this.action && (command.name === 'label' || command.name === 'assign')) {

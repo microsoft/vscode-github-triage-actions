@@ -7,7 +7,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../../../api/octokit'
-import { getRequiredInput, getInput } from '../../../common/utils'
+import { getRequiredInput, getInput, safeLog } from '../../../common/utils'
 import { Action } from '../../../common/Action'
 import { trackEvent } from '../../../common/telemetry'
 
@@ -40,24 +40,24 @@ class ApplyLabels extends Action {
 				!debug &&
 				(issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))
 			) {
-				console.log('skipping')
+				safeLog('skipping')
 				continue
 			}
 
 			const assignee = labeling.assignee
 			if (assignee) {
-				console.log('has assignee')
+				safeLog('has assignee')
 
 				if (debug) {
 					if (!(await github.repoHasLabel(assignee))) {
-						console.log(`creating assignee label`)
+						safeLog(`creating assignee label`)
 						await github.createLabel(assignee, 'ffa5a1', '')
 					}
 					await issue.addLabel(assignee)
 				}
 
 				const assigneeConfig = config.assignees?.[assignee]
-				console.log({ assigneeConfig })
+				safeLog(JSON.stringify({ assigneeConfig }))
 
 				await Promise.all<any>([
 					assigneeConfig?.assign ? issue.addAssignee(assignee) : Promise.resolve(),
@@ -67,11 +67,11 @@ class ApplyLabels extends Action {
 
 			const label = labeling.area
 			if (label) {
-				console.log(`adding label ${label} to issue ${issueData.number}`)
+				safeLog(`adding label ${label} to issue ${issueData.number}`)
 
 				if (debug) {
 					if (!(await github.repoHasLabel(label))) {
-						console.log(`creating label`)
+						safeLog(`creating label`)
 						await github.createLabel(label, 'f1d9ff', '')
 					}
 				}

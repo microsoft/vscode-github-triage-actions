@@ -20,7 +20,7 @@ class NewRelease {
         const daysSinceRelease = (Date.now() - release.timestamp) / (24 * 60 * 60 * 1000);
         if (daysSinceRelease > this.days) {
             // delete the label from the repo as a whole to remove it from all issues
-            console.log('New release window passed. Globally deleting label ' + this.label);
+            utils_1.safeLog('New release window passed. Globally deleting label ' + this.label);
             return this.github.deleteLabel(this.label);
         }
         const issue = await this.github.getIssue();
@@ -28,10 +28,10 @@ class NewRelease {
         if (!/VS ?Code Version:.*Insider/i.test(cleansed) &&
             new RegExp(`VS ?Code Version:(.*[^\\d])?${release.productVersion.replace('.', '\\.')}([^\\d]|$)`, 'i').test(cleansed)) {
             if (!(await this.github.repoHasLabel(this.label))) {
-                console.log('First release issue found. Globally creating label ' + this.label);
+                utils_1.safeLog('First release issue found. Globally creating label ' + this.label);
                 await this.github.createLabel(this.label, this.labelColor, this.labelDescription);
             }
-            console.log('New release issue found. Adding label ' + this.label);
+            utils_1.safeLog('New release issue found. Adding label ' + this.label);
             await this.github.addLabel(this.label);
         }
     }

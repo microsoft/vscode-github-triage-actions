@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { context } from '@actions/github'
-import { getRequiredInput, loadLatestRelease } from '../common/utils'
+import { getRequiredInput, loadLatestRelease, safeLog } from '../common/utils'
 import { uploadBlobText, downloadBlobText } from '../classifier/blobStorage'
 import { OctoKit } from '../api/octokit'
 import { Action } from '../common/Action'
@@ -25,7 +25,7 @@ class LatestReleaseMonitor extends Action {
 
 		const latest = (await loadLatestRelease(quality))?.version
 		if (latest && latest !== lastKnown) {
-			console.log('found a new release of', quality)
+			safeLog('found a new release of', quality)
 			await uploadBlobText('latest-' + quality, latest, 'latest-releases', storageKey)
 			await new OctoKit(token, context.repo).dispatch('released-' + quality)
 		}

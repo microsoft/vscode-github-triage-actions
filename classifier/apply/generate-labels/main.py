@@ -47,14 +47,9 @@ def apply_classifier(classifier, text):
 
 
 def predict(text_clf, target_names, text, min_prob, ignore_labels):
-    print("getting prediction for ", text)
     probs = text_clf.predict_proba([text])[0]
     best = sorted(enumerate(probs), key=lambda p: -p[1])
-    print("threshold", min_prob)
-    print(
-        "estimated",
-        [(target_names[i], str(int(round(p, 2) * 100)) + "%") for i, p in best[:5]],
-    )
+
 
     return [
         target_names[i]
@@ -76,10 +71,6 @@ def main():
                     "contents": issue["contents"],
                 }
             )
-
-    print("Generated labels: ")
-    for issue in results:
-        print(issue["number"], ": ", "-", issue["area"], issue["assignee"])
 
     with open(os.path.join(BASE_PATH, "issue_labels.json"), "w") as f:
         json.dump(results, f)

@@ -25,15 +25,15 @@ class Locker {
                     (!this.label || !hydrated.labels.includes(this.label))
                 // TODO: Verify closed and updated timestamps
                 ) {
-                    console.log(`Locking issue ${hydrated.number}`);
+                    utils_1.safeLog(`Locking issue ${hydrated.number}`);
                     await issue.lockIssue();
                 }
                 else {
                     if (hydrated.locked) {
-                        console.log(`Issue ${hydrated.number} is already locked. Ignoring`);
+                        utils_1.safeLog(`Issue ${hydrated.number} is already locked. Ignoring`);
                     }
                     else {
-                        console.log('Query returned an invalid issue:' + hydrated.number);
+                        utils_1.safeLog('Query returned an invalid issue:' + hydrated.number);
                     }
                 }
             }));

@@ -59,7 +59,6 @@ def getThresholds(
             guesses.append((raw_output[prediction], prediction == real_label,))
     guesses.sort(reverse=True)
 
-    print("Computing thresholds for label", label)
     num_total = int(
         len(
             [
@@ -97,7 +96,6 @@ def getThresholds(
 
 
 for category in categories:
-    print("generation configuration for", category)
     test_df, train_df, data_target_names = load_dataframes(category)
     thresholds = {}
 
@@ -143,20 +141,6 @@ for category in categories:
                 total_correct += thresholds[data_target_name][target_precision][
                     "num_correct"
                 ]
-
-        print(
-            "Category ",
-            category,
-            "target: ",
-            target_precision,
-            "results:",
-            total_correct,
-            "/",
-            total_items,
-            " (",
-            total_correct / total_items,
-            ")",
-        )
 
     with open(os.path.join(category + "_model", "thresholds.json"), "w") as fp:
         json.dump(thresholds, fp)

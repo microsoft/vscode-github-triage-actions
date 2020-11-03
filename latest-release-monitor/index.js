@@ -27,7 +27,7 @@ class LatestReleaseMonitor extends Action_1.Action {
         }
         const latest = (_a = (await utils_1.loadLatestRelease(quality))) === null || _a === void 0 ? void 0 : _a.version;
         if (latest && latest !== lastKnown) {
-            console.log('found a new release of', quality);
+            utils_1.safeLog('found a new release of', quality);
             await blobStorage_1.uploadBlobText('latest-' + quality, latest, 'latest-releases', storageKey);
             await new octokit_1.OctoKit(token, github_1.context.repo).dispatch('released-' + quality);
         }

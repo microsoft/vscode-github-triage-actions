@@ -98,4 +98,8 @@ ${JSON.stringify(github_1.context, null, 2)
 -->
 `);
 };
+exports.safeLog = (message, ...args) => {
+    const clean = (val) => ('' + val).replace(/:|#/g, '');
+    console.log(clean(message), ...args.map(clean));
+};
 //# sourceMappingURL=utils.js.map

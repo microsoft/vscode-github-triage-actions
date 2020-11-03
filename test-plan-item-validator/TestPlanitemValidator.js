@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../common/utils");
 const validator_1 = require("./validator");
 const commentTag = '<!-- INVALID TEST PLAN ITEM -->';
 class TestPlanItemValidator {
@@ -16,7 +17,7 @@ class TestPlanItemValidator {
     async run() {
         const issue = await this.github.getIssue();
         if (!(issue.labels.includes(this.label) || issue.labels.includes(this.invalidLabel))) {
-            console.log(`Labels ${this.label}/${this.invalidLabel} not in issue labels ${issue.labels.join(',')}. Aborting.`);
+            utils_1.safeLog(`Labels ${this.label}/${this.invalidLabel} not in issue labels ${issue.labels.join(',')}. Aborting.`);
             return;
         }
         const tasks = [];
@@ -24,7 +25,7 @@ class TestPlanItemValidator {
         for await (const page of this.github.getComments()) {
             priorComments = page.filter((comment) => comment.body.indexOf(commentTag) !== -1);
             if (priorComments) {
-                console.log('Found prior comment. Deleting.');
+                utils_1.safeLog('Found prior comment. Deleting.');
                 tasks.push(...priorComments.map((comment) => this.github.deleteComment(comment.id)));
             }
             break;
@@ -36,7 +37,7 @@ class TestPlanItemValidator {
             tasks.push(this.github.removeLabel(this.label));
         }
         else {
-            console.log('All good!');
+            utils_1.safeLog('All good!');
             tasks.push(this.github.removeLabel(this.invalidLabel));
             tasks.push(this.github.addLabel(this.label));
         }

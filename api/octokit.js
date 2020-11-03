@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const child_process_1 = require("child_process");
+const utils_1 = require("../common/utils");
 let numRequests = 0;
 exports.getNumRequests = () => numRequests;
 class OctoKit {
@@ -48,7 +49,7 @@ class OctoKit {
             await timeout();
             numRequests++;
             const page = pageResponse.data;
-            console.log(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`);
+            utils_1.safeLog(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`);
             yield page.map((issue) => new OctoKitIssue(this.token, this.params, this.octokitIssueToIssue(issue)));
         }
     }
@@ -167,7 +168,7 @@ class OctoKitIssue extends OctoKit {
         super(token, params, options);
         this.params = params;
         this.issueData = issueData;
-        console.log('running bot on issue', issueData.number);
+        utils_1.safeLog('running bot on issue', issueData.number);
     }
     async addAssignee(assignee) {
         core_1.debug('Adding assignee ' + assignee + ' to ' + this.issueData.number);
@@ -208,7 +209,7 @@ class OctoKitIssue extends OctoKit {
             core_1.debug('Got issue data from query result ' + this.issueData.number);
             return this.issueData;
         }
-        console.log('Fetching issue ' + this.issueData.number);
+        utils_1.safeLog('Fetching issue ' + this.issueData.number);
         const issue = (await this.octokit.issues.get({
             ...this.params,
             issue_number: this.issueData.number,
@@ -306,7 +307,7 @@ class OctoKitIssue extends OctoKit {
         }
         catch (err) {
             if (err.status === 404) {
-                console.log(`Label ${name} not found on issue`);
+                utils_1.safeLog(`Label ${name} not found on issue`);
                 return;
             }
             throw err;
@@ -373,7 +374,7 @@ class OctoKitIssue extends OctoKit {
                 }
             }
         }
-        console.log(`Got ${JSON.stringify(closingCommit)} as closing commit of ${this.issueData.number}`);
+        utils_1.safeLog(`Got ${JSON.stringify(closingCommit)} as closing commit of ${this.issueData.number}`);
         return closingCommit;
     }
 }

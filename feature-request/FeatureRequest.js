@@ -5,6 +5,7 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const telemetry_1 = require("../common/telemetry");
+const utils_1 = require("../common/utils");
 exports.CREATE_MARKER = '<!-- 6d457af9-96bd-47a8-a0e8-ecf120dfffc1 -->'; // do not change, this is how we find the comments the bot made when assigning the issue was assigned to the candidate milestone
 exports.WARN_MARKER = '<!-- 7e568b0a-a7ce-58b9-b1f9-fd0231e000d2 -->'; // do not change, this is how we find the comments the bot made when writing a warning message
 exports.REJECT_MARKER = '<!-- 8f679c1b-b8df-69ca-c20a-0e1342f111e3 -->'; // do not change, this is how we find the comments the bot made when rejecting an issue
@@ -25,7 +26,7 @@ class FeatureRequestQueryer {
                     await this.actOn(issue);
                 }
                 else {
-                    console.log('Query returned an invalid issue:', issueData.number);
+                    utils_1.safeLog('Query returned an invalid issue:', issueData.number);
                 }
             }
         }
@@ -35,7 +36,7 @@ class FeatureRequestQueryer {
         if (!issueData.reactions)
             throw Error('No reaction data in issue ' + JSON.stringify(issueData));
         if (issueData.reactions['+1'] >= this.config.upvotesRequired) {
-            console.log(`Issue #${issueData.number} sucessfully promoted`);
+            utils_1.safeLog(`Issue #${issueData.number} sucessfully promoted`);
             await telemetry_1.trackEvent(issue, 'feature-request:accepted');
             await Promise.all([
                 issue.setMilestone(this.config.milestones.backlogID),
@@ -60,19 +61,19 @@ class FeatureRequestQueryer {
             else if (!state.warnTimestamp) {
                 if (this.daysSince(state.initTimestamp) >
                     this.config.delays.close - this.config.delays.warn) {
-                    console.log(`Issue #${issueData.number} nearing rejection`);
+                    utils_1.safeLog(`Issue #${issueData.number} nearing rejection`);
                     await issue.postComment(exports.WARN_MARKER + '\n' + this.config.comments.warn);
                 }
             }
             else if (this.daysSince(state.warnTimestamp) > this.config.delays.warn) {
-                console.log(`Issue #${issueData.number} rejected`);
+                utils_1.safeLog(`Issue #${issueData.number} rejected`);
                 await telemetry_1.trackEvent(issue, 'feature-request:rejected');
                 await issue.postComment(exports.REJECT_MARKER + '\n' + this.config.comments.reject);
                 await issue.closeIssue();
             }
         }
         else {
-            console.log(`Issue #${issueData.number} has hot discussion. Ignoring.`);
+            utils_1.safeLog(`Issue #${issueData.number} has hot discussion. Ignoring.`);
         }
     }
     daysSince(timestamp) {
