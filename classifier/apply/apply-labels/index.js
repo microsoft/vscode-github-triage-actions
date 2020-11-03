@@ -23,7 +23,6 @@ class ApplyLabels extends Action_1.Action {
         var _a, _b;
         const config = await github.readConfig(utils_1.getRequiredInput('config-path'));
         const labelings = JSON.parse(fs_1.readFileSync(path_1.join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
-        console.log('labelings:', labelings);
         for (const labeling of labelings) {
             const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
             const issueData = await issue.getIssue();
@@ -32,11 +31,6 @@ class ApplyLabels extends Action_1.Action {
                 console.log('skipping');
                 continue;
             }
-            console.log('not skipping', {
-                assignee: labeling.assignee,
-                area: labeling.area,
-                number: labeling.number,
-            });
             const assignee = labeling.assignee;
             if (assignee) {
                 console.log('has assignee');

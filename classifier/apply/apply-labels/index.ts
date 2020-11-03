@@ -32,7 +32,6 @@ class ApplyLabels extends Action {
 		const labelings: { number: number; area: string; assignee: string }[] = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 		)
-		console.log('labelings:', labelings)
 
 		for (const labeling of labelings) {
 			const issue = new OctoKitIssue(token, context.repo, { number: labeling.number })
@@ -44,11 +43,6 @@ class ApplyLabels extends Action {
 				console.log('skipping')
 				continue
 			}
-			console.log('not skipping', {
-				assignee: labeling.assignee,
-				area: labeling.area,
-				number: labeling.number,
-			})
 
 			const assignee = labeling.assignee
 			if (assignee) {

@@ -24,7 +24,6 @@ if (aiKey) {
 }
 exports.aiHandle = _aiHandle;
 exports.trackEvent = async (issue, event, props) => {
-    console.log('tracking event', event, props);
     if (exports.aiHandle) {
         exports.aiHandle.trackEvent({
             name: event,

@@ -99,7 +99,7 @@ export const logErrorToIssue = async (message: string, ping: boolean, token: str
 	// Attempt to wait out abuse detection timeout if present
 	await new Promise((resolve) => setTimeout(resolve, 10000))
 	const dest = errorLoggingIssue
-	if (!dest) return console.log('no error logging repo defined. swallowing error:', message)
+	if (!dest) return console.log('no error logging repo defined. swallowing error.')
 
 	return new OctoKitIssue(token, { owner: dest.owner, repo: dest.repo }, { number: dest.issue })
 		.postComment(`

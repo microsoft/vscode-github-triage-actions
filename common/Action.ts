@@ -35,16 +35,6 @@ export abstract class Action {
 	}
 
 	public async run() {
-		console.log('running ', this.id, 'with context', {
-			...context,
-			payload: {
-				issue: context.payload?.issue?.number,
-				label: context.payload?.label?.name,
-				repository: context.payload?.repository?.html_url,
-				sender: context.payload?.sender?.login ?? context.payload?.sender?.type,
-			},
-		})
-
 		if (errorLoggingIssue) {
 			const { repo, issue, owner } = errorLoggingIssue
 			if (

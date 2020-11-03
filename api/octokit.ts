@@ -33,7 +33,6 @@ export class OctoKit implements GitHub {
 	// TODO: just iterate over the issues in a page here instead of making caller do it
 	async *query(query: Query): AsyncIterableIterator<GitHubIssue[]> {
 		const q = query.q + ` repo:${this.params.owner}/${this.params.repo}`
-		console.log(`Querying for ${q}:`)
 
 		const options = this.octokit.search.issuesAndPullRequests.endpoint.merge({
 			...query,

@@ -45,9 +45,7 @@ export class NeedsMoreInfoCloser {
 						(await issue.hasWriteAccess(lastComment.author))
 					) {
 						if (lastComment) {
-							console.log(
-								`Last comment on ${hydrated.number} by ${lastComment.author.name}. Closing.`,
-							)
+							console.log(`Last comment on ${hydrated.number} by rando. Closing.`)
 						} else {
 							console.log(`No comments on ${hydrated.number}. Closing.`)
 						}
@@ -58,7 +56,7 @@ export class NeedsMoreInfoCloser {
 					} else {
 						if (hydrated.updatedAt < pingTimestamp && hydrated.assignee) {
 							console.log(
-								`Last comment on ${hydrated.number} by ${lastComment.author.name}. Pinging @${hydrated.assignee}`,
+								`Last comment on ${hydrated.number} by rando. Pinging @${hydrated.assignee}`,
 							)
 							if (this.pingComment) {
 								await issue.postComment(
@@ -69,7 +67,7 @@ export class NeedsMoreInfoCloser {
 							}
 						} else {
 							console.log(
-								`Last comment on ${hydrated.number} by ${lastComment.author.name}. Skipping.${
+								`Last comment on ${hydrated.number} by rando. Skipping.${
 									hydrated.assignee ? ' cc @' + hydrated.assignee : ''
 								}`,
 							)

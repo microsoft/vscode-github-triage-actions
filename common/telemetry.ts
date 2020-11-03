@@ -26,8 +26,6 @@ if (aiKey) {
 
 export const aiHandle = _aiHandle
 export const trackEvent = async (issue: GitHubIssue, event: string, props?: Record<string, string>) => {
-	console.log('tracking event', event, props)
-
 	if (aiHandle) {
 		aiHandle.trackEvent({
 			name: event,
