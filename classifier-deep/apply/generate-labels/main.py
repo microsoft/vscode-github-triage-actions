@@ -84,8 +84,6 @@ def main():
                 }
             )
 
-    for issue in results:
-
     with open(os.path.join(BASE_PATH, "issue_labels.json"), "w") as f:
         json.dump(results, f)
 
