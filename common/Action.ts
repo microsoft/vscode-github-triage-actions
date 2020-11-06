@@ -8,6 +8,7 @@ import { context, GitHub } from '@actions/github'
 import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue, safeLog } from './utils'
 import { getInput, setFailed } from '@actions/core'
 import { aiHandle } from './telemetry'
+import { v4 as uuid } from 'uuid'
 
 export abstract class Action {
 	abstract id: string
@@ -16,7 +17,7 @@ export abstract class Action {
 	private token = getRequiredInput('token')
 
 	constructor() {
-		console.log('::stop-commands::' + Math.random().toString(36).substring(7))
+		console.log('::stop-commands::' + uuid())
 		this.username = new GitHub(this.token).users.getAuthenticated().then((v) => v.data.name)
 	}
 

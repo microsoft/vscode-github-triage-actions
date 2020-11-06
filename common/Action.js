@@ -9,10 +9,11 @@ const github_1 = require("@actions/github");
 const utils_1 = require("./utils");
 const core_1 = require("@actions/core");
 const telemetry_1 = require("./telemetry");
+const uuid_1 = require("uuid");
 class Action {
     constructor() {
         this.token = utils_1.getRequiredInput('token');
-        console.log('::stop-commands::' + Math.random().toString(36).substring(7));
+        console.log('::stop-commands::' + uuid_1.v4());
         this.username = new github_1.GitHub(this.token).users.getAuthenticated().then((v) => v.data.name);
     }
     async trackMetric(telemetry) {
