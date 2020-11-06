@@ -18,6 +18,7 @@
 	],
 	"ignorePatterns": [
 		"node_modules",
+		"vm-filesystem",
 		"*.js"
 	],
 	"rules": {
