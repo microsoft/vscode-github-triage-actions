@@ -41,4 +41,26 @@ describe('Locker', () => {
 		const testbed = new Testbed({ queryRunner })
 		await new Locker(testbed, 10, 1, 'exclude').run()
 	})
+
+	it('observes the exclude until label if present', async () => {
+		const issue: TestbedIssueConstructorArgs = {
+			issue: {
+				open: false,
+				locked: false,
+			},
+			labels: ['authorVerificationRequested'],
+		}
+
+		const queryRunner = async function* (): AsyncIterableIterator<TestbedIssueConstructorArgs[]> {
+			yield [issue]
+		}
+
+		const testbed = new Testbed({ queryRunner })
+		expect(issue?.issue?.locked).to.be.false
+		await new Locker(testbed, 10, 1, 'exclude', 'authorVerificationRequested', 'verify').run()
+		expect(issue?.issue?.locked).to.be.false
+		issue.labels?.push('verify')
+		await new Locker(testbed, 10, 1, 'exclude', 'authorVerificationRequested', 'verify').run()
+		expect(issue?.issue?.locked).to.be.true
+	})
 })

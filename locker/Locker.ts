@@ -12,6 +12,8 @@ export class Locker {
 		private daysSinceClose: number,
 		private daysSinceUpdate: number,
 		private label?: string,
+		private ignoreLabelUntil?: string,
+		private labelUntil?: string,
 	) {}
 
 	async run() {
@@ -33,8 +35,15 @@ export class Locker {
 						(!this.label || !hydrated.labels.includes(this.label))
 						// TODO: Verify closed and updated timestamps
 					) {
-						safeLog(`Locking issue ${hydrated.number}`)
-						await issue.lockIssue()
+						if (
+							(!this.ignoreLabelUntil || hydrated.labels.includes(this.ignoreLabelUntil)) &&
+							(!this.labelUntil || hydrated.labels.includes(this.labelUntil))
+						) {
+							safeLog(`Locking issue ${hydrated.number}`)
+							await issue.lockIssue()
+						} else {
+							safeLog(`Not locking issue as it has ignoreLabelUntil but not labelUntil`)
+						}
 					} else {
 						if (hydrated.locked) {
 							safeLog(`Issue ${hydrated.number} is already locked. Ignoring`)

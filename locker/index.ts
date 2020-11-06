@@ -17,6 +17,8 @@ class LockerAction extends Action {
 			+getRequiredInput('daysSinceClose'),
 			+getRequiredInput('daysSinceUpdate'),
 			getInput('ignoredLabel') || undefined,
+			getInput('ignoreLabelUntil') || undefined,
+			getInput('untilLabel') || undefined,
 		).run()
 	}
 }

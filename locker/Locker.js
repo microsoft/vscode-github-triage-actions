@@ -6,11 +6,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../common/utils");
 class Locker {
-    constructor(github, daysSinceClose, daysSinceUpdate, label) {
+    constructor(github, daysSinceClose, daysSinceUpdate, label, ignoreLabelUntil, labelUntil) {
         this.github = github;
         this.daysSinceClose = daysSinceClose;
         this.daysSinceUpdate = daysSinceUpdate;
         this.label = label;
+        this.ignoreLabelUntil = ignoreLabelUntil;
+        this.labelUntil = labelUntil;
     }
     async run() {
         const closedTimestamp = utils_1.daysAgoToHumanReadbleDate(this.daysSinceClose);
@@ -25,8 +27,14 @@ class Locker {
                     (!this.label || !hydrated.labels.includes(this.label))
                 // TODO: Verify closed and updated timestamps
                 ) {
-                    utils_1.safeLog(`Locking issue ${hydrated.number}`);
-                    await issue.lockIssue();
+                    if ((!this.ignoreLabelUntil || hydrated.labels.includes(this.ignoreLabelUntil)) &&
+                        (!this.labelUntil || hydrated.labels.includes(this.labelUntil))) {
+                        utils_1.safeLog(`Locking issue ${hydrated.number}`);
+                        await issue.lockIssue();
+                    }
+                    else {
+                        utils_1.safeLog(`Not locking issue as it has ignoreLabelUntil but not labelUntil`);
+                    }
                 }
                 else {
                     if (hydrated.locked) {

@@ -316,6 +316,10 @@ inputs:
     required: true
   ignoredLabel:
     description: items with this label will not be automatically locked
+  ignoreLabelUntil:
+    description: items with this label will not be automatically locked, until they also have the until label
+  labelUntil:
+    description: items with this will not automatically locked, even if they have the ignoreLabelUntil label
 ```
 
 ### Needs More Info Closer
