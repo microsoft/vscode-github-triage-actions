@@ -47,7 +47,7 @@ export class OctoKit implements GitHub {
 			if (pageNum < 2) {
 				/* pass */
 			} else if (pageNum < 4) {
-				await new Promise((resolve) => setTimeout(resolve, 3000))
+				await new Promise((resolve) => setTimeout(resolve, 10000))
 			} else {
 				await new Promise((resolve) => setTimeout(resolve, 30000))
 			}
