@@ -64,7 +64,7 @@ describe('Locker', () => {
 		expect(issue?.issue?.locked).to.be.true
 	})
 
-	it.only('locks issues that do not contain exclude label', async () => {
+	it('locks issues that do not contain exclude label', async () => {
 		const issue: TestbedIssueConstructorArgs = {
 			issue: {
 				open: false,
