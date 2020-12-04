@@ -27,8 +27,11 @@ class Locker {
                     (!this.label || !hydrated.labels.includes(this.label))
                 // TODO: Verify closed and updated timestamps
                 ) {
-                    if ((!this.ignoreLabelUntil || hydrated.labels.includes(this.ignoreLabelUntil)) &&
-                        (!this.labelUntil || hydrated.labels.includes(this.labelUntil))) {
+                    const skipDueToIgnoreLabel = this.ignoreLabelUntil &&
+                        this.labelUntil &&
+                        hydrated.labels.includes(this.ignoreLabelUntil) &&
+                        !hydrated.labels.includes(this.labelUntil);
+                    if (!skipDueToIgnoreLabel) {
                         utils_1.safeLog(`Locking issue ${hydrated.number}`);
                         await issue.lockIssue();
                     }
