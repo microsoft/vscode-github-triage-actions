@@ -8,10 +8,11 @@ const telemetry_1 = require("../common/telemetry");
 const utils_1 = require("../common/utils");
 /* eslint-enable */
 class Commands {
-    constructor(github, config, action) {
+    constructor(github, config, action, hydrate) {
         this.github = github;
         this.config = config;
         this.action = action;
+        this.hydrate = hydrate;
     }
     async matches(command, issue) {
         if (command.requireLabel && !issue.labels.includes(command.requireLabel)) {
@@ -80,7 +81,7 @@ class Commands {
             tasks.push(this.github.closeIssue());
         }
         if (command.comment && (command.action !== 'close' || issue.open)) {
-            tasks.push(this.github.postComment(command.comment));
+            tasks.push(this.github.postComment(this.hydrate(command.comment, issue)));
         }
         if (command.addLabel) {
             tasks.push(this.github.addLabel(command.addLabel));

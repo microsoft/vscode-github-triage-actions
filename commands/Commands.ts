@@ -22,6 +22,7 @@ export class Commands {
 		private github: GitHubIssue,
 		private config: Command[],
 		private action: { label: string } | { comment: string; user: User },
+		private hydrate: (comment: string, issue: Issue) => string,
 	) {}
 
 	private async matches(command: Command, issue: Issue): Promise<boolean> {
@@ -111,7 +112,7 @@ export class Commands {
 		}
 
 		if (command.comment && (command.action !== 'close' || issue.open)) {
-			tasks.push(this.github.postComment(command.comment))
+			tasks.push(this.github.postComment(this.hydrate(command.comment, issue)))
 		}
 
 		if (command.addLabel) {
