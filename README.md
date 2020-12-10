@@ -64,7 +64,7 @@ This setup is more involved and detailed in the [Action's README](/classifier-de
 
 This classifier generates assignees and lables using a model stored in Azure Blob storage and generated using a GitHub Actions runner.
 
-The full classifier workflow is a 2-part process (Train, Apply), with each part consisting of several individual Actions. It maay be helpful to see how this is configured in the [vscode-remote-release repository](https://github.com/microsoft/vscode-remote-release/tree/master/.github/workflows).
+The full classifier workflow is a 2-part process (Train, Apply), with each part consisting of several individual Actions. It may be helpful to see how this is configured in the [vscode-remote-release repository](https://github.com/microsoft/vscode-remote-release/tree/master/.github/workflows).
 
 #### Train
 
