@@ -339,7 +339,7 @@ describe('Commands', () => {
 			expect((await testbed.getIssue()).open).to.equal(false)
 		})
 
-		it.only('Comments', async () => {
+		it('Comments', async () => {
 			const testbed = new TestbedIssue({ writers: ['JacksonKearl'] })
 			const commands: Command[] = [
 				{
