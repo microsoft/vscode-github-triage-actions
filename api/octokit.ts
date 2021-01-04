@@ -156,6 +156,8 @@ export class OctoKit implements GitHub {
 	}
 
 	async releaseContainsCommit(release: string, commit: string): Promise<'yes' | 'no' | 'unknown'> {
+		const isHash = (s: string) => /^[a-fA-F0-9]*$/.test(s)
+		if (!isHash(release) || !isHash(commit)) return 'unknown'
 		return new Promise((resolve, reject) =>
 			exec(`git -C ./repo merge-base --is-ancestor ${commit} ${release}`, (err) => {
 				if (!err || err.code === 1) {
@@ -370,7 +372,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			return
 		}
 
-		const closingHashComment = /(?:\\|\/)closedWith (\S*)/
+		const closingHashComment = /(?:\\|\/)closedWith ([a-fA-F0-9]*)/
 
 		const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
 			...this.params,

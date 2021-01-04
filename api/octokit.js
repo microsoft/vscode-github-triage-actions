@@ -138,6 +138,9 @@ class OctoKit {
         }
     }
     async releaseContainsCommit(release, commit) {
+        const isHash = (s) => /^[a-fA-F0-9]*$/.test(s);
+        if (!isHash(release) || !isHash(commit))
+            return 'unknown';
         return new Promise((resolve, reject) => child_process_1.exec(`git -C ./repo merge-base --is-ancestor ${commit} ${release}`, (err) => {
             if (!err || err.code === 1) {
                 resolve(!err ? 'yes' : 'no');
@@ -321,7 +324,7 @@ class OctoKitIssue extends OctoKit {
         if ((await this.getIssue()).open) {
             return;
         }
-        const closingHashComment = /(?:\\|\/)closedWith (\S*)/;
+        const closingHashComment = /(?:\\|\/)closedWith ([a-fA-F0-9]*)/;
         const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
             ...this.params,
             issue_number: this.issueData.number,
