@@ -59,7 +59,8 @@ export class OctoKit implements GitHub {
 			const page: Array<Octokit.SearchIssuesAndPullRequestsResponseItemsItem> = pageResponse.data
 			safeLog(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`)
 			yield page.map(
-				(issue) => new OctoKitIssue(this.token, this.params, this.octokitIssueToIssue(issue)),
+				(issue) =>
+					new OctoKitIssue(this.token, this.params, this.octokitIssueToIssue(issue), this.options),
 			)
 		}
 	}
