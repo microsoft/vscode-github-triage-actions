@@ -49,7 +49,7 @@ class OctoKit {
             numRequests++;
             const page = pageResponse.data;
             utils_1.safeLog(`Page ${++pageNum}: ${page.map(({ number }) => number).join(' ')}`);
-            yield page.map((issue) => new OctoKitIssue(this.token, this.params, this.octokitIssueToIssue(issue)));
+            yield page.map((issue) => new OctoKitIssue(this.token, this.params, this.octokitIssueToIssue(issue), this.options));
         }
     }
     async createIssue(owner, repo, title, body) {
