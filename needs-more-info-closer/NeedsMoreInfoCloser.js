@@ -37,7 +37,7 @@ class NeedsMoreInfoCloser {
                         this.additionalTeam.includes(lastComment.author.name) ||
                         (await issue.hasWriteAccess(lastComment.author))) {
                         if (lastComment) {
-                            utils_1.safeLog(`Last comment on ${hydrated.number} by rando. Closing.`);
+                            utils_1.safeLog(`Last comment on ${hydrated.number} by team. Closing.`);
                         }
                         else {
                             utils_1.safeLog(`No comments on ${hydrated.number}. Closing.`);

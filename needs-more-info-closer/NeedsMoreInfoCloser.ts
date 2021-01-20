@@ -45,7 +45,7 @@ export class NeedsMoreInfoCloser {
 						(await issue.hasWriteAccess(lastComment.author))
 					) {
 						if (lastComment) {
-							safeLog(`Last comment on ${hydrated.number} by rando. Closing.`)
+							safeLog(`Last comment on ${hydrated.number} by team. Closing.`)
 						} else {
 							safeLog(`No comments on ${hydrated.number}. Closing.`)
 						}
