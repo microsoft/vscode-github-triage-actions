@@ -1,0 +1,13 @@
+name: 'Build Chat'
+description: 'Notify in chat about build results.'
+author: 'Christof Marti'
+inputs:
+  workflow_run_url:
+    description: 'Workflow run URL of the completed build.'
+    required: true
+  notify_channel:
+    description: 'Whether the notifications should be sent to the channel as opposed to individual accounts. Defaults to false.'
+    required: false
+runs:
+  using: 'node12'
+  main: 'index.js'
