@@ -3,41 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as core from '@actions/core'
 import { Octokit } from '@octokit/rest'
 import { WebClient } from '@slack/web-api'
 import * as storage from 'azure-storage'
 import { WritableStreamBuffer } from 'stream-buffers'
-;(async () => {
-	const actionUrl = core.getInput('workflow_run_url')
-	const url =
-		actionUrl || 'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/528305299'
-	console.log(url)
-	const parts = url.split('/')
+
+let safeLog: (message: string, ...args: any[]) => void // utils.ts needs GITHUB_REPOSITORY set below.
+
+if (require.main === module) {
+	process.env.GITHUB_REPOSITORY = 'microsoft/vscode-remote-containers'
+	safeLog = require('../common/utils').safeLog
+	const auth = `token ${process.env.GITHUB_TOKEN}`
+	const octokit = new Octokit({ auth })
+	const workflowUrl =
+		'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/528305299'
+	const options = {
+		notifyAuthors: true,
+		notificationChannel: 'bottest',
+		logChannel: 'bot-log',
+	}
+	;(async () => {
+		await buildChat(octokit, workflowUrl, options)
+	})().then(undefined, safeLog)
+} else {
+	safeLog = require('../common/utils').safeLog
+}
+
+export interface Options {
+	notifyAuthors?: boolean
+	notificationChannel?: string
+	logChannel?: string
+}
+
+export async function buildChat(octokit: Octokit, workflowUrl: string, options: Options = {}) {
+	safeLog(workflowUrl)
+	const parts = workflowUrl.split('/')
 	const owner = parts[parts.length - 5]
 	const repo = parts[parts.length - 4]
 	const runId = parseInt(parts[parts.length - 1], 10)
-	// eslint-disable-next-line no-constant-condition
-	if (1) {
-		const options = actionUrl
-			? {
-					notifyAuthors: core.getInput('notify_authors') === 'true',
-					notificationChannel: core.getInput('notification_channel'),
-					logChannel: core.getInput('log_channel'),
-			  }
-			: {
-					notifyAuthors: true,
-					notificationChannel: 'bottest',
-					logChannel: 'bot-log',
-			  }
-		await handleNotification(owner, repo, runId, options)
-	} else {
-		const results = await buildComplete(owner, repo, runId)
-		for (const message of [...results.logMessages, ...results.messages]) {
-			console.log(message)
-		}
-	}
-})().then(null, console.error)
+	await handleNotification(octokit, owner, repo, runId, options)
+}
 
 interface UserOrChannel {
 	id: string
@@ -49,19 +54,21 @@ interface Team {
 }
 
 async function handleNotification(
+	octokit: Octokit,
 	owner: string,
 	repo: string,
 	runId: number,
-	options: { notifyAuthors: boolean; notificationChannel?: string; logChannel?: string },
+	options: Options,
 ) {
-	const results = await buildComplete(owner, repo, runId)
-	if (results.logMessages.length || results.messages.length) {
-		const web = new WebClient(process.env.SLACK_TOKEN)
+	const results = await buildComplete(octokit, owner, repo, runId)
+	const slackToken = process.env.SLACK_TOKEN
+	if (slackToken && (results.logMessages.length || results.messages.length)) {
+		const web = new WebClient(slackToken)
 		const memberships = await listAllMemberships(web)
 
 		const logChannel = options.logChannel && memberships.find((m) => m.name === options.logChannel)
 		if (options.logChannel && !logChannel) {
-			console.log(`Log channel not found: ${options.logChannel}`)
+			safeLog(`Log channel not found: ${options.logChannel}`)
 		}
 		if (logChannel) {
 			for (const logMessage of results.logMessages) {
@@ -86,7 +93,7 @@ async function handleNotification(
 		const notificationChannel =
 			options.notificationChannel && memberships.find((m) => m.name === options.notificationChannel)
 		if (options.notificationChannel && !notificationChannel) {
-			console.log(`Notification channel not found: ${options.notificationChannel}`)
+			safeLog(`Notification channel not found: ${options.notificationChannel}`)
 		}
 		for (const message of results.messages) {
 			const notificationChannels: UserOrChannel[] = []
@@ -107,7 +114,7 @@ async function handleNotification(
 						).channel as UserOrChannel
 						notificationChannels.push(channel)
 					} else {
-						console.log(`Slack user not found: ${slackAuthor}`)
+						safeLog(`Slack user not found: ${slackAuthor}`)
 					}
 				}
 			}
@@ -124,10 +131,8 @@ async function handleNotification(
 	}
 }
 
-async function buildComplete(owner: string, repo: string, runId: number) {
-	console.log(`buildComplete: https://github.com/${owner}/${repo}/actions/runs/${runId}`)
-	const auth = `token ${process.env.GITHUB_TOKEN}`
-	const octokit = new Octokit({ auth })
+async function buildComplete(octokit: Octokit, owner: string, repo: string, runId: number) {
+	safeLog(`buildComplete: https://github.com/${owner}/${repo}/actions/runs/${runId}`)
 	const buildResult = (
 		await octokit.actions.getWorkflowRun({
 			owner,
@@ -157,9 +162,11 @@ async function buildComplete(owner: string, repo: string, runId: number) {
 
 	const currentBuildIndex = buildResults.findIndex((build) => build.id === buildResult.id)
 	if (currentBuildIndex === -1) {
-		console.error('Build not on first page. Terminating.')
-		console.error(buildResults.map(({ id, status, conclusion }) => ({ id, status, conclusion })))
-		return { logMessages: [], messages: [] }
+		safeLog('Build not on first page. Terminating.')
+		safeLog(
+			JSON.stringify(buildResults.map(({ id, status, conclusion }) => ({ id, status, conclusion }))),
+		)
+		throw new Error('Build not on first page. Terminating.')
 	}
 	const slicedResults = buildResults.slice(currentBuildIndex, currentBuildIndex + 2)
 	const builds = slicedResults.map<Build>((build, i, array) => ({
@@ -262,7 +269,7 @@ function githubToAccounts(accounts: Accounts[]) {
 async function readAccounts() {
 	const connectionString = process.env.BUILD_CHAT_STORAGE_CONNECTION_STRING
 	if (!connectionString) {
-		console.error('Connection string missing.')
+		safeLog('Connection string missing.')
 		return []
 	}
 	const buf = await readFile(connectionString, 'config', '/', 'accounts.json')
