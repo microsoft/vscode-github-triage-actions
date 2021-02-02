@@ -14,7 +14,7 @@ class Action {
     constructor() {
         this.token = utils_1.getRequiredInput('token');
         console.log('::stop-commands::' + uuid_1.v4());
-        this.username = new github_1.GitHub(this.token).users.getAuthenticated().then((v) => v.data.name);
+        this.username = new github_1.GitHub(this.token).users.getAuthenticated().then((v) => v.data.name, () => 'unknown');
     }
     async trackMetric(telemetry) {
         if (telemetry_1.aiHandle) {

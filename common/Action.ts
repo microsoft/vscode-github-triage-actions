@@ -18,7 +18,10 @@ export abstract class Action {
 
 	constructor() {
 		console.log('::stop-commands::' + uuid())
-		this.username = new GitHub(this.token).users.getAuthenticated().then((v) => v.data.name)
+		this.username = new GitHub(this.token).users.getAuthenticated().then(
+			(v) => v.data.name,
+			() => 'unknown',
+		)
 	}
 
 	public async trackMetric(telemetry: { name: string; value: number }) {
