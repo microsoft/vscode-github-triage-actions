@@ -81,7 +81,12 @@ class Action {
             }
         }
         catch (e) {
-            await this.error(e);
+            try {
+                await this.error(e);
+            }
+            catch {
+                utils_1.safeLog((e === null || e === void 0 ? void 0 : e.stack) || (e === null || e === void 0 ? void 0 : e.message) || String(e));
+            }
         }
         await this.trackMetric({ name: 'octokit_request_count', value: octokit_1.getNumRequests() });
         const usage = await utils_1.getRateLimit(this.token);
