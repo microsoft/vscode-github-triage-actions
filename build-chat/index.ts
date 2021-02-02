@@ -10,7 +10,6 @@ import * as storage from 'azure-storage'
 import { WritableStreamBuffer } from 'stream-buffers'
 ;(async () => {
 	const actionUrl = core.getInput('workflow_run_url')
-	const notifyChannel = core.getInput('notify_channel') === 'true'
 	const url =
 		actionUrl || 'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/528305299'
 	console.log(url)
@@ -18,8 +17,20 @@ import { WritableStreamBuffer } from 'stream-buffers'
 	const owner = parts[parts.length - 5]
 	const repo = parts[parts.length - 4]
 	const runId = parseInt(parts[parts.length - 1], 10)
-	if (actionUrl) {
-		await handleNotification(owner, repo, runId, notifyChannel)
+	// eslint-disable-next-line no-constant-condition
+	if (1) {
+		const options = actionUrl
+			? {
+					notifyAuthors: core.getInput('notify_authors') === 'true',
+					notificationChannel: core.getInput('notification_channel'),
+					logChannel: core.getInput('log_channel'),
+			  }
+			: {
+					notifyAuthors: true,
+					notificationChannel: 'bottest',
+					logChannel: 'bot-log',
+			  }
+		await handleNotification(owner, repo, runId, options)
 	} else {
 		const results = await buildComplete(owner, repo, runId)
 		for (const message of [...results.logMessages, ...results.messages]) {
@@ -28,50 +39,64 @@ import { WritableStreamBuffer } from 'stream-buffers'
 	}
 })().then(null, console.error)
 
-const testChannels = ['bot-log', 'bot-test-log']
-
-interface User {
+interface UserOrChannel {
 	id: string
 	name: string
 }
 
 interface Team {
-	members: User[]
+	members: UserOrChannel[]
 }
 
-async function handleNotification(owner: string, repo: string, runId: number, notifyChannel: boolean) {
+async function handleNotification(
+	owner: string,
+	repo: string,
+	runId: number,
+	options: { notifyAuthors: boolean; notificationChannel?: string; logChannel?: string },
+) {
 	const results = await buildComplete(owner, repo, runId)
 	if (results.logMessages.length || results.messages.length) {
 		const web = new WebClient(process.env.SLACK_TOKEN)
 		const memberships = await listAllMemberships(web)
-		const memberTestChannels = memberships.filter((m) => testChannels.indexOf(m.name) !== -1)
 
-		for (const message of results.logMessages) {
-			for (const testChannel of memberTestChannels) {
+		const logChannel = options.logChannel && memberships.find((m) => m.name === options.logChannel)
+		if (options.logChannel && !logChannel) {
+			console.log(`Log channel not found: ${options.logChannel}`)
+		}
+		if (logChannel) {
+			for (const logMessage of results.logMessages) {
 				await web.chat.postMessage({
-					text: message,
+					text: logMessage,
 					link_names: true,
-					channel: testChannel.id,
+					channel: logChannel.id,
 					as_user: true,
 				})
 			}
 		}
-		for (const message of results.messages) {
-			for (const channel of notifyChannel ? memberships : memberTestChannels) {
-				await web.chat.postMessage({
-					text: message.text,
-					link_names: true,
-					channel: channel.id,
-					as_user: true,
-				})
-			}
-			if (!notifyChannel) {
-				const usersByName: Record<string, User> = {}
-				for await (const page of web.paginate('users.list')) {
-					for (const member of ((page as unknown) as Team).members) {
-						usersByName[member.name] = member
-					}
+
+		const usersByName: Record<string, UserOrChannel> = {}
+		if (options.notifyAuthors) {
+			for await (const page of web.paginate('users.list')) {
+				for (const member of ((page as unknown) as Team).members) {
+					usersByName[member.name] = member
 				}
+			}
+		}
+
+		const notificationChannel =
+			options.notificationChannel && memberships.find((m) => m.name === options.notificationChannel)
+		if (options.notificationChannel && !notificationChannel) {
+			console.log(`Notification channel not found: ${options.notificationChannel}`)
+		}
+		for (const message of results.messages) {
+			const notificationChannels: UserOrChannel[] = []
+			if (logChannel) {
+				notificationChannels.push(logChannel)
+			}
+			if (notificationChannel) {
+				notificationChannels.push(notificationChannel)
+			}
+			if (options.notifyAuthors) {
 				for (const slackAuthor of message.slackAuthors) {
 					const user = usersByName[slackAuthor]
 					if (user) {
@@ -79,15 +104,21 @@ async function handleNotification(owner: string, repo: string, runId: number, no
 							await web.conversations.open({
 								users: user.id,
 							})
-						).channel as { id: string }
-						await web.chat.postMessage({
-							text: message.text,
-							link_names: true,
-							channel: channel.id,
-							as_user: true,
-						})
+						).channel as UserOrChannel
+						notificationChannels.push(channel)
+					} else {
+						console.log(`Slack user not found: ${slackAuthor}`)
 					}
 				}
+			}
+
+			for (const channel of notificationChannels) {
+				await web.chat.postMessage({
+					text: message.text,
+					link_names: true,
+					channel: channel.id,
+					as_user: true,
+				})
 			}
 		}
 	}

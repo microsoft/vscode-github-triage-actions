@@ -5,8 +5,14 @@ inputs:
   workflow_run_url:
     description: 'Workflow run URL of the completed build.'
     required: true
-  notify_channel:
-    description: 'Whether the notifications should be sent to the channel as opposed to individual accounts. Defaults to false.'
+  notify_authors:
+    description: 'Whether the notifications should be sent directly to users. Defaults to false.'
+    required: false
+  notification_channel:
+    description: 'Which channel to send notifications to. Defaults to none.'
+    required: false
+  log_channel:
+    description: 'Which channel to send log messages to. Defaults to none.'
     required: false
 runs:
   using: 'node12'
