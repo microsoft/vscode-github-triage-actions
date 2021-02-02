@@ -5,8 +5,7 @@
 
 import { Octokit } from '@octokit/rest'
 import { WebClient } from '@slack/web-api'
-import * as storage from 'azure-storage'
-import { WritableStreamBuffer } from 'stream-buffers'
+import { BlobServiceClient } from '@azure/storage-blob'
 
 let safeLog: (message: string, ...args: any[]) => void // utils.ts needs GITHUB_REPOSITORY set below.
 
@@ -16,7 +15,7 @@ if (require.main === module) {
 	const auth = `token ${process.env.GITHUB_TOKEN}`
 	const octokit = new Octokit({ auth })
 	const workflowUrl =
-		'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/528305299'
+		'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/531076964'
 	const options: Options = {
 		slackToken: process.env.SLACK_TOKEN,
 		storageConnectionString: process.env.STORAGE_CONNECTION_STRING,
@@ -274,27 +273,11 @@ async function readAccounts(connectionString: string | undefined) {
 		safeLog('Connection string missing.')
 		return []
 	}
-	const buf = await readFile(connectionString, 'config', '/', 'accounts.json')
+	const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
+	const containerClient = blobServiceClient.getContainerClient('config')
+	const createContainerResponse = containerClient.getBlockBlobClient('accounts.json')
+	const buf = await createContainerResponse.downloadToBuffer()
 	return JSON.parse(buf.toString()) as Accounts[]
-}
-
-async function readFile(connectionString: string, share: string, directory: string, filename: string) {
-	return new Promise<Buffer>((resolve, reject) => {
-		const stream = new WritableStreamBuffer()
-		const fileService = storage.createFileService(connectionString)
-		fileService.getFileToStream(share, directory, filename, stream, (err) => {
-			if (err) {
-				reject(err)
-			} else {
-				const contents = stream.getContents()
-				if (contents) {
-					resolve(contents)
-				} else {
-					reject(new Error('No content'))
-				}
-			}
-		})
-	})
 }
 
 interface AllChannels {

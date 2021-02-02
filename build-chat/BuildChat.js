@@ -6,15 +6,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const rest_1 = require("@octokit/rest");
 const web_api_1 = require("@slack/web-api");
-const storage = require("azure-storage");
-const stream_buffers_1 = require("stream-buffers");
+const storage_blob_1 = require("@azure/storage-blob");
 let safeLog; // utils.ts needs GITHUB_REPOSITORY set below.
 if (require.main === module) {
     process.env.GITHUB_REPOSITORY = 'microsoft/vscode-remote-containers';
     safeLog = require('../common/utils').safeLog;
     const auth = `token ${process.env.GITHUB_TOKEN}`;
     const octokit = new rest_1.Octokit({ auth });
-    const workflowUrl = 'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/528305299';
+    const workflowUrl = 'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/531076964';
     const options = {
         slackToken: process.env.SLACK_TOKEN,
         storageConnectionString: process.env.STORAGE_CONNECTION_STRING,
@@ -200,28 +199,11 @@ async function readAccounts(connectionString) {
         safeLog('Connection string missing.');
         return [];
     }
-    const buf = await readFile(connectionString, 'config', '/', 'accounts.json');
+    const blobServiceClient = storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
+    const containerClient = blobServiceClient.getContainerClient('config');
+    const createContainerResponse = containerClient.getBlockBlobClient('accounts.json');
+    const buf = await createContainerResponse.downloadToBuffer();
     return JSON.parse(buf.toString());
-}
-async function readFile(connectionString, share, directory, filename) {
-    return new Promise((resolve, reject) => {
-        const stream = new stream_buffers_1.WritableStreamBuffer();
-        const fileService = storage.createFileService(connectionString);
-        fileService.getFileToStream(share, directory, filename, stream, (err) => {
-            if (err) {
-                reject(err);
-            }
-            else {
-                const contents = stream.getContents();
-                if (contents) {
-                    resolve(contents);
-                }
-                else {
-                    reject(new Error('No content'));
-                }
-            }
-        });
-    });
 }
 async function listAllMemberships(web) {
     const groups = (await web.conversations.list({
