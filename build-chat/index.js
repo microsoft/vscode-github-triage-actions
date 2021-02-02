@@ -17,7 +17,7 @@ class BuildChatAction extends Action_1.Action {
         const auth = utils_1.getRequiredInput('token');
         const github = new rest_1.Octokit({ auth });
         await BuildChat_1.buildChat(github, utils_1.getRequiredInput('workflow_run_url'), {
-            slackToken: utils_1.getRequiredInput('stack_token'),
+            slackToken: utils_1.getRequiredInput('slack_token'),
             storageConnectionString: utils_1.getInput('storage_connection_string') || undefined,
             notifyAuthors: utils_1.getInput('notify_authors') === 'true',
             notificationChannel: utils_1.getInput('notification_channel') || undefined,
