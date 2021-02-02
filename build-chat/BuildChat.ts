@@ -17,7 +17,9 @@ if (require.main === module) {
 	const octokit = new Octokit({ auth })
 	const workflowUrl =
 		'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/528305299'
-	const options = {
+	const options: Options = {
+		slackToken: process.env.SLACK_TOKEN,
+		storageConnectionString: process.env.STORAGE_CONNECTION_STRING,
 		notifyAuthors: true,
 		notificationChannel: 'bottest',
 		logChannel: 'bot-log',
@@ -30,6 +32,8 @@ if (require.main === module) {
 }
 
 export interface Options {
+	slackToken?: string
+	storageConnectionString?: string
 	notifyAuthors?: boolean
 	notificationChannel?: string
 	logChannel?: string
@@ -60,10 +64,9 @@ async function handleNotification(
 	runId: number,
 	options: Options,
 ) {
-	const results = await buildComplete(octokit, owner, repo, runId)
-	const slackToken = process.env.SLACK_TOKEN
-	if (slackToken && (results.logMessages.length || results.messages.length)) {
-		const web = new WebClient(slackToken)
+	const results = await buildComplete(octokit, owner, repo, runId, options)
+	if (options.slackToken && (results.logMessages.length || results.messages.length)) {
+		const web = new WebClient(options.slackToken)
 		const memberships = await listAllMemberships(web)
 
 		const logChannel = options.logChannel && memberships.find((m) => m.name === options.logChannel)
@@ -131,7 +134,7 @@ async function handleNotification(
 	}
 }
 
-async function buildComplete(octokit: Octokit, owner: string, repo: string, runId: number) {
+async function buildComplete(octokit: Octokit, owner: string, repo: string, runId: number, options: Options) {
 	safeLog(`buildComplete: https://github.com/${owner}/${repo}/actions/runs/${runId}`)
 	const buildResult = (
 		await octokit.actions.getWorkflowRun({
@@ -212,7 +215,7 @@ async function buildComplete(octokit: Octokit, owner: string, repo: string, runI
 	const vscode = repo === 'vscode'
 	const name = vscode ? `VS Code ${build.name} Build` : build.name
 	// TBD: `Requester: ${vstsToSlackUser(build.requester, build.degraded)}${pingBenForSmokeTests && releaseBuild && build.result === 'partiallySucceeded' ? ' | Ping: @bpasero' : ''}`
-	const accounts = await readAccounts()
+	const accounts = await readAccounts(options.storageConnectionString)
 	const githubAccountMap = githubToAccounts(accounts)
 	const messages = transitionedBuilds.map((build) => {
 		return {
@@ -266,8 +269,7 @@ function githubToAccounts(accounts: Accounts[]) {
 	}, <Record<string, Accounts>>{})
 }
 
-async function readAccounts() {
-	const connectionString = process.env.BUILD_CHAT_STORAGE_CONNECTION_STRING
+async function readAccounts(connectionString: string | undefined) {
 	if (!connectionString) {
 		safeLog('Connection string missing.')
 		return []

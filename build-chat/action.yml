@@ -2,6 +2,16 @@ name: 'Build Chat'
 description: 'Notify in chat about build results.'
 author: 'Christof Marti'
 inputs:
+  token:
+    description: GitHub token.
+    default: ${{ github.token }}
+    required: true
+  slack_token:
+    description: Slack token.
+    required: true
+  storage_connection_string:
+    description: Storage connection string.
+    required: false
   workflow_run_url:
     description: 'Workflow run URL of the completed build.'
     required: true
