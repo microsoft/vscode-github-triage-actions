@@ -18,7 +18,10 @@ export abstract class Action {
 
 	constructor() {
 		console.log('::stop-commands::' + uuid())
-		this.username = new GitHub(this.token).users.getAuthenticated().then((v) => v.data.name)
+		this.username = new GitHub(this.token).users.getAuthenticated().then(
+			(v) => v.data.name,
+			() => 'unknown',
+		)
 	}
 
 	public async trackMetric(telemetry: { name: string; value: number }) {
@@ -87,7 +90,11 @@ export abstract class Action {
 				await this.onTriggered(new OctoKit(token, context.repo, { readonly }))
 			}
 		} catch (e) {
-			await this.error(e)
+			try {
+				await this.error(e)
+			} catch {
+				safeLog(e?.stack || e?.message || String(e))
+			}
 		}
 
 		await this.trackMetric({ name: 'octokit_request_count', value: getNumRequests() })

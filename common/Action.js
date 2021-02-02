@@ -14,7 +14,7 @@ class Action {
     constructor() {
         this.token = utils_1.getRequiredInput('token');
         console.log('::stop-commands::' + uuid_1.v4());
-        this.username = new github_1.GitHub(this.token).users.getAuthenticated().then((v) => v.data.name);
+        this.username = new github_1.GitHub(this.token).users.getAuthenticated().then((v) => v.data.name, () => 'unknown');
     }
     async trackMetric(telemetry) {
         if (telemetry_1.aiHandle) {
@@ -81,7 +81,12 @@ class Action {
             }
         }
         catch (e) {
-            await this.error(e);
+            try {
+                await this.error(e);
+            }
+            catch {
+                utils_1.safeLog((e === null || e === void 0 ? void 0 : e.stack) || (e === null || e === void 0 ? void 0 : e.message) || String(e));
+            }
         }
         await this.trackMetric({ name: 'octokit_request_count', value: octokit_1.getNumRequests() });
         const usage = await utils_1.getRateLimit(this.token);
