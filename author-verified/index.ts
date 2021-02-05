@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKit, OctoKitIssue } from '../api/octokit'
+import { OctoKitIssue } from '../api/octokit'
 import { getRequiredInput } from '../common/utils'
-import { AuthorVerifiedLabeler, AuthorVerifiedQueryer } from './AuthorVerified'
+import { AuthorVerifiedLabeler } from './AuthorVerified'
 import { Action } from '../common/Action'
 
 const requestVerificationComment = getRequiredInput('requestVerificationComment')
@@ -15,16 +15,6 @@ const authorVerificationRequestedLabel = getRequiredInput('authorVerificationReq
 
 class AuthorVerified extends Action {
 	id = 'AuthorVerified'
-
-	async onTriggered(octokit: OctoKit) {
-		return new AuthorVerifiedQueryer(
-			octokit,
-			requestVerificationComment,
-			releasedLabel,
-			authorVerificationRequestedLabel,
-			verifiedLabel,
-		).run()
-	}
 
 	private runLabler(issue: OctoKitIssue) {
 		return new AuthorVerifiedLabeler(
@@ -41,7 +31,7 @@ class AuthorVerified extends Action {
 	}
 
 	async onLabeled(issue: OctoKitIssue, label: string) {
-		if (label === authorVerificationRequestedLabel) {
+		if (label === authorVerificationRequestedLabel || label === releasedLabel) {
 			await this.runLabler(issue)
 		}
 	}

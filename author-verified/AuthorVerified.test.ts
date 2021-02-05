@@ -22,7 +22,7 @@ describe('AuthorVerified', () => {
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}
-		expect(comments[0]?.body).not.to.equal('plz verify thx')
+		expect(comments[0]?.body).to.be.undefined
 	})
 
 	it('Does nothing to issues which arent labeled', async () => {
@@ -32,7 +32,7 @@ describe('AuthorVerified', () => {
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}
-		expect(comments[0]?.body).not.to.equal('plz verify thx')
+		expect(comments[0]?.body).to.be.undefined
 	})
 
 	it('Does nothing to issues which have not yet been released', async () => {
@@ -42,7 +42,7 @@ describe('AuthorVerified', () => {
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}
-		expect(comments[0]?.body).not.to.equal('plz verify thx')
+		expect(comments[0]?.body).to.be.undefined
 	})
 
 	it('Does nothing to issues which have not been marked verifiable', async () => {
@@ -52,7 +52,7 @@ describe('AuthorVerified', () => {
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}
-		expect(comments[0]?.body).not.to.equal('plz verify thx')
+		expect(comments[0]?.body).to.be.undefined
 	})
 
 	it('Adds comment to issues which have been released', async () => {
@@ -62,7 +62,7 @@ describe('AuthorVerified', () => {
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}
-		expect(comments[0]?.body).to.equal('plz verify thx')
+		expect(comments[0]?.body).to.contain('plz verify thx')
 	})
 
 	it('Adds comment to issues which are closed with a commit and labeled and released', async () => {
@@ -81,7 +81,7 @@ describe('AuthorVerified', () => {
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}
-		expect(comments[0].body).to.equal('plz verify thx')
+		expect(comments[0].body).to.contain('plz verify thx')
 	})
 
 	it('Does not add comment to issues which are verified already', async () => {
@@ -100,6 +100,6 @@ describe('AuthorVerified', () => {
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}
-		expect(comments[0]?.body).not.to.equal('plz verify thx')
+		expect(comments[0]?.body).to.be.undefined
 	})
 })

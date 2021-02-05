@@ -16,9 +16,6 @@ class AuthorVerified extends Action_1.Action {
         super(...arguments);
         this.id = 'AuthorVerified';
     }
-    async onTriggered(octokit) {
-        return new AuthorVerified_1.AuthorVerifiedQueryer(octokit, requestVerificationComment, releasedLabel, authorVerificationRequestedLabel, verifiedLabel).run();
-    }
     runLabler(issue) {
         return new AuthorVerified_1.AuthorVerifiedLabeler(issue, requestVerificationComment, releasedLabel, authorVerificationRequestedLabel, verifiedLabel).run();
     }
@@ -26,7 +23,7 @@ class AuthorVerified extends Action_1.Action {
         await this.runLabler(issue);
     }
     async onLabeled(issue, label) {
-        if (label === authorVerificationRequestedLabel) {
+        if (label === authorVerificationRequestedLabel || label === releasedLabel) {
             await this.runLabler(issue);
         }
     }
