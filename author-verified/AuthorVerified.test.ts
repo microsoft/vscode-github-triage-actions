@@ -18,13 +18,51 @@ describe('AuthorVerified', () => {
 	it('Does nothing to issues which have not yet been closed', async () => {
 		const testbed = new TestbedIssue({}, { labels: ['verify-plz'] })
 		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
-		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
+		const comments: Comment[] = []
+		for await (const page of testbed.getComments()) {
+			comments.push(...page)
+		}
+		expect(comments[0]?.body).not.to.equal('plz verify thx')
 	})
 
 	it('Does nothing to issues which arent labeled', async () => {
 		const testbed = new TestbedIssue({}, { labels: [], issue: { open: false } })
 		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
-		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
+		const comments: Comment[] = []
+		for await (const page of testbed.getComments()) {
+			comments.push(...page)
+		}
+		expect(comments[0]?.body).not.to.equal('plz verify thx')
+	})
+
+	it('Does nothing to issues which have not yet been released', async () => {
+		const testbed = new TestbedIssue({}, { labels: ['verify-plz'], issue: { open: false } })
+		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
+		const comments: Comment[] = []
+		for await (const page of testbed.getComments()) {
+			comments.push(...page)
+		}
+		expect(comments[0]?.body).not.to.equal('plz verify thx')
+	})
+
+	it('Does nothing to issues which have not been marked verifiable', async () => {
+		const testbed = new TestbedIssue({}, { labels: ['released'], issue: { open: false } })
+		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
+		const comments: Comment[] = []
+		for await (const page of testbed.getComments()) {
+			comments.push(...page)
+		}
+		expect(comments[0]?.body).not.to.equal('plz verify thx')
+	})
+
+	it('Adds comment to issues which have been released', async () => {
+		const testbed = new TestbedIssue({}, { labels: ['verify-plz', 'released'], issue: { open: false } })
+		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
+		const comments: Comment[] = []
+		for await (const page of testbed.getComments()) {
+			comments.push(...page)
+		}
+		expect(comments[0]?.body).to.equal('plz verify thx')
 	})
 
 	it('Adds comment to issues which are closed with a commit and labeled and released', async () => {
