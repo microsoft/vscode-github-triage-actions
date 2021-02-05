@@ -17,13 +17,14 @@ export class AuthorVerifiedQueryer {
 	) {}
 
 	async run(): Promise<void> {
-		const query = `is:closed label:${this.releasedLabel} label:${this.authorVerificationRequestedLabel}`
+		const query = `is:closed label:${this.releasedLabel} label:${this.authorVerificationRequestedLabel} -label:${this.verifiedLabel}`
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
 				const issueData = await issue.getIssue()
 				if (
 					issueData.labels.includes(this.releasedLabel) &&
 					issueData.labels.includes(this.authorVerificationRequestedLabel) &&
+					!issueData.labels.includes(this.verifiedLabel) &&
 					issueData.open === false
 				) {
 					await new AuthorVerifiedLabeler(
@@ -33,7 +34,7 @@ export class AuthorVerifiedQueryer {
 						this.authorVerificationRequestedLabel,
 						this.verifiedLabel,
 					).run()
-					await new Promise((resolve) => setTimeout(resolve, 1000))
+					await new Promise((resolve) => setTimeout(resolve, 5000))
 				} else {
 					safeLog('Query returned an invalid issue:' + issueData.number)
 				}
@@ -51,6 +52,22 @@ export class AuthorVerifiedLabeler {
 		private verifiedLabel: string,
 	) {}
 
+	private async commentVerficationRequest(comment: string) {
+		const key = `<!-- AUTHOR_VERIFICATION_REQUEST -->`
+
+		for await (const page of this.github.getComments()) {
+			for (const comment of page) {
+				if (
+					comment.body.includes(key) ||
+					comment.body.includes('you can help us out by commenting `/verified`') // legacy
+				) {
+					return
+				}
+			}
+		}
+		await this.github.postComment(`${key}\n${comment}`)
+	}
+
 	async run(): Promise<void> {
 		const issue = await this.github.getIssue()
 
@@ -66,7 +83,7 @@ export class AuthorVerifiedLabeler {
 			if (!latestRelease) throw Error('Error loading latest release')
 			await trackEvent(this.github, 'author-verified:verifiable')
 			if (!issue.labels.includes(this.verifiedLabel)) {
-				await this.github.postComment(
+				await this.commentVerficationRequest(
 					this.comment
 						.replace('${commit}', latestRelease.version)
 						.replace('${author}', issue.author.name),
