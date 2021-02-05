@@ -23,6 +23,11 @@ class ReleasePipelineAction extends Action_1.Action {
     async onTriggered(github) {
         await new ReleasePipeline_1.ReleasePipeline(github, notYetReleasedLabel, insidersReleasedLabel).run();
     }
+    async onCommented(issue, comment) {
+        if (comment.includes('closedWith')) {
+            await ReleasePipeline_1.enrollIssue(issue, notYetReleasedLabel);
+        }
+    }
 }
 new ReleasePipelineAction().run(); // eslint-disable-line
 //# sourceMappingURL=index.js.map

@@ -46,8 +46,11 @@ inputs:
   requestVerificationComment:
     description: Comment to add whenn asking authors to verify the issue. ${commit} and ${author} will be substituted
     required: true
-  pendingReleaseLabel:
-    description: Label for Action to add for issue that authors can verify, but are not yet released
+  releasedLabel:
+    description: Label of issues which are released and thus able to be verified
+    required: true
+  verifiedLabel:
+    description: Label of issues that are laready verified and shouldn't be further interacted with
     required: true
   authorVerificationRequestedLabel:
     description: Label added by issue fixer to signal that the author can verify the issue

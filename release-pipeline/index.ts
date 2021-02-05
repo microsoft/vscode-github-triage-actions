@@ -25,6 +25,12 @@ class ReleasePipelineAction extends Action {
 	async onTriggered(github: OctoKit) {
 		await new ReleasePipeline(github, notYetReleasedLabel, insidersReleasedLabel).run()
 	}
+
+	async onCommented(issue: OctoKitIssue, comment: string) {
+		if (comment.includes('closedWith')) {
+			await enrollIssue(issue, notYetReleasedLabel)
+		}
+	}
 }
 
 new ReleasePipelineAction().run() // eslint-disable-line

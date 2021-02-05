@@ -33,25 +33,38 @@ export class ReleasePipeline {
 		}
 	}
 
+	private async commentUnableToFindCommitMessage(issue: GitHubIssue, location: 'repo' | 'issue') {
+		const key = `<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE ${location} -->`
+
+		for await (const page of issue.getComments()) {
+			for (const comment of page) {
+				if (comment.body.includes(key)) {
+					return
+				}
+			}
+		}
+
+		if (location === 'repo') {
+			await issue.postComment(`${key}
+Issue marked as unreleased but unable to locate closing commit in repo history. If this was closed in a separate repo you can add the \`${this.insidersReleasedLabel}\` label directly, or comment \`\\closedWith someShaThatWillbeReleasedWhenThisIsRelesed\`.`)
+		} else {
+			await issue.postComment(`${key}
+Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, or directly add the \`${this.insidersReleasedLabel}\` label if you know this has already been releaased`)
+		}
+	}
+
 	private async update(issue: GitHubIssue, latestRelease: Release) {
 		const closingHash = (await issue.getClosingInfo())?.hash
 
 		if (!closingHash) {
 			await issue.removeLabel(this.notYetReleasedLabel)
-			await issue.postComment(
-				`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.`,
-			)
+			await this.commentUnableToFindCommitMessage(issue, 'issue')
 			return
 		}
 
-		let errorMessage = ''
 		const releaseContainsCommit = await issue
 			.releaseContainsCommit(latestRelease.version, closingHash)
-			.catch(async (e) => {
-				errorMessage = `\n\`\`\`${e.message}\`\`\``
-				return 'unknown' as const
-			})
+			.catch(() => 'unknown' as const)
 
 		if (releaseContainsCommit === 'yes') {
 			await trackEvent(issue, 'insiders-released:released')
@@ -62,11 +75,7 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
 			await issue.addLabel(this.notYetReleasedLabel)
 		} else if ((await issue.getIssue()).labels.includes(this.notYetReleasedLabel)) {
 			await issue.removeLabel(this.notYetReleasedLabel)
-			await issue.postComment(
-				`<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->
-Issue marked as unreleased but unable to locate closing commit in repo history. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, then add back the \`unreleased\` label.` +
-					errorMessage,
-			)
+			await this.commentUnableToFindCommitMessage(issue, 'repo')
 		}
 	}
 }

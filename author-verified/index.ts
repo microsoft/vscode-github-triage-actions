@@ -9,7 +9,7 @@ import { AuthorVerifiedLabeler, AuthorVerifiedQueryer } from './AuthorVerified'
 import { Action } from '../common/Action'
 
 const requestVerificationComment = getRequiredInput('requestVerificationComment')
-const pendingReleaseLabel = getRequiredInput('pendingReleaseLabel')
+const releasedLabel = getRequiredInput('releasedLabel')
 const verifiedLabel = getRequiredInput('verifiedLabel')
 const authorVerificationRequestedLabel = getRequiredInput('authorVerificationRequestedLabel')
 
@@ -20,7 +20,7 @@ class AuthorVerified extends Action {
 		return new AuthorVerifiedQueryer(
 			octokit,
 			requestVerificationComment,
-			pendingReleaseLabel,
+			releasedLabel,
 			authorVerificationRequestedLabel,
 			verifiedLabel,
 		).run()
@@ -30,7 +30,7 @@ class AuthorVerified extends Action {
 		return new AuthorVerifiedLabeler(
 			issue,
 			requestVerificationComment,
-			pendingReleaseLabel,
+			releasedLabel,
 			authorVerificationRequestedLabel,
 			verifiedLabel,
 		).run()

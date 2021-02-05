@@ -5,6 +5,7 @@
 
 import { expect } from 'chai'
 import * as nock from 'nock'
+import { Comment } from '../api/api'
 import { TestbedIssue } from '../api/testbed'
 import { AuthorVerifiedLabeler } from './AuthorVerified'
 
@@ -16,74 +17,14 @@ const setup = () =>
 describe('AuthorVerified', () => {
 	it('Does nothing to issues which have not yet been closed', async () => {
 		const testbed = new TestbedIssue({}, { labels: ['verify-plz'] })
-		await new AuthorVerifiedLabeler(
-			testbed,
-			'plz verify thx',
-			'pending-release',
-			'verify-plz',
-			'verified',
-		).run()
+		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
 		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
 	})
 
 	it('Does nothing to issues which arent labeled', async () => {
 		const testbed = new TestbedIssue({}, { labels: [], issue: { open: false } })
-		await new AuthorVerifiedLabeler(
-			testbed,
-			'plz verify thx',
-			'pending-release',
-			'verify-plz',
-			'verified',
-		).run()
+		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
 		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
-	})
-
-	it('Comments an error on issues which are labeled and closed but not closed with a commit', async () => {
-		setup()
-		const testbed = new TestbedIssue(
-			{},
-			{
-				labels: ['verify-plz'],
-				closingCommit: undefined,
-				issue: { open: false },
-			},
-		)
-		await new AuthorVerifiedLabeler(
-			testbed,
-			'plz verify thx',
-			'pending-release',
-			'verify-plz',
-			'verified',
-		).run()
-
-		expect((await testbed.getIssue()).labels).not.to.contain('verify-plz')
-
-		const comments = []
-		for await (const page of testbed.getComments()) {
-			comments.push(...page)
-		}
-
-		expect(comments[0].body).to.contain('Unable to locate closing commit in issue timeline')
-	})
-
-	it('Adds pending label to issues which are closed with a commit and labeled but not released', async () => {
-		setup()
-		const testbed = new TestbedIssue(
-			{},
-			{
-				labels: ['verify-plz'],
-				closingCommit: { hash: 'commit', timestamp: 0 },
-				issue: { open: false },
-			},
-		)
-		await new AuthorVerifiedLabeler(
-			testbed,
-			'plz verify thx',
-			'pending-release',
-			'verify-plz',
-			'verified',
-		).run()
-		expect((await testbed.getIssue()).labels).to.contain('pending-release')
 	})
 
 	it('Adds comment to issues which are closed with a commit and labeled and released', async () => {
@@ -91,21 +32,14 @@ describe('AuthorVerified', () => {
 		const testbed = new TestbedIssue(
 			{ releasedCommits: ['commit'] },
 			{
-				labels: ['verify-plz', 'pending-release'],
+				labels: ['verify-plz', 'released'],
 				closingCommit: { hash: 'commit', timestamp: 0 },
 				issue: { open: false },
 			},
 		)
-		await new AuthorVerifiedLabeler(
-			testbed,
-			'plz verify thx',
-			'pending-release',
-			'verify-plz',
-			'verified',
-		).run()
-		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
+		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
 
-		const comments = []
+		const comments: Comment[] = []
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}
@@ -117,21 +51,14 @@ describe('AuthorVerified', () => {
 		const testbed = new TestbedIssue(
 			{ releasedCommits: ['commit'] },
 			{
-				labels: ['verify-plz', 'pending-release', 'verified'],
+				labels: ['verify-plz', 'released', 'verified'],
 				closingCommit: { hash: 'commit', timestamp: 0 },
 				issue: { open: false },
 			},
 		)
-		await new AuthorVerifiedLabeler(
-			testbed,
-			'plz verify thx',
-			'pending-release',
-			'verify-plz',
-			'verified',
-		).run()
-		expect((await testbed.getIssue()).labels).not.to.contain('pending-release')
+		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
 
-		const comments = []
+		const comments: Comment[] = []
 		for await (const page of testbed.getComments()) {
 			comments.push(...page)
 		}

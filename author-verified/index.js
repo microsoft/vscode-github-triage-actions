@@ -8,7 +8,7 @@ const utils_1 = require("../common/utils");
 const AuthorVerified_1 = require("./AuthorVerified");
 const Action_1 = require("../common/Action");
 const requestVerificationComment = utils_1.getRequiredInput('requestVerificationComment');
-const pendingReleaseLabel = utils_1.getRequiredInput('pendingReleaseLabel');
+const releasedLabel = utils_1.getRequiredInput('releasedLabel');
 const verifiedLabel = utils_1.getRequiredInput('verifiedLabel');
 const authorVerificationRequestedLabel = utils_1.getRequiredInput('authorVerificationRequestedLabel');
 class AuthorVerified extends Action_1.Action {
@@ -17,10 +17,10 @@ class AuthorVerified extends Action_1.Action {
         this.id = 'AuthorVerified';
     }
     async onTriggered(octokit) {
-        return new AuthorVerified_1.AuthorVerifiedQueryer(octokit, requestVerificationComment, pendingReleaseLabel, authorVerificationRequestedLabel, verifiedLabel).run();
+        return new AuthorVerified_1.AuthorVerifiedQueryer(octokit, requestVerificationComment, releasedLabel, authorVerificationRequestedLabel, verifiedLabel).run();
     }
     runLabler(issue) {
-        return new AuthorVerified_1.AuthorVerifiedLabeler(issue, requestVerificationComment, pendingReleaseLabel, authorVerificationRequestedLabel, verifiedLabel).run();
+        return new AuthorVerified_1.AuthorVerifiedLabeler(issue, requestVerificationComment, releasedLabel, authorVerificationRequestedLabel, verifiedLabel).run();
     }
     async onClosed(issue) {
         await this.runLabler(issue);
