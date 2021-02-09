@@ -12,7 +12,7 @@ class BuildChatAction extends Action {
 	id = 'BuildChat'
 
 	async onTriggered() {
-		const slackToken = getRequiredInput('slack_token')
+		const slackToken = getInput('slack_token')
 		if (!slackToken) {
 			return
 		}

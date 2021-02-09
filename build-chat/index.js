@@ -14,7 +14,7 @@ class BuildChatAction extends Action_1.Action {
         this.id = 'BuildChat';
     }
     async onTriggered() {
-        const slackToken = utils_1.getRequiredInput('slack_token');
+        const slackToken = utils_1.getInput('slack_token');
         if (!slackToken) {
             return;
         }
