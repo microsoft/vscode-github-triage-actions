@@ -15,7 +15,7 @@ if (require.main === module) {
 	const auth = `token ${process.env.GITHUB_TOKEN}`
 	const octokit = new Octokit({ auth })
 	const workflowUrl =
-		'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/531076964'
+		'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/552662814'
 	const options: Options = {
 		slackToken: process.env.SLACK_TOKEN,
 		storageConnectionString: process.env.STORAGE_CONNECTION_STRING,
@@ -131,6 +131,14 @@ async function handleNotification(
 			}
 		}
 	}
+	if (!options.slackToken) {
+		for (const message of results.logMessages) {
+			safeLog(message)
+		}
+		for (const message of results.messages) {
+			safeLog(message.text)
+		}
+	}
 }
 
 async function buildComplete(octokit: Octokit, owner: string, repo: string, runId: number, options: Options) {
@@ -161,6 +169,7 @@ async function buildComplete(octokit: Octokit, owner: string, repo: string, runI
 			per_page: 5, // More returns 502s.
 		})
 	).data.workflow_runs.filter((run) => run.status === 'completed')
+	buildResults.sort((a, b) => -a.created_at.localeCompare(b.created_at))
 
 	const currentBuildIndex = buildResults.findIndex((build) => build.id === buildResult.id)
 	if (currentBuildIndex === -1) {

@@ -13,7 +13,7 @@ if (require.main === module) {
     safeLog = require('../common/utils').safeLog;
     const auth = `token ${process.env.GITHUB_TOKEN}`;
     const octokit = new rest_1.Octokit({ auth });
-    const workflowUrl = 'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/531076964';
+    const workflowUrl = 'https://api.github.com/repos/microsoft/vscode-remote-containers/actions/runs/552662814';
     const options = {
         slackToken: process.env.SLACK_TOKEN,
         storageConnectionString: process.env.STORAGE_CONNECTION_STRING,
@@ -100,6 +100,14 @@ async function handleNotification(octokit, owner, repo, runId, options) {
             }
         }
     }
+    if (!options.slackToken) {
+        for (const message of results.logMessages) {
+            safeLog(message);
+        }
+        for (const message of results.messages) {
+            safeLog(message.text);
+        }
+    }
 }
 async function buildComplete(octokit, owner, repo, runId, options) {
     safeLog(`buildComplete: https://github.com/${owner}/${repo}/actions/runs/${runId}`);
@@ -122,6 +130,7 @@ async function buildComplete(octokit, owner, repo, runId, options) {
         branch: buildResult.head_branch || undefined,
         per_page: 5,
     })).data.workflow_runs.filter((run) => run.status === 'completed');
+    buildResults.sort((a, b) => -a.created_at.localeCompare(b.created_at));
     const currentBuildIndex = buildResults.findIndex((build) => build.id === buildResult.id);
     if (currentBuildIndex === -1) {
         safeLog('Build not on first page. Terminating.');
