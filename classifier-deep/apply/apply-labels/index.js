@@ -41,11 +41,11 @@ class ApplyLabels extends Action_1.Action {
                 utils_1.safeLog('skipping');
                 continue;
             }
-            utils_1.safeLog('not skipping', {
+            utils_1.safeLog('not skipping', JSON.stringify({
                 assignee: labeling.assignee,
                 area: labeling.area,
                 number: labeling.number,
-            });
+            }));
             {
                 const { category, confidence, confident } = labeling.area;
                 if (debug) {

@@ -58,11 +58,14 @@ class ApplyLabels extends Action {
 				continue
 			}
 
-			safeLog('not skipping', {
-				assignee: labeling.assignee,
-				area: labeling.area,
-				number: labeling.number,
-			})
+			safeLog(
+				'not skipping',
+				JSON.stringify({
+					assignee: labeling.assignee,
+					area: labeling.area,
+					number: labeling.number,
+				}),
+			)
 
 			{
 				const { category, confidence, confident } = labeling.area
