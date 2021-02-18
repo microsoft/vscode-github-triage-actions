@@ -91,7 +91,10 @@ class FeatureRequestOnLabel {
     async run() {
         await new Promise((resolve) => setTimeout(resolve, this.delay * 1000));
         const issue = await this.github.getIssue();
-        if (!issue.open || issue.milestoneId || !issue.labels.includes(this.label)) {
+        if (!issue.open ||
+            issue.milestoneId ||
+            !issue.labels.includes(this.label) ||
+            (await this.github.hasWriteAccess(issue.author))) {
             return;
         }
         return this.github.setMilestone(this.milestone);
