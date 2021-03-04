@@ -73,6 +73,7 @@ exports.download = async (token, repo, endCursor) => {
             'Content-Type': 'application/json',
             Accept: 'application/json',
             Authorization: 'bearer ' + token,
+            'User-Agent': 'github-actions://microsoft/vscode-github-triage-actions#fetch-issues',
         },
     })
         .then((r) => r.data);
@@ -107,7 +108,7 @@ exports.download = async (token, repo, endCursor) => {
             setTimeout(async () => {
                 await exports.download(token, repo, endCursor);
                 resolve();
-            }, 1000);
+            }, 5000);
         });
     }
 };
