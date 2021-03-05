@@ -36,6 +36,7 @@ exports.download = async (token, repo, endCursor) => {
             labels(first: 100) {
               nodes {
                 name
+                color
               }
             }
             timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
@@ -83,7 +84,7 @@ exports.download = async (token, repo, endCursor) => {
         title: issue.title,
         body: issue.body,
         createdAt: +new Date(issue.createdAt),
-        labels: issue.labels.nodes.map((label) => label.name),
+        labels: issue.labels.nodes.map((label) => ({ name: label.name, color: label.color })),
         assignees: issue.assignees.nodes.map((assignee) => assignee.login),
         labelEvents: extractLabelEvents(issue),
         closedWithCode: !!issue.timelineItems.nodes.find((event) => {

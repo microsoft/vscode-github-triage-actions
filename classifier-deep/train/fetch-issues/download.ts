@@ -40,7 +40,7 @@ type IssueResponse = {
 		createdAt: number
 		userContentEdits: { nodes: { editedAt: string; diff: string }[] }
 		assignees: { nodes: { login: string }[] }
-		labels: { nodes: { name: string }[] }
+		labels: { nodes: { name: string; color: string }[] }
 		timelineItems: {
 			nodes: (GHLabelEvent | GHRenameEvent | GHCloseEvent)[]
 		}
@@ -52,7 +52,7 @@ export type JSONOutputLine = {
 	title: string
 	body: string
 	createdAt: number
-	labels: string[]
+	labels: { name: string; color: string }[]
 	assignees: string[]
 	labelEvents: LabelEvent[]
 	closedWithCode: boolean
@@ -104,6 +104,7 @@ export const download = async (token: string, repo: { owner: string; repo: strin
             labels(first: 100) {
               nodes {
                 name
+                color
               }
             }
             timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
@@ -155,7 +156,7 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 		title: issue.title,
 		body: issue.body,
 		createdAt: +new Date(issue.createdAt),
-		labels: issue.labels.nodes.map((label) => label.name),
+		labels: issue.labels.nodes.map((label) => ({ name: label.name, color: label.color })),
 		assignees: issue.assignees.nodes.map((assignee) => assignee.login),
 		labelEvents: extractLabelEvents(issue),
 		closedWithCode: !!issue.timelineItems.nodes.find(
