@@ -44,7 +44,7 @@ class ApplyLabels extends Action_1.Action {
                 const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[assignee];
                 utils_1.safeLog(JSON.stringify({ assigneeConfig }));
                 await Promise.all([
-                    (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) ? issue.addAssignee(assignee) : Promise.resolve(),
+                    (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) ? !debug && issue.addAssignee(assignee) : Promise.resolve(),
                     (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
                 ]);
             }

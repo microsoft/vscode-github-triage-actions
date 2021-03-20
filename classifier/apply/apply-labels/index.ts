@@ -60,7 +60,7 @@ class ApplyLabels extends Action {
 				safeLog(JSON.stringify({ assigneeConfig }))
 
 				await Promise.all<any>([
-					assigneeConfig?.assign ? issue.addAssignee(assignee) : Promise.resolve(),
+					assigneeConfig?.assign ? !debug && issue.addAssignee(assignee) : Promise.resolve(),
 					assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
 				])
 			}
