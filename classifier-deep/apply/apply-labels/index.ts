@@ -126,7 +126,7 @@ class ApplyLabels extends Action {
 				}
 			}
 
-			if (potentialAssignees.length) {
+			if (potentialAssignees.length && !debug) {
 				await issue.addAssignee(potentialAssignees[0])
 			}
 		}

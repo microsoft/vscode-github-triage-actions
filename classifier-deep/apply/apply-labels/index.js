@@ -90,7 +90,7 @@ class ApplyLabels extends Action_1.Action {
                     });
                 }
             }
-            if (potentialAssignees.length) {
+            if (potentialAssignees.length && !debug) {
                 await issue.addAssignee(potentialAssignees[0]);
             }
         }
