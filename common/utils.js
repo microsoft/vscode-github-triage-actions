@@ -42,7 +42,7 @@ exports.normalizeIssue = (issue) => {
         issueType: isBug ? 'bug' : isFeatureRequest ? 'feature_request' : 'unknown',
     };
 };
-exports.loadLatestRelease = async (quality) => (await axios_1.default.get(`https://vscode-update.azurewebsites.net/api/update/darwin/${quality}/latest`)).data;
+exports.loadLatestRelease = async (quality) => (await axios_1.default.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`)).data;
 exports.daysAgoToTimestamp = (days) => +new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 exports.daysAgoToHumanReadbleDate = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}\w$/, '');
 exports.getRateLimit = async (token) => {

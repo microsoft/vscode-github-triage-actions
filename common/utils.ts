@@ -61,7 +61,7 @@ export interface Release {
 }
 
 export const loadLatestRelease = async (quality: 'stable' | 'insider'): Promise<Release | undefined> =>
-	(await axios.get(`https://vscode-update.azurewebsites.net/api/update/darwin/${quality}/latest`)).data
+	(await axios.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`)).data
 
 export const daysAgoToTimestamp = (days: number): number => +new Date(Date.now() - days * 24 * 60 * 60 * 1000)
 

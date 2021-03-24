@@ -10,7 +10,7 @@ import { TestbedIssue } from '../api/testbed'
 import { AuthorVerifiedLabeler } from './AuthorVerified'
 
 const setup = () =>
-	nock('https://vscode-update.azurewebsites.net')
+	nock('https://update.code.visualstudio.com')
 		.get('/api/update/darwin/insider/latest')
 		.reply(200, { version: 'hash', timestamp: 0 })
 

@@ -9,9 +9,7 @@ import { TestbedIssue } from '../api/testbed'
 import { NewRelease } from './NewRelease'
 
 const setup = (payload: { productVersion: string; timestamp: number }) =>
-	nock('https://vscode-update.azurewebsites.net')
-		.get('/api/update/darwin/stable/latest')
-		.reply(200, payload)
+	nock('https://update.code.visualstudio.com').get('/api/update/darwin/stable/latest').reply(200, payload)
 
 describe('NewRelease', () => {
 	it('adds label when body contains version tag and is recent enough', async () => {
