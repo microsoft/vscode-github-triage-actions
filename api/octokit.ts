@@ -373,7 +373,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			return
 		}
 
-		const closingHashComment = /(?:\\|\/)closedWith ([a-fA-F0-9]*)/
+		const closingHashComment = /(?:\\|\/)closedWith (?:https:\/\/github\.com\/microsoft\/vscode\/commit\/)?([a-fA-F0-9]{7,40})/
 
 		const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
 			...this.params,

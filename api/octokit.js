@@ -324,7 +324,7 @@ class OctoKitIssue extends OctoKit {
         if ((await this.getIssue()).open) {
             return;
         }
-        const closingHashComment = /(?:\\|\/)closedWith ([a-fA-F0-9]*)/;
+        const closingHashComment = /(?:\\|\/)closedWith (?:https:\/\/github\.com\/microsoft\/vscode\/commit\/)?([a-fA-F0-9]{7,40})/;
         const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
             ...this.params,
             issue_number: this.issueData.number,
