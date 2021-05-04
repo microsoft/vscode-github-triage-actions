@@ -61,7 +61,10 @@ export class NeedsMoreInfoCloser {
 							if (this.pingComment) {
 								await issue.postComment(
 									this.pingComment
-										.replace('${assignee}', hydrated.assignee)
+										.replace(
+											'${assignee}',
+											hydrated.assignees?.join(' ') || hydrated.assignee,
+										)
 										.replace('${author}', hydrated.author.name),
 								)
 							}

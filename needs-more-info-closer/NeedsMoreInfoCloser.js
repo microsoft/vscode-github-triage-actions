@@ -16,6 +16,7 @@ class NeedsMoreInfoCloser {
         this.additionalTeam = additionalTeam;
     }
     async run() {
+        var _a;
         const updatedTimestamp = utils_1.daysAgoToHumanReadbleDate(this.closeDays);
         const pingTimestamp = utils_1.daysAgoToTimestamp(this.pingDays);
         const query = `updated:<${updatedTimestamp} label:"${this.label}" is:open is:unlocked`;
@@ -52,7 +53,7 @@ class NeedsMoreInfoCloser {
                             utils_1.safeLog(`Last comment on ${hydrated.number} by rando. Pinging @${hydrated.assignee}`);
                             if (this.pingComment) {
                                 await issue.postComment(this.pingComment
-                                    .replace('${assignee}', hydrated.assignee)
+                                    .replace('${assignee}', ((_a = hydrated.assignees) === null || _a === void 0 ? void 0 : _a.join(' ')) || hydrated.assignee)
                                     .replace('${author}', hydrated.author.name));
                             }
                         }

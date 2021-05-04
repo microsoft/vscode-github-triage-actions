@@ -83,7 +83,9 @@ export class OctoKit implements GitHub {
 			locked: (issue as any).locked,
 			numComments: issue.comments,
 			reactions: (issue as any).reactions,
-			assignee: issue.assignee?.login ?? (issue as any).assignees?.[0]?.login,
+			assignee: issue.assignee?.login ?? (issue as Octokit.IssuesGetResponse).assignees?.[0]?.login,
+			assignees:
+				(issue as Octokit.IssuesGetResponse).assignees?.map((assignee) => assignee.login) ?? [],
 			milestoneId: issue.milestone?.number ?? null,
 			createdAt: +new Date(issue.created_at),
 			updatedAt: +new Date(issue.updated_at),

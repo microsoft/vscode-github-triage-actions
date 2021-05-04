@@ -58,7 +58,7 @@ class OctoKit {
             await this.octokit.issues.create({ owner, repo, title, body });
     }
     octokitIssueToIssue(issue) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         return {
             author: { name: issue.user.login, isGitHubApp: issue.user.type === 'Bot' },
             body: issue.body,
@@ -70,7 +70,8 @@ class OctoKit {
             numComments: issue.comments,
             reactions: issue.reactions,
             assignee: (_b = (_a = issue.assignee) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : (_d = (_c = issue.assignees) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.login,
-            milestoneId: (_f = (_e = issue.milestone) === null || _e === void 0 ? void 0 : _e.number) !== null && _f !== void 0 ? _f : null,
+            assignees: (_f = (_e = issue.assignees) === null || _e === void 0 ? void 0 : _e.map((assignee) => assignee.login)) !== null && _f !== void 0 ? _f : [],
+            milestoneId: (_h = (_g = issue.milestone) === null || _g === void 0 ? void 0 : _g.number) !== null && _h !== void 0 ? _h : null,
             createdAt: +new Date(issue.created_at),
             updatedAt: +new Date(issue.updated_at),
             closedAt: issue.closed_at ? +new Date(issue.closed_at) : undefined,

@@ -88,6 +88,7 @@ export interface Issue {
 	reactions: Reactions
 	milestoneId: number | null
 	assignee?: string
+	assignees: string[]
 	createdAt: number
 	updatedAt: number
 	closedAt?: number
