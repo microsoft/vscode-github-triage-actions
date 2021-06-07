@@ -289,19 +289,31 @@ async function readAccounts(connectionString: string | undefined) {
 	return JSON.parse(buf.toString()) as Accounts[]
 }
 
-interface AllChannels {
-	channels: {
-		id: string
-		name: string
-		is_member: boolean
-	}[]
+interface Channel {
+	id: string
+	name: string
+	is_member: boolean
+}
+
+interface ConversationsList {
+	channels: Channel[]
+	response_metadata?: {
+		next_cursor?: string
+	}
 }
 
 async function listAllMemberships(web: WebClient) {
-	const groups = ((await web.conversations.list({
-		types: 'public_channel,private_channel',
-	})) as unknown) as AllChannels
-	return groups.channels.filter((c) => c.is_member)
+	let groups: ConversationsList | undefined;
+	const channels: Channel[] = [];
+	do {
+		groups = ((await web.conversations.list({
+			types: 'public_channel,private_channel',
+			cursor: groups?.response_metadata?.next_cursor,
+			limit: 100,
+		})) as unknown) as ConversationsList
+		channels.push(...groups.channels);
+	} while (groups.response_metadata?.next_cursor)
+	return channels.filter((c) => c.is_member)
 }
 
 interface Build {

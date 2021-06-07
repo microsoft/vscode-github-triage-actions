@@ -215,9 +215,17 @@ async function readAccounts(connectionString) {
     return JSON.parse(buf.toString());
 }
 async function listAllMemberships(web) {
-    const groups = (await web.conversations.list({
-        types: 'public_channel,private_channel',
-    }));
-    return groups.channels.filter((c) => c.is_member);
+    var _a, _b;
+    let groups;
+    const channels = [];
+    do {
+        groups = (await web.conversations.list({
+            types: 'public_channel,private_channel',
+            cursor: (_a = groups === null || groups === void 0 ? void 0 : groups.response_metadata) === null || _a === void 0 ? void 0 : _a.next_cursor,
+            limit: 100,
+        }));
+        channels.push(...groups.channels);
+    } while ((_b = groups.response_metadata) === null || _b === void 0 ? void 0 : _b.next_cursor);
+    return channels.filter((c) => c.is_member);
 }
 //# sourceMappingURL=BuildChat.js.map
