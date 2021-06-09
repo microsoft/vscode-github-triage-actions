@@ -36,6 +36,10 @@ class ApplyLabels extends Action_1.Action {
                 }
             };
             const issueData = await issue.getIssue();
+            if (issueData.number !== labeling.number) {
+                utils_1.safeLog(`issue ${labeling.number} moved to ${issueData.number}, skipping`);
+                continue;
+            }
             if (!debug &&
                 (issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))) {
                 utils_1.safeLog('skipping');
