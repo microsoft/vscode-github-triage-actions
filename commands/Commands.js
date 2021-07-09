@@ -86,6 +86,9 @@ class Commands {
         if (command.addLabel) {
             tasks.push(this.github.addLabel(command.addLabel));
         }
+        if (command.assign) {
+            tasks.push(...command.assign.map((assignee) => this.github.addAssignee(assignee)));
+        }
         if (command.removeLabel) {
             tasks.push(this.github.removeLabel(command.removeLabel));
         }

@@ -13,7 +13,7 @@ export type Command =
 	& { name: string }
 	& ({ type: 'comment'; allowUsers: string[] } | { type: 'label' })
 	& { action?: 'close' }
-	& Partial<{ comment: string; addLabel: string; removeLabel: string }>
+	& Partial<{ comment: string; addLabel: string; removeLabel: string, assign: string[] }>
 	& Partial<{ requireLabel: string; disallowLabel: string }>
 /* eslint-enable */
 
@@ -117,6 +117,10 @@ export class Commands {
 
 		if (command.addLabel) {
 			tasks.push(this.github.addLabel(command.addLabel))
+		}
+
+		if (command.assign) {
+			tasks.push(...command.assign.map((assignee) => this.github.addAssignee(assignee)))
 		}
 
 		if (command.removeLabel) {
