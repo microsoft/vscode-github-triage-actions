@@ -12,9 +12,10 @@ class CopyCat {
         this.repo = repo;
     }
     async run() {
+        var _a;
         const issue = await this.github.getIssue();
         utils_1.safeLog(`Mirroring issue \`${issue.number}\` to ${this.owner}/${this.repo}`);
-        await this.github.createIssue(this.owner, this.repo, issue.title, issue.body.replace(/@|#|issues/g, '-').replace(/\/github.com\//g, '/github-com/'));
+        await this.github.createIssue(this.owner, this.repo, issue.title, ((_a = issue.body) !== null && _a !== void 0 ? _a : '').replace(/@|#|issues/g, '-').replace(/\/github.com\//g, '/github-com/'));
     }
 }
 exports.CopyCat = CopyCat;

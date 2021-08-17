@@ -16,7 +16,7 @@ export class CopyCat {
 			this.owner,
 			this.repo,
 			issue.title,
-			issue.body.replace(/@|#|issues/g, '-').replace(/\/github.com\//g, '/github-com/'),
+			(issue.body ?? '').replace(/@|#|issues/g, '-').replace(/\/github.com\//g, '/github-com/'),
 		)
 	}
 }
