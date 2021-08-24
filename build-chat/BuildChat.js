@@ -129,7 +129,7 @@ async function buildComplete(octokit, owner, repo, runId, options) {
         workflow_id: workflowId,
         branch: buildResult.head_branch || undefined,
         per_page: 5,
-    })).data.workflow_runs.filter((run) => run.status === 'completed');
+    })).data.workflow_runs.filter((run) => run.status === 'completed' && conclusions.indexOf(run.conclusion || 'success') !== -1);
     buildResults.sort((a, b) => -a.created_at.localeCompare(b.created_at));
     const currentBuildIndex = buildResults.findIndex((build) => build.id === buildResult.id);
     if (currentBuildIndex === -1) {

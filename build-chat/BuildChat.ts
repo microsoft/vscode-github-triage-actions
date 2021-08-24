@@ -168,7 +168,9 @@ async function buildComplete(octokit: Octokit, owner: string, repo: string, runI
 			branch: buildResult.head_branch || undefined,
 			per_page: 5, // More returns 502s.
 		})
-	).data.workflow_runs.filter((run) => run.status === 'completed')
+	).data.workflow_runs.filter(
+		(run) => run.status === 'completed' && conclusions.indexOf(run.conclusion || 'success') !== -1,
+	)
 	buildResults.sort((a, b) => -a.created_at.localeCompare(b.created_at))
 
 	const currentBuildIndex = buildResults.findIndex((build) => build.id === buildResult.id)
@@ -303,15 +305,15 @@ interface ConversationsList {
 }
 
 async function listAllMemberships(web: WebClient) {
-	let groups: ConversationsList | undefined;
-	const channels: Channel[] = [];
+	let groups: ConversationsList | undefined
+	const channels: Channel[] = []
 	do {
 		groups = ((await web.conversations.list({
 			types: 'public_channel,private_channel',
 			cursor: groups?.response_metadata?.next_cursor,
 			limit: 100,
 		})) as unknown) as ConversationsList
-		channels.push(...groups.channels);
+		channels.push(...groups.channels)
 	} while (groups.response_metadata?.next_cursor)
 	return channels.filter((c) => c.is_member)
 }
