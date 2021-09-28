@@ -73,9 +73,9 @@ export function parseTestPlanItem(body: string, author: string): ParsedTestPlanI
 		throw new Error('Test plan item should have assignments');
 	}
 
-	let matches = InvalidAssignment.exec(body);
+	let matches = InvalidAssignment.exec(header);
 	if (matches && matches.length) {
-		throw new Error(`Test plan item has invalid assignments - ${body.substring(matches.index).split('\n')[0]}`);
+		throw new Error(`Test plan item has invalid assignments - ${header.substring(matches.index).split('\n')[0]}`);
 	}
 
 	return testPlanItem;
@@ -139,72 +139,45 @@ function parseRoles(body: string): TesterRole[] | undefined {
 
 function parseAuthors(body: string): string[] {
 	const matches = /author(s)?\s*[:-]?\s*(<\!--.*-->)*(.*)/i.exec(body);
-	return matches && matches[3] ? matches[3].trim().split(',').map(a => {
-		a = a.trim();
-		return a.indexOf('@') === 0 ? a.substring(1) : a;
-	}) : [];
+	if (!matches || !matches[3]) {
+		return [];
+	}
+	const authors: string[] = [];
+	for (const value of matches[3].trim().split(',')) {
+		for (const author of value.trim().split(' ')) {
+			authors.push(author.startsWith('@') ? author.substring(1) : author);
+		}
+	}
+	return authors;
 }
 
 function parsePlatformAssignment(body: string, platform: Platform, regex: RegExp, platformAssignments: PlatformAssigment[]): void {
 	let matches = regex.exec(body);
-	if (matches && matches.length) {
+	let startIndex = 0;
+	let endIndex = 0;
+	while (matches && matches.length) {
 		const platformAssignment: PlatformAssigment = { platform, checked: false, range: [-1, -1], user: undefined, userRange: [-1, -1] };
 		platformAssignments.push(platformAssignment);
-		let startIndex = matches.index;
+		startIndex = endIndex + matches.index;
 		setUserAssignment(body, { match: matches[0], start: startIndex }, platformAssignment);
-		let endIndex = findEOLIndex(body, matches[0], startIndex);
+		endIndex = findEOLIndex(body, matches[0], startIndex);
 		platformAssignment.range = [findStartIndex(body, matches[0], startIndex), endIndex];
 		platformAssignment.checked = matches[1] === 'x' && !!platformAssignment.user;
 		matches = regex.exec(body.substring(endIndex));
-		if (matches && matches.length) {
-			const platformAssignment: PlatformAssigment = { platform, checked: false, range: [-1, -1], user: undefined, userRange: [-1, -1] };
-			platformAssignments.push(platformAssignment);
-			startIndex = endIndex + matches.index;
-			setUserAssignment(body, { match: matches[0], start: startIndex }, platformAssignment);
-			endIndex = findEOLIndex(body, matches[0], startIndex);
-			platformAssignment.range = [findStartIndex(body, matches[0], startIndex), endIndex];
-			platformAssignment.checked = matches[1] === 'x' && !!platformAssignment.user;
-			matches = regex.exec(body.substring(endIndex));
-			if (matches && matches.length) {
-				const platformAssignment: PlatformAssigment = { platform, checked: false, range: [-1, -1], user: undefined, userRange: [-1, -1] };
-				platformAssignments.push(platformAssignment);
-				startIndex = endIndex + matches.index;
-				setUserAssignment(body, { match: matches[0], start: startIndex }, platformAssignment);
-				endIndex = findEOLIndex(body, matches[0], startIndex);
-				platformAssignment.range = [findStartIndex(body, matches[0], startIndex), endIndex];
-				platformAssignment.checked = matches[1] === 'x' && !!platformAssignment.user;
-			}
-		}
 	}
 }
 
 function parseAnyPlatformAssignments(body: string, platformAssignments: PlatformAssigment[]): void {
 	const anyPlatforms = [Platform.MAC, Platform.WINDOWS, Platform.LINUX];
-	let fromIndex = 0;
-	fromIndex = parseAnyPlatformAssignmentsStartingFrom(body, fromIndex, anyPlatforms, platformAssignments);
-	if (fromIndex !== -1) {
-		fromIndex = parseAnyPlatformAssignmentsStartingFrom(body, fromIndex, anyPlatforms, platformAssignments);
-		if (fromIndex !== -1) {
-			parseAnyPlatformAssignmentsStartingFrom(body, fromIndex, anyPlatforms, platformAssignments);
-		}
+	let startIndex = 0;
+	while (startIndex !== -1) {
+		startIndex = parseAnyPlatformAssignmentsStartingFrom(body, startIndex, anyPlatforms, platformAssignments);
 	}
 }
 
 function parseAnyPlatformAssignmentsStartingFrom(body: string, fromIndex: number, anyPlatforms: Platform[], platformAssignments: PlatformAssigment[]): number {
 	const matches = AnyPlatformAssignment.exec(body.substring(fromIndex));
 	if (matches && matches.length) {
-		for (const platform of anyPlatforms) {
-			if (!platformAssignments.some(assignment => assignment.platform === platform)) {
-				const platformAssignment: PlatformAssigment = { platform, checked: false, user: undefined, userRange: [-1, -1], range: [-1, -1] };
-				platformAssignments.push(platformAssignment);
-				const startIndex = fromIndex + matches.index;
-				setUserAssignment(body, { match: matches[0], start: startIndex }, platformAssignment);
-				const endIndex = findEOLIndex(body, matches[0], startIndex);
-				platformAssignment.range = [findStartIndex(body, matches[0], startIndex), endIndex];
-				platformAssignment.checked = matches[1] === 'x' && !!platformAssignment.user;
-				return endIndex;
-			}
-		}
 		let platformAssignmentsCount: [Platform, number] | undefined;
 		for (const platform of anyPlatforms) {
 			const count = platformAssignments.filter(a => a.platform === platform).length;
@@ -212,16 +185,14 @@ function parseAnyPlatformAssignmentsStartingFrom(body: string, fromIndex: number
 				platformAssignmentsCount = [platform, count];
 			}
 		}
-		if (platformAssignmentsCount) {
-			const platformAssignment: PlatformAssigment = { platform: platformAssignmentsCount[0], checked: false, user: undefined, userRange: [-1, -1], range: [-1, -1] };
-			platformAssignments.push(platformAssignment);
-			const startIndex = fromIndex + matches.index;
-			setUserAssignment(body, { match: matches[0], start: startIndex }, platformAssignment);
-			const endIndex = findEOLIndex(body, matches[0], startIndex);
-			platformAssignment.range = [findStartIndex(body, matches[0], startIndex), endIndex];
-			platformAssignment.checked = matches[1] === 'x' && !!platformAssignment.user;
-			return endIndex;
-		}
+		const platformAssignment: PlatformAssigment = { platform: platformAssignmentsCount ? platformAssignmentsCount[0] : anyPlatforms[0], checked: false, user: undefined, userRange: [-1, -1], range: [-1, -1] };
+		platformAssignments.push(platformAssignment);
+		const startIndex = fromIndex + matches.index;
+		setUserAssignment(body, { match: matches[0], start: startIndex }, platformAssignment);
+		const endIndex = findEOLIndex(body, matches[0], startIndex);
+		platformAssignment.range = [findStartIndex(body, matches[0], startIndex), endIndex];
+		platformAssignment.checked = matches[1] === 'x' && !!platformAssignment.user;
+		return endIndex;
 	}
 	return -1;
 }
