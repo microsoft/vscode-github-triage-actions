@@ -22,7 +22,11 @@ class Commands {
             return false;
         }
         if ('label' in this.action) {
-            return command.type === 'label' && this.action.label === command.name;
+            if (!(command.type === 'label'))
+                return false;
+            const regexMatch = command.regex && new RegExp(command.regex).test(this.action.label);
+            const nameMatch = this.action.label === command.name;
+            return !!(nameMatch || regexMatch);
         }
         else {
             return (command.type === 'comment' &&

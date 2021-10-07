@@ -11,7 +11,7 @@ import { safeLog } from '../common/utils'
 // confusing when eslint formats
 export type Command =
 	& { name: string }
-	& ({ type: 'comment'; allowUsers: string[] } | { type: 'label' })
+	& ({ type: 'comment'; allowUsers: string[] } | { type: 'label', regex?: string })
 	& { action?: 'close' }
 	& Partial<{ comment: string; addLabel: string; removeLabel: string, assign: string[] }>
 	& Partial<{ requireLabel: string; disallowLabel: string }>
@@ -34,7 +34,10 @@ export class Commands {
 		}
 
 		if ('label' in this.action) {
-			return command.type === 'label' && this.action.label === command.name
+			if (!(command.type === 'label')) return false
+			const regexMatch = command.regex && new RegExp(command.regex).test(this.action.label)
+			const nameMatch = this.action.label === command.name
+			return !!(nameMatch || regexMatch)
 		} else {
 			return (
 				command.type === 'comment' &&

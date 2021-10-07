@@ -367,6 +367,36 @@ describe('Commands', () => {
 			expect(comments[0].body).to.equal('myComment hello :)')
 		})
 
+		it('Comments (regex)', async () => {
+			const testbed = new TestbedIssue({ writers: ['JacksonKearl'] })
+			const commands: Command[] = [
+				{
+					type: 'label',
+					regex: 'hello-.+',
+					action: 'close',
+					comment: 'myComment ${DUMMY}',
+					name: 'hello',
+				},
+			]
+
+			await new Commands(
+				testbed,
+				commands,
+				{
+					label: 'hello-world',
+					user: { name: 'JacksonKearl' },
+				},
+				dummyHydrate,
+			).run()
+
+			expect((await testbed.getIssue()).open).to.equal(false)
+			const comments = []
+			for await (const page of testbed.getComments()) {
+				comments.push(...page)
+			}
+			expect(comments[0].body).to.equal('myComment hello :)')
+		})
+
 		it('But doesnt comment when the issue was closed', async () => {
 			const testbed = new TestbedIssue({ writers: ['JacksonKearl'] }, { issue: { open: false } })
 			const commands: Command[] = [
