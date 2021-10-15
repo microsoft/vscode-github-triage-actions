@@ -1,0 +1,12 @@
+name: AddExtraLabel
+description: When a label is added to an issue, auto add a new label
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions to both repos
+    default: ${{ github.token }}
+  newLabel:
+    description: new label to apply to the issue
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'
