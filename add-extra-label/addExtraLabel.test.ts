@@ -31,5 +31,6 @@ describe('AddExtraLabel', () => {
 		await new AddExtraLabel(testbed, 'baz').run()
 		testbedIssue = await testbed.getIssue()
 		expect(testbedIssue?.labels).to.contain('baz')
+		expect(testbedIssue?.labels).to.contain('foobar')
 	})
 })
