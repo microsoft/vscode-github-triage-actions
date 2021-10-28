@@ -98,7 +98,7 @@ class ApplyLabels extends Action_1.Action {
                 for (const assignee of potentialAssignees) {
                     const hasBeenAssigned = await issue.getAssigner(assignee).catch(() => undefined);
                     if (!hasBeenAssigned) {
-                        await issue.addAssignee(potentialAssignees[0]);
+                        await issue.addAssignee(assignee);
                         break;
                     }
                 }
