@@ -292,6 +292,9 @@ class OctoKitIssue extends OctoKit {
                     assigner = timelineEvent.actor.login;
                 }
             }
+            if (assigner) {
+                break;
+            }
         }
         if (!assigner) {
             throw Error('Expected to find ' + assignee + ' in issue timeline but did not.');

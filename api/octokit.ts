@@ -336,6 +336,9 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 					assigner = timelineEvent.actor.login
 				}
 			}
+			if (assigner) {
+				break
+			}
 		}
 
 		if (!assigner) {

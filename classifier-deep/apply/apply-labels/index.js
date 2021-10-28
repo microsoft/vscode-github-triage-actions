@@ -95,7 +95,13 @@ class ApplyLabels extends Action_1.Action {
                 }
             }
             if (potentialAssignees.length && !debug) {
-                await issue.addAssignee(potentialAssignees[0]);
+                for (const assignee of potentialAssignees) {
+                    const hasBeenAssigned = await issue.getAssigner(assignee).catch(() => undefined);
+                    if (!hasBeenAssigned) {
+                        await issue.addAssignee(potentialAssignees[0]);
+                        break;
+                    }
+                }
             }
         }
     }
