@@ -43,30 +43,45 @@ export class LanguageSpecificLabeler {
 	) {}
 
 	private async detectLanguage(chunk: string): Promise<string | undefined> {
-		const result = await axios.post(
-			'https://api.cognitive.microsofttranslator.com/detect?api-version=3.0',
-			JSON.stringify([{ text: chunk.slice(0, 200) }]),
-			{
-				headers: {
-					'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
-					'Content-type': 'application/json',
+		const hashedKey = this.cognitiveServicesAPIKey.replace(/./g, '*')
+		safeLog('attempting to detect language...', chunk.slice(0, 30), hashedKey)
+
+		const result = await axios
+			.post(
+				'https://api.cognitive.microsofttranslator.com/detect?api-version=3.0',
+				JSON.stringify([{ text: chunk.slice(0, 200) }]),
+				{
+					headers: {
+						'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
+						'Content-type': 'application/json',
+					},
 				},
-			},
-		)
+			)
+			.catch((e) => {
+				safeLog('error detecing language', e)
+				throw e
+			})
 		return result?.data?.[0].language ?? undefined
 	}
 
 	private async translate(text: string, to: string): Promise<string | undefined> {
-		const result = await axios.post(
-			'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=' + to,
-			JSON.stringify([{ text }]),
-			{
-				headers: {
-					'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
-					'Content-type': 'application/json',
+		const hashedKey = this.cognitiveServicesAPIKey.replace(/./g, '*')
+		safeLog('attempting to translate...', hashedKey, text.slice(0, 20), to)
+		const result = await axios
+			.post(
+				'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=' + to,
+				JSON.stringify([{ text }]),
+				{
+					headers: {
+						'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
+						'Content-type': 'application/json',
+					},
 				},
-			},
-		)
+			)
+			.catch((e) => {
+				safeLog('error translating language', e)
+				throw e
+			})
 		return result?.data?.[0].translations?.[0].text ?? undefined
 	}
 

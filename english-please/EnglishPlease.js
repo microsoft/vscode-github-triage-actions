@@ -37,21 +37,35 @@ class LanguageSpecificLabeler {
     }
     async detectLanguage(chunk) {
         var _a, _b;
-        const result = await axios_1.default.post('https://api.cognitive.microsofttranslator.com/detect?api-version=3.0', JSON.stringify([{ text: chunk.slice(0, 200) }]), {
+        const hashedKey = this.cognitiveServicesAPIKey.replace(/./g, '*');
+        utils_1.safeLog('attempting to detect language...', chunk.slice(0, 30), hashedKey);
+        const result = await axios_1.default
+            .post('https://api.cognitive.microsofttranslator.com/detect?api-version=3.0', JSON.stringify([{ text: chunk.slice(0, 200) }]), {
             headers: {
                 'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
                 'Content-type': 'application/json',
             },
+        })
+            .catch((e) => {
+            utils_1.safeLog('error detecing language', e);
+            throw e;
         });
         return (_b = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0].language) !== null && _b !== void 0 ? _b : undefined;
     }
     async translate(text, to) {
         var _a, _b, _c;
-        const result = await axios_1.default.post('https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=' + to, JSON.stringify([{ text }]), {
+        const hashedKey = this.cognitiveServicesAPIKey.replace(/./g, '*');
+        utils_1.safeLog('attempting to translate...', hashedKey, text.slice(0, 20), to);
+        const result = await axios_1.default
+            .post('https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=' + to, JSON.stringify([{ text }]), {
             headers: {
                 'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
                 'Content-type': 'application/json',
             },
+        })
+            .catch((e) => {
+            utils_1.safeLog('error translating language', e);
+            throw e;
         });
         return (_c = (_b = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0].translations) === null || _b === void 0 ? void 0 : _b[0].text) !== null && _c !== void 0 ? _c : undefined;
     }

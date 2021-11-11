@@ -38,7 +38,7 @@ const argv = yargs
     .alias('help', 'h').argv;
 const [, owner, repo] = /(.*)\/(.*)/.exec(argv.repo);
 const main = async () => {
-    await new EnglishPlease_1.LanguageSpecificLabeler(new octokit_1.OctoKitIssue(argv.token, { repo, owner }, { number: argv.number }, { readonly: !argv.write }), 'translation-requested-', '555555', '*english-please', 'needs more info', argv.key).run();
+    await new EnglishPlease_1.LanguageSpecificLabeler(new octokit_1.OctoKitIssue(argv.token, { repo, owner }, { number: argv.number }, { readonly: !argv.write }), 'translation-required-', 'c29cff', '*english-please', 'needs more info', argv.key).run();
 };
 main().catch(console.error);
 //# sourceMappingURL=cli.js.map

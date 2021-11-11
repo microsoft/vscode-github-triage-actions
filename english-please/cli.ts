@@ -41,8 +41,8 @@ const [, owner, repo] = /(.*)\/(.*)/.exec(argv.repo)!
 const main = async () => {
 	await new LanguageSpecificLabeler(
 		new OctoKitIssue(argv.token, { repo, owner }, { number: argv.number }, { readonly: !argv.write }),
-		'translation-requested-',
-		'555555',
+		'translation-required-',
+		'c29cff',
 		'*english-please',
 		'needs more info',
 		argv.key,
