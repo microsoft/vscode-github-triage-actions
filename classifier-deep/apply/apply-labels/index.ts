@@ -5,6 +5,7 @@
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import fetch from 'node-fetch'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../../../api/octokit'
 import { getRequiredInput, getInput, safeLog } from '../../../common/utils'
@@ -12,6 +13,9 @@ import { Action } from '../../../common/Action'
 import { trackEvent } from '../../../common/telemetry'
 
 const token = getRequiredInput('token')
+const manifestURL = getInput('triager-manifest-url')
+const manifestSecret = getInput('triager-manifest-secret')
+
 const allowLabels = (getInput('allowLabels') || '').split('|')
 const debug = !!getInput('__debug')
 
@@ -32,6 +36,19 @@ class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels'
 
 	async onTriggered(github: OctoKit) {
+		let manifest: Promise<string[] | undefined> = Promise.resolve(undefined)
+		if (manifestURL && manifestSecret) {
+			manifest = fetch(manifestURL, {
+				headers: { 'x-triager-manifest-secret': manifestSecret },
+			}).then(
+				(v) => v.json() as Promise<string[]>,
+				(e) => {
+					safeLog('error loading triager manifest', e.message)
+					return undefined
+				},
+			)
+		}
+
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'))
 		const labelings: LabelingsFile = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
@@ -132,13 +149,31 @@ class ApplyLabels extends Action {
 				}
 			}
 
+			let performedAssignment = false
 			if (potentialAssignees.length && !debug) {
 				for (const assignee of potentialAssignees) {
 					const hasBeenAssigned = await issue.getAssigner(assignee).catch(() => undefined)
 					if (!hasBeenAssigned) {
 						await issue.addAssignee(assignee)
+						performedAssignment = true
 						break
 					}
+				}
+			}
+
+			if (!performedAssignment) {
+				safeLog('could not find assignee, picking a random one...')
+				try {
+					const available = await manifest
+					if (available) {
+						const randomSelection = available[Math.floor(Math.random() * available.length)]
+						safeLog('assigning', randomSelection)
+						await issue.addAssignee(randomSelection)
+					} else {
+						safeLog('could not find manifest')
+					}
+				} catch (e) {
+					safeLog('error assigning random', (e as any).message)
 				}
 			}
 		}

@@ -6,12 +6,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const path_1 = require("path");
+const node_fetch_1 = require("node-fetch");
 const github_1 = require("@actions/github");
 const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
 const telemetry_1 = require("../../../common/telemetry");
 const token = utils_1.getRequiredInput('token');
+const manifestURL = utils_1.getInput('triager-manifest-url');
+const manifestSecret = utils_1.getInput('triager-manifest-secret');
 const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
 const debug = !!utils_1.getInput('__debug');
 class ApplyLabels extends Action_1.Action {
@@ -21,6 +24,15 @@ class ApplyLabels extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a;
+        let manifest = Promise.resolve(undefined);
+        if (manifestURL && manifestSecret) {
+            manifest = node_fetch_1.default(manifestURL, {
+                headers: { 'x-triager-manifest-secret': manifestSecret },
+            }).then((v) => v.json(), (e) => {
+                utils_1.safeLog('error loading triager manifest', e.message);
+                return undefined;
+            });
+        }
         const config = await github.readConfig(utils_1.getRequiredInput('configPath'));
         const labelings = JSON.parse(fs_1.readFileSync(path_1.join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
         for (const labeling of labelings) {
@@ -94,13 +106,32 @@ class ApplyLabels extends Action_1.Action {
                     });
                 }
             }
+            let performedAssignment = false;
             if (potentialAssignees.length && !debug) {
                 for (const assignee of potentialAssignees) {
                     const hasBeenAssigned = await issue.getAssigner(assignee).catch(() => undefined);
                     if (!hasBeenAssigned) {
                         await issue.addAssignee(assignee);
+                        performedAssignment = true;
                         break;
                     }
+                }
+            }
+            if (!performedAssignment) {
+                utils_1.safeLog('could not find assignee, picking a random one...');
+                try {
+                    const available = await manifest;
+                    if (available) {
+                        const randomSelection = available[Math.floor(Math.random() * available.length)];
+                        utils_1.safeLog('assigning', randomSelection);
+                        await issue.addAssignee(randomSelection);
+                    }
+                    else {
+                        utils_1.safeLog('could not find manifest');
+                    }
+                }
+                catch (e) {
+                    utils_1.safeLog('error assigning random', e.message);
                 }
             }
         }
