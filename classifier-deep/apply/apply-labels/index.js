@@ -25,9 +25,9 @@ class ApplyLabels extends Action_1.Action {
     async onTriggered(github) {
         var _a;
         let manifest = Promise.resolve(undefined);
-        if (manifestURL && manifestSecret) {
+        if (manifestURL) {
             manifest = node_fetch_1.default(manifestURL, {
-                headers: { 'x-triager-manifest-secret': manifestSecret },
+                headers: manifestSecret ? { 'x-triager-manifest-secret': manifestSecret } : {},
             }).then((v) => v.json(), (e) => {
                 utils_1.safeLog('error loading triager manifest', e.message);
                 return undefined;

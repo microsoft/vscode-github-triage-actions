@@ -37,9 +37,9 @@ class ApplyLabels extends Action {
 
 	async onTriggered(github: OctoKit) {
 		let manifest: Promise<string[] | undefined> = Promise.resolve(undefined)
-		if (manifestURL && manifestSecret) {
+		if (manifestURL) {
 			manifest = fetch(manifestURL, {
-				headers: { 'x-triager-manifest-secret': manifestSecret },
+				headers: manifestSecret ? { 'x-triager-manifest-secret': manifestSecret } : {},
 			}).then(
 				(v) => v.json() as Promise<string[]>,
 				(e) => {
