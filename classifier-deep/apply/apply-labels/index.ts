@@ -13,8 +13,8 @@ import { Action } from '../../../common/Action'
 import { trackEvent } from '../../../common/telemetry'
 
 const token = getRequiredInput('token')
-const manifestURL = getInput('triager-manifest-url')
-const manifestSecret = getInput('triager-manifest-secret')
+const manifestURL = getInput('triagerManifestUrl')
+const manifestSecret = getInput('triagerManifestSecret')
 
 const allowLabels = (getInput('allowLabels') || '').split('|')
 const debug = !!getInput('__debug')

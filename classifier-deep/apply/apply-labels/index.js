@@ -13,8 +13,8 @@ const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
 const telemetry_1 = require("../../../common/telemetry");
 const token = utils_1.getRequiredInput('token');
-const manifestURL = utils_1.getInput('triager-manifest-url');
-const manifestSecret = utils_1.getInput('triager-manifest-secret');
+const manifestURL = utils_1.getInput('triagerManifestUrl');
+const manifestSecret = utils_1.getInput('triagerManifestSecret');
 const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
 const debug = !!utils_1.getInput('__debug');
 class ApplyLabels extends Action_1.Action {
