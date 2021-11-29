@@ -50,9 +50,9 @@ class LanguageSpecificLabeler {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                utils_1.safeLog(error.response.data);
-                utils_1.safeLog(error.response.status);
-                utils_1.safeLog(error.response.headers);
+                utils_1.safeLog(JSON.stringify(error.response.data));
+                utils_1.safeLog(JSON.stringify(error.response.status));
+                utils_1.safeLog(JSON.stringify(error.response.headers));
             }
             else if (error.request) {
                 // The request was made but no response was received
