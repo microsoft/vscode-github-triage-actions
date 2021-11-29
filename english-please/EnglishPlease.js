@@ -50,21 +50,22 @@ class LanguageSpecificLabeler {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                utils_1.safeLog(JSON.stringify(error.response.data));
-                utils_1.safeLog(JSON.stringify(error.response.status));
-                utils_1.safeLog(JSON.stringify(error.response.headers));
+                utils_1.safeLog('DATA: ' + JSON.stringify(error.response.data));
+                utils_1.safeLog('STATUS: ' + JSON.stringify(error.response.status));
+                utils_1.safeLog('HEADERS: ' + JSON.stringify(error.response.headers));
+                utils_1.safeLog('REQUEST: ' + JSON.stringify(error.request));
             }
             else if (error.request) {
                 // The request was made but no response was received
                 // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
                 // http.ClientRequest in node.js
-                utils_1.safeLog(error.request);
+                utils_1.safeLog('REQUEST: ' + JSON.stringify(error.request));
             }
             else {
                 // Something happened in setting up the request that triggered an Error
                 utils_1.safeLog('Error', error.message);
             }
-            utils_1.safeLog(error.config);
+            utils_1.safeLog('CONFIG: ' + JSON.stringify(error.config));
         });
         return (_c = (_b = (_a = result) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b[0].language) !== null && _c !== void 0 ? _c : undefined;
     }
