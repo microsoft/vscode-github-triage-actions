@@ -36,7 +36,7 @@ class LanguageSpecificLabeler {
         this.cognitiveServicesAPIKey = cognitiveServicesAPIKey;
     }
     async detectLanguage(chunk) {
-        var _a, _b;
+        var _a, _b, _c;
         const hashedKey = this.cognitiveServicesAPIKey.replace(/./g, '*');
         utils_1.safeLog('attempting to detect language...', chunk.slice(0, 30), hashedKey);
         const result = await axios_1.default
@@ -46,11 +46,27 @@ class LanguageSpecificLabeler {
                 'Content-type': 'application/json',
             },
         })
-            .catch((e) => {
-            utils_1.safeLog('error detecing language', e);
-            throw e;
+            .catch((error) => {
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                utils_1.safeLog(error.response.data);
+                utils_1.safeLog(error.response.status);
+                utils_1.safeLog(error.response.headers);
+            }
+            else if (error.request) {
+                // The request was made but no response was received
+                // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+                // http.ClientRequest in node.js
+                utils_1.safeLog(error.request);
+            }
+            else {
+                // Something happened in setting up the request that triggered an Error
+                utils_1.safeLog('Error', error.message);
+            }
+            utils_1.safeLog(error.config);
         });
-        return (_b = (_a = result === null || result === void 0 ? void 0 : result.data) === null || _a === void 0 ? void 0 : _a[0].language) !== null && _b !== void 0 ? _b : undefined;
+        return (_c = (_b = (_a = result) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b[0].language) !== null && _c !== void 0 ? _c : undefined;
     }
     async translate(text, to) {
         var _a, _b, _c;

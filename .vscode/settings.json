@@ -3,7 +3,7 @@
 		"source.fixAll.eslint": true
 	},
 	"[typescript]": {
-		"editor.defaultFormatter": "vscode.typescript-language-features"
+		"editor.defaultFormatter": null
 	},
 	"eslint.format.enable": true,
 	"files.exclude": {
