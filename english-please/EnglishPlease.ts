@@ -49,7 +49,7 @@ export class LanguageSpecificLabeler {
 		const result = await axios
 			.post(
 				'https://api.cognitive.microsofttranslator.com/detect?api-version=3.0',
-				JSON.stringify([{ text: chunk.slice(0, 200) }]),
+				[{ text: chunk.slice(0, 200) }],
 				{
 					headers: {
 						'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
@@ -64,7 +64,7 @@ export class LanguageSpecificLabeler {
 					safeLog('DATA: ' + JSON.stringify(error.response.data))
 					safeLog('STATUS: ' + JSON.stringify(error.response.status))
 					safeLog('HEADERS: ' + JSON.stringify(error.response.headers))
-					safeLog('REQUEST: ' + JSON.stringify(error.request))
+					safeLog('REQUEST: ' + JSON.stringify(error.request?.body))
 				} else if (error.request) {
 					// The request was made but no response was received
 					// `error.request` is an instance of XMLHttpRequest in the browser and an instance of

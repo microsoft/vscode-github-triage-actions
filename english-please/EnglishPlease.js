@@ -40,20 +40,21 @@ class LanguageSpecificLabeler {
         const hashedKey = this.cognitiveServicesAPIKey.replace(/./g, '*');
         utils_1.safeLog('attempting to detect language...', chunk.slice(0, 30), hashedKey);
         const result = await axios_1.default
-            .post('https://api.cognitive.microsofttranslator.com/detect?api-version=3.0', JSON.stringify([{ text: chunk.slice(0, 200) }]), {
+            .post('https://api.cognitive.microsofttranslator.com/detect?api-version=3.0', [{ text: chunk.slice(0, 200) }], {
             headers: {
                 'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
                 'Content-type': 'application/json',
             },
         })
             .catch((error) => {
+            var _a;
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
                 utils_1.safeLog('DATA: ' + JSON.stringify(error.response.data));
                 utils_1.safeLog('STATUS: ' + JSON.stringify(error.response.status));
                 utils_1.safeLog('HEADERS: ' + JSON.stringify(error.response.headers));
-                utils_1.safeLog('REQUEST: ' + JSON.stringify(error.request));
+                utils_1.safeLog('REQUEST: ' + JSON.stringify((_a = error.request) === null || _a === void 0 ? void 0 : _a.body));
             }
             else if (error.request) {
                 // The request was made but no response was received
