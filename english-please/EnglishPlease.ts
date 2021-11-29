@@ -62,9 +62,6 @@ export class LanguageSpecificLabeler {
 					// The request was made and the server responded with a status code
 					// that falls out of the range of 2xx
 					safeLog('DATA: ' + JSON.stringify(error.response.data))
-					safeLog('STATUS: ' + JSON.stringify(error.response.status))
-					safeLog('HEADERS: ' + JSON.stringify(error.response.headers))
-					safeLog('REQUEST: ' + JSON.stringify(error.request?.body))
 				} else if (error.request) {
 					// The request was made but no response was received
 					// `error.request` is an instance of XMLHttpRequest in the browser and an instance of
@@ -85,7 +82,7 @@ export class LanguageSpecificLabeler {
 		const result = await axios
 			.post(
 				'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=' + to,
-				JSON.stringify([{ text }]),
+				[{ text }],
 				{
 					headers: {
 						'Ocp-Apim-Subscription-Key': this.cognitiveServicesAPIKey,
