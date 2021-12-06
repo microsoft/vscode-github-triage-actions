@@ -4,17 +4,16 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const mongodb = require("mongodb");
 const fs_1 = require("fs");
 const path_1 = require("path");
-const node_fetch_1 = require("node-fetch");
 const github_1 = require("@actions/github");
 const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
 const telemetry_1 = require("../../../common/telemetry");
 const token = utils_1.getRequiredInput('token');
-const manifestURL = utils_1.getInput('triagerManifestUrl');
-const manifestSecret = utils_1.getInput('triagerManifestSecret');
+const manifestDbConnectionString = utils_1.getInput('manifestDbConnectionString');
 const allowLabels = (utils_1.getInput('allowLabels') || '').split('|');
 const debug = !!utils_1.getInput('__debug');
 class ApplyLabels extends Action_1.Action {
@@ -25,13 +24,27 @@ class ApplyLabels extends Action_1.Action {
     async onTriggered(github) {
         var _a;
         let manifest = Promise.resolve(undefined);
-        if (manifestURL) {
-            manifest = node_fetch_1.default(manifestURL, {
-                headers: manifestSecret ? { 'x-triager-manifest-secret': manifestSecret } : {},
-            }).then((v) => v.json(), (e) => {
-                utils_1.safeLog('error loading triager manifest', e.message);
-                return undefined;
+        if (manifestDbConnectionString) {
+            utils_1.safeLog('has manifestDbConnectionString');
+            manifest = mongodb.MongoClient.connect(manifestDbConnectionString).then(async (db) => {
+                utils_1.safeLog('connected to db');
+                try {
+                    const collection = db.collection('testers');
+                    const triagers = await collection.find().toArray();
+                    return triagers.filter((t) => t.triager).map((t) => t.id);
+                }
+                catch (e) {
+                    utils_1.safeLog('error reading from db');
+                    utils_1.safeLog(e.message);
+                }
+                finally {
+                    utils_1.safeLog('disconnected from db');
+                    db.close();
+                }
             });
+        }
+        else {
+            utils_1.safeLog('has no manifestDbConnectionString');
         }
         const config = await github.readConfig(utils_1.getRequiredInput('configPath'));
         const labelings = JSON.parse(fs_1.readFileSync(path_1.join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));

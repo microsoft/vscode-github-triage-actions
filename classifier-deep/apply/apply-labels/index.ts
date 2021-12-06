@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import * as mongodb from 'mongodb'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import fetch from 'node-fetch'
 import { context } from '@actions/github'
 import { OctoKit, OctoKitIssue } from '../../../api/octokit'
 import { getRequiredInput, getInput, safeLog } from '../../../common/utils'
@@ -13,8 +13,7 @@ import { Action } from '../../../common/Action'
 import { trackEvent } from '../../../common/telemetry'
 
 const token = getRequiredInput('token')
-const manifestURL = getInput('triagerManifestUrl')
-const manifestSecret = getInput('triagerManifestSecret')
+const manifestDbConnectionString = getInput('manifestDbConnectionString')
 
 const allowLabels = (getInput('allowLabels') || '').split('|')
 const debug = !!getInput('__debug')
@@ -32,21 +31,35 @@ type ClassifierConfig = {
 type Labeling = { confident: boolean; category: string; confidence: number }
 type LabelingsFile = { number: number; area: Labeling; assignee: Labeling }[]
 
+type Triager = {
+	id: string
+	triager: boolean
+}
+
 class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels'
 
 	async onTriggered(github: OctoKit) {
 		let manifest: Promise<string[] | undefined> = Promise.resolve(undefined)
-		if (manifestURL) {
-			manifest = fetch(manifestURL, {
-				headers: manifestSecret ? { 'x-triager-manifest-secret': manifestSecret } : {},
-			}).then(
-				(v) => v.json() as Promise<string[]>,
-				(e) => {
-					safeLog('error loading triager manifest', e.message)
-					return undefined
-				},
-			)
+
+		if (manifestDbConnectionString) {
+			safeLog('has manifestDbConnectionString')
+			manifest = mongodb.MongoClient.connect(manifestDbConnectionString).then(async (db) => {
+				safeLog('connected to db')
+				try {
+					const collection = db.collection('testers')
+					const triagers = await collection.find<Triager>().toArray()
+					return triagers.filter((t) => t.triager).map((t) => t.id)
+				} catch (e) {
+					safeLog('error reading from db')
+					safeLog((e as any).message)
+				} finally {
+					safeLog('disconnected from db')
+					db.close()
+				}
+			})
+		} else {
+			safeLog('has no manifestDbConnectionString')
 		}
 
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'))
