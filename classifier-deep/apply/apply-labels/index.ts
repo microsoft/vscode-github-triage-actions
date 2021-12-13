@@ -55,6 +55,7 @@ class ApplyLabels extends Action {
 					safeLog((e as any).message)
 				} finally {
 					safeLog('disconnected from db')
+					// eslint-disable-next-line @typescript-eslint/no-floating-promises
 					db.close()
 				}
 			})
@@ -181,7 +182,9 @@ class ApplyLabels extends Action {
 					if (available) {
 						const randomSelection = available[Math.floor(Math.random() * available.length)]
 						safeLog('assigning', randomSelection)
-						await issue.addAssignee(randomSelection)
+						if (!debug) {
+							await issue.addAssignee(randomSelection)
+						}
 					} else {
 						safeLog('could not find manifest')
 					}

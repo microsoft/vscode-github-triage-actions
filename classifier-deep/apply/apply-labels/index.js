@@ -39,6 +39,7 @@ class ApplyLabels extends Action_1.Action {
                 }
                 finally {
                     utils_1.safeLog('disconnected from db');
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     db.close();
                 }
             });
@@ -137,7 +138,9 @@ class ApplyLabels extends Action_1.Action {
                     if (available) {
                         const randomSelection = available[Math.floor(Math.random() * available.length)];
                         utils_1.safeLog('assigning', randomSelection);
-                        await issue.addAssignee(randomSelection);
+                        if (!debug) {
+                            await issue.addAssignee(randomSelection);
+                        }
                     }
                     else {
                         utils_1.safeLog('could not find manifest');
