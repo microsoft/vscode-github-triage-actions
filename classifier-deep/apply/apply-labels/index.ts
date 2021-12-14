@@ -183,6 +183,7 @@ class ApplyLabels extends Action {
 						const randomSelection = available[Math.floor(Math.random() * available.length)]
 						safeLog('assigning', randomSelection)
 						if (!debug) {
+							await issue.addLabel('triage-needed')
 							await issue.addAssignee(randomSelection)
 						}
 					} else {
