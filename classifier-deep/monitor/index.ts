@@ -11,6 +11,13 @@ import { trackEvent } from '../../common/telemetry'
 class DeepClassifierMonitor extends Action {
 	id = 'Classifier-Deep/Monitor'
 
+	protected async onAssigned(issue: OctoKitIssue, assignee: string): Promise<void> {
+		const assigner = await issue.getAssigner(assignee)
+		if (assigner !== getRequiredInput('botName')) {
+			await issue.removeLabel('triage-needed')
+		}
+	}
+
 	async onUnassigned(issue: OctoKitIssue, assignee: string) {
 		const assigner = await issue.getAssigner(assignee)
 		if (assigner === getRequiredInput('botName')) {

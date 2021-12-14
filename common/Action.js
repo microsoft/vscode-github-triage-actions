@@ -62,6 +62,9 @@ class Action {
                         case 'labeled':
                             await this.onLabeled(octokit, github_1.context.payload.label.name);
                             break;
+                        case 'assigned':
+                            await this.onAssigned(octokit, github_1.context.payload.assignee.login);
+                            break;
                         case 'unassigned':
                             await this.onUnassigned(octokit, github_1.context.payload.assignee.login);
                             break;
@@ -124,7 +127,10 @@ ID: ${details.id}
     async onLabeled(_issue, _label) {
         throw Error('not implemented');
     }
-    async onUnassigned(_issue, _label) {
+    async onAssigned(_issue, _assignee) {
+        throw Error('not implemented');
+    }
+    async onUnassigned(_issue, _assignee) {
         throw Error('not implemented');
     }
     async onOpened(_issue) {

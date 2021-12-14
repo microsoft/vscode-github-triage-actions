@@ -73,6 +73,9 @@ export abstract class Action {
 						case 'labeled':
 							await this.onLabeled(octokit, context.payload.label.name)
 							break
+						case 'assigned':
+							await this.onAssigned(octokit, context.payload.assignee.login)
+							break
 						case 'unassigned':
 							await this.onUnassigned(octokit, context.payload.assignee.login)
 							break
@@ -139,7 +142,10 @@ ID: ${details.id}
 	protected async onLabeled(_issue: OctoKitIssue, _label: string): Promise<void> {
 		throw Error('not implemented')
 	}
-	protected async onUnassigned(_issue: OctoKitIssue, _label: string): Promise<void> {
+	protected async onAssigned(_issue: OctoKitIssue, _assignee: string): Promise<void> {
+		throw Error('not implemented')
+	}
+	protected async onUnassigned(_issue: OctoKitIssue, _assignee: string): Promise<void> {
 		throw Error('not implemented')
 	}
 	protected async onOpened(_issue: OctoKitIssue): Promise<void> {
