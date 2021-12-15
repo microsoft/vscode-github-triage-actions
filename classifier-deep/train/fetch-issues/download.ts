@@ -77,7 +77,7 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 	const data = await axios
 		.post(
 			'https://api.github.com/graphql',
-			JSON.stringify({
+			{
 				query: `{
       repository(name: "${repo.repo}", owner: "${repo.owner}") {
         issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
@@ -137,7 +137,7 @@ export const download = async (token: string, repo: { owner: string; repo: strin
         remaining
       }
     }`,
-			}),
+			},
 			{
 				headers: {
 					'Content-Type': 'application/json',

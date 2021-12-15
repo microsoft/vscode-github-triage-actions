@@ -9,7 +9,7 @@ const fs_1 = require("fs");
 const path_1 = require("path");
 exports.download = async (token, repo, endCursor) => {
     const data = await axios_1.default
-        .post('https://api.github.com/graphql', JSON.stringify({
+        .post('https://api.github.com/graphql', {
         query: `{
       repository(name: "${repo.repo}", owner: "${repo.owner}") {
         issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
@@ -69,7 +69,7 @@ exports.download = async (token, repo, endCursor) => {
         remaining
       }
     }`,
-    }), {
+    }, {
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
