@@ -18,7 +18,7 @@ const fromInput = getInput('from') || undefined
 const from = fromInput ? daysAgoToHumanReadbleDate(+fromInput * minToDay) : undefined
 const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay)
 
-const createdQuery = `created:` + from ? `${from}..${until}` : `<${until}`
+const createdQuery = `created:` + (from ? `${from}..${until}` : `<${until}`)
 
 const blobContainer = getRequiredInput('blobContainerName')
 const blobStorageKey = getRequiredInput('blobStorageKey')

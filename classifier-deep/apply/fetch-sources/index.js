@@ -15,7 +15,7 @@ const minToDay = 0.0007;
 const fromInput = core_1.getInput('from') || undefined;
 const from = fromInput ? utils_1.daysAgoToHumanReadbleDate(+fromInput * minToDay) : undefined;
 const until = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('until') * minToDay);
-const createdQuery = `created:` + from ? `${from}..${until}` : `<${until}`;
+const createdQuery = `created:` + (from ? `${from}..${until}` : `<${until}`);
 const blobContainer = utils_1.getRequiredInput('blobContainerName');
 const blobStorageKey = utils_1.getRequiredInput('blobStorageKey');
 class FetchIssues extends Action_1.Action {
