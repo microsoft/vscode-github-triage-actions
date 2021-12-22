@@ -9,12 +9,16 @@ import { OctoKit } from '../../../api/octokit'
 import { getRequiredInput, daysAgoToHumanReadbleDate, normalizeIssue, safeLog } from '../../../common/utils'
 import { Action } from '../../../common/Action'
 import { execSync } from 'child_process'
-import { setFailed } from '@actions/core'
+import { getInput, setFailed } from '@actions/core'
 import { downloadBlobFile } from '../../blobStorage'
 
 const minToDay = 0.0007
-const from = daysAgoToHumanReadbleDate(+getRequiredInput('from') * minToDay)
+const fromInput = getInput('from') || undefined
+
+const from = fromInput ? daysAgoToHumanReadbleDate(+fromInput * minToDay) : undefined
 const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay)
+
+const createdQuery = `created:` + from ? `${from}..${until}` : `<${until}`
 
 const blobContainer = getRequiredInput('blobContainerName')
 const blobStorageKey = getRequiredInput('blobStorageKey')
@@ -23,7 +27,7 @@ class FetchIssues extends Action {
 	id = 'Clasifier-Deep/Apply/FetchIssues'
 
 	async onTriggered(github: OctoKit) {
-		const query = `created:>${from} updated:<${until} is:open`
+		const query = `${createdQuery} is:open no:assignee`
 
 		const data: { number: number; contents: string }[] = []
 		for await (const page of github.query({ q: query })) {

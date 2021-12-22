@@ -12,8 +12,10 @@ const child_process_1 = require("child_process");
 const core_1 = require("@actions/core");
 const blobStorage_1 = require("../../blobStorage");
 const minToDay = 0.0007;
-const from = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('from') * minToDay);
+const fromInput = core_1.getInput('from') || undefined;
+const from = fromInput ? utils_1.daysAgoToHumanReadbleDate(+fromInput * minToDay) : undefined;
 const until = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('until') * minToDay);
+const createdQuery = `created:` + from ? `${from}..${until}` : `<${until}`;
 const blobContainer = utils_1.getRequiredInput('blobContainerName');
 const blobStorageKey = utils_1.getRequiredInput('blobStorageKey');
 class FetchIssues extends Action_1.Action {
@@ -22,7 +24,7 @@ class FetchIssues extends Action_1.Action {
         this.id = 'Clasifier-Deep/Apply/FetchIssues';
     }
     async onTriggered(github) {
-        const query = `created:>${from} updated:<${until} is:open`;
+        const query = `${createdQuery} is:open no:assignee`;
         const data = [];
         for await (const page of github.query({ q: query })) {
             for (const issue of page) {
