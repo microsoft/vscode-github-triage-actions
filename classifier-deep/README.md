@@ -12,7 +12,7 @@ The deep classifier workflow is comprised of several components:
     - The provision-vm.sh script has been tested to work with NC6s_v2 VM's on Azure.
 - Applying
   - ./apply/fetch-sources Action
-    - This pulls the recent issues, models and other related daata from blob storage and places them on the Action runner's filesystem for
+    - This pulls the recent issues, models and other related data from blob storage and places them on the Action runner's filesystem for
   - ./apply/generaate-labels Action
     - This runs the downloaaded models against the recent issues and stores the results on the filesystem
   - ./apply/apply-labels
