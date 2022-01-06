@@ -47,6 +47,7 @@ class FetchIssues extends Action_1.Action {
                         }
                     }
                     catch (e) {
+                        console.log(e);
                         utils_1.safeLog('Encountered error finding linked issue assignee. Falling back to normal classification');
                     }
                 }
