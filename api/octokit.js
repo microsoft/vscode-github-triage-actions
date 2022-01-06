@@ -23,6 +23,9 @@ class OctoKit {
         numRequests++;
         return this._octokit;
     }
+    getIssueByNumber(number) {
+        return new OctoKitIssue(this.token, this.params, { number: number });
+    }
     // TODO: just iterate over the issues in a page here instead of making caller do it
     async *query(query) {
         const q = query.q + ` repo:${this.params.owner}/${this.params.repo}`;
@@ -58,20 +61,21 @@ class OctoKit {
             await this.octokit.issues.create({ owner, repo, title, body });
     }
     octokitIssueToIssue(issue) {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         return {
             author: { name: issue.user.login, isGitHubApp: issue.user.type === 'Bot' },
             body: issue.body,
             number: issue.number,
             title: issue.title,
+            isPr: !!((_a = issue.pull_request) === null || _a === void 0 ? void 0 : _a.html_url),
             labels: issue.labels.map((label) => label.name),
             open: issue.state === 'open',
             locked: issue.locked,
             numComments: issue.comments,
             reactions: issue.reactions,
-            assignee: (_b = (_a = issue.assignee) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : (_d = (_c = issue.assignees) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.login,
-            assignees: (_f = (_e = issue.assignees) === null || _e === void 0 ? void 0 : _e.map((assignee) => assignee.login)) !== null && _f !== void 0 ? _f : [],
-            milestoneId: (_h = (_g = issue.milestone) === null || _g === void 0 ? void 0 : _g.number) !== null && _h !== void 0 ? _h : null,
+            assignee: (_c = (_b = issue.assignee) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : (_e = (_d = issue.assignees) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.login,
+            assignees: (_g = (_f = issue.assignees) === null || _f === void 0 ? void 0 : _f.map((assignee) => assignee.login)) !== null && _g !== void 0 ? _g : [],
+            milestoneId: (_j = (_h = issue.milestone) === null || _h === void 0 ? void 0 : _h.number) !== null && _j !== void 0 ? _j : null,
             createdAt: +new Date(issue.created_at),
             updatedAt: +new Date(issue.updated_at),
             closedAt: issue.closed_at ? +new Date(issue.closed_at) : undefined,

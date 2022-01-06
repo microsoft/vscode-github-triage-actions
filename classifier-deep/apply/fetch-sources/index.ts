@@ -33,8 +33,32 @@ class FetchIssues extends Action {
 		for await (const page of github.query({ q: query })) {
 			for (const issue of page) {
 				const issueData = await issue.getIssue()
-				const cleansed = normalizeIssue(issueData)
-				data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` })
+
+				let performedPRAssignment = false
+				if (issueData.isPr) {
+					try {
+						safeLog('issue is a PR, attempting to read find a linked issue')
+						const linkedIssue = issueData.body.match(/#\d({3,7})/)?.[1]
+						if (linkedIssue) {
+							safeLog('PR is linked to', linkedIssue)
+							const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue()
+							const linkedIssueAssignee = linkedIssueData.assignees[0]
+							if (linkedIssueAssignee) {
+								safeLog('linked issue is assigned to', linkedIssueAssignee)
+								await issue.addAssignee(linkedIssueAssignee)
+								performedPRAssignment = true
+							}
+						}
+					} catch (e) {
+						safeLog(
+							'Encountered error finding linked issue assignee. Falling back to normal classification',
+						)
+					}
+				}
+				if (!performedPRAssignment) {
+					const cleansed = normalizeIssue(issueData)
+					data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` })
+				}
 			}
 		}
 

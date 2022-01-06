@@ -84,6 +84,7 @@ export interface Issue {
 	open: boolean
 	locked: boolean
 	number: number
+	isPr: boolean
 	numComments: number
 	reactions: Reactions
 	milestoneId: number | null

@@ -24,13 +24,36 @@ class FetchIssues extends Action_1.Action {
         this.id = 'Clasifier-Deep/Apply/FetchIssues';
     }
     async onTriggered(github) {
+        var _a;
         const query = `${createdQuery} is:open no:assignee`;
         const data = [];
         for await (const page of github.query({ q: query })) {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
-                const cleansed = utils_1.normalizeIssue(issueData);
-                data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
+                let performedPRAssignment = false;
+                if (issueData.isPr) {
+                    try {
+                        utils_1.safeLog('issue is a PR, attempting to read find a linked issue');
+                        const linkedIssue = (_a = issueData.body.match(/#\d({3,7})/)) === null || _a === void 0 ? void 0 : _a[1];
+                        if (linkedIssue) {
+                            utils_1.safeLog('PR is linked to', linkedIssue);
+                            const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue();
+                            const linkedIssueAssignee = linkedIssueData.assignees[0];
+                            if (linkedIssueAssignee) {
+                                utils_1.safeLog('linked issue is assigned to', linkedIssueAssignee);
+                                await issue.addAssignee(linkedIssueAssignee);
+                                performedPRAssignment = true;
+                            }
+                        }
+                    }
+                    catch (e) {
+                        utils_1.safeLog('Encountered error finding linked issue assignee. Falling back to normal classification');
+                    }
+                }
+                if (!performedPRAssignment) {
+                    const cleansed = utils_1.normalizeIssue(issueData);
+                    data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
+                }
             }
         }
         fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));

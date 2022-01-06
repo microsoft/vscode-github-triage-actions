@@ -30,6 +30,10 @@ export class OctoKit implements GitHub {
 		this._octokit = new GitHubAPI(token)
 	}
 
+	getIssueByNumber(number: number) {
+		return new OctoKitIssue(this.token, this.params, { number: number })
+	}
+
 	// TODO: just iterate over the issues in a page here instead of making caller do it
 	async *query(query: Query): AsyncIterableIterator<GitHubIssue[]> {
 		const q = query.q + ` repo:${this.params.owner}/${this.params.repo}`
@@ -78,6 +82,7 @@ export class OctoKit implements GitHub {
 			body: issue.body,
 			number: issue.number,
 			title: issue.title,
+			isPr: !!issue.pull_request?.html_url,
 			labels: (issue.labels as Octokit.IssuesGetLabelResponse[]).map((label) => label.name),
 			open: issue.state === 'open',
 			locked: (issue as any).locked,
