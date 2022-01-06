@@ -38,7 +38,7 @@ class FetchIssues extends Action {
 				if (issueData.isPr) {
 					try {
 						safeLog('issue is a PR, attempting to read find a linked issue')
-						const linkedIssue = issueData.body.match(/#\d({3,7})/)?.[1]
+						const linkedIssue = issueData.body.match(/#(\d{3,7})/)?.[1]
 						if (linkedIssue) {
 							safeLog('PR is linked to', linkedIssue)
 							const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue()
