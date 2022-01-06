@@ -47,10 +47,13 @@ class FetchIssues extends Action {
 								safeLog('linked issue is assigned to', linkedIssueAssignee)
 								await issue.addAssignee(linkedIssueAssignee)
 								performedPRAssignment = true
+							} else {
+								safeLog(
+									'unable to find assignee for linked issue. falling back to normal classification',
+								)
 							}
 						}
 					} catch (e) {
-						console.log(e)
 						safeLog(
 							'Encountered error finding linked issue assignee. Falling back to normal classification',
 						)
