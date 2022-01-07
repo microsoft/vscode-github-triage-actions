@@ -35,6 +35,7 @@ class FetchIssues extends Action {
 				const issueData = await issue.getIssue()
 
 				let performedPRAssignment = false
+				let additionalInfo = ''
 				if (issueData.isPr) {
 					try {
 						safeLog('issue is a PR, attempting to read find a linked issue')
@@ -42,6 +43,8 @@ class FetchIssues extends Action {
 						if (linkedIssue) {
 							safeLog('PR is linked to', linkedIssue)
 							const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue()
+							const normalized = normalizeIssue(linkedIssueData)
+							additionalInfo = `\n\n${normalized.title}\n\n${normalized.body}`
 							const linkedIssueAssignee = linkedIssueData.assignees[0]
 							if (linkedIssueAssignee) {
 								safeLog('linked issue is assigned to', linkedIssueAssignee)
@@ -61,7 +64,10 @@ class FetchIssues extends Action {
 				}
 				if (!performedPRAssignment) {
 					const cleansed = normalizeIssue(issueData)
-					data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` })
+					data.push({
+						number: issueData.number,
+						contents: `${cleansed.title}\n\n${cleansed.body}` + additionalInfo,
+					})
 				}
 			}
 		}
