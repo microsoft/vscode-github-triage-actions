@@ -64,7 +64,7 @@ export class Commands {
 			const args: { task: 'add' | 'remove'; name: string }[] = []
 			let argList = (
 				this.action.comment.match(
-					new RegExp(String.raw`(?:\\|/)${command.name}(.*)(?:\r)?(?:\n|$)`),
+					new RegExp(String.raw`(?:^|\s)(?:\\|/)${command.name}(.*)(?:\r)?(?:\n|$)`),
 				)?.[1] ?? ''
 			).trim()
 			while (argList) {

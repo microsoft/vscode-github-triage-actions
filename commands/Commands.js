@@ -46,7 +46,7 @@ class Commands {
         const tasks = [];
         if ('comment' in this.action && (command.name === 'label' || command.name === 'assign')) {
             const args = [];
-            let argList = ((_b = (_a = this.action.comment.match(new RegExp(String.raw `(?:\\|/)${command.name}(.*)(?:\r)?(?:\n|$)`))) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : '').trim();
+            let argList = ((_b = (_a = this.action.comment.match(new RegExp(String.raw `(?:^|\s)(?:\\|/)${command.name}(.*)(?:\r)?(?:\n|$)`))) === null || _a === void 0 ? void 0 : _a[1]) !== null && _b !== void 0 ? _b : '').trim();
             while (argList) {
                 const task = argList[0] === '-' ? 'remove' : 'add';
                 if (task === 'remove')
