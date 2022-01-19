@@ -8,13 +8,9 @@
 	"eslint.format.enable": true,
 	"files.exclude": {
 		"node_modules": true,
-		"**/*.js": {
-			"when": "$(basename).ts"
-		},
-		"**/*.js.map": {
-			"when": "$(basename)"
-		}
 	},
+	"explorer.experimental.fileNesting.enabled": true,
+	"explorer.experimental.fileNesting.expand": false,
 	"python.pythonPath": "/usr/local/bin/python3",
 	"python.formatting.provider": "black",
 	"python.linting.enabled": true,

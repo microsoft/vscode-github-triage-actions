@@ -99,10 +99,11 @@ class ApplyLabels extends Action {
 				continue
 			}
 
-			if (
-				!debug &&
-				(issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))
-			) {
+			const allLabelsAllowed = issueData.labels.every((issueLabel) =>
+				allowLabels.some((allowedLabel) => issueLabel.includes(allowedLabel)),
+			)
+
+			if (!debug && (issueData.assignee || !allLabelsAllowed)) {
 				safeLog('skipping')
 				continue
 			}
