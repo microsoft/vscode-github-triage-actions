@@ -228,6 +228,9 @@ async function buildComplete(octokit: Octokit, owner: string, repo: string, runI
 	const accounts = await readAccounts(options.storageConnectionString)
 	const githubAccountMap = githubToAccounts(accounts)
 	const messages = transitionedBuilds.map((build) => {
+		const issueBody = encodeURIComponent(`Build: ${build.buildHtmlUrl}\nChanges: ${build.changesHtmlUrl}`)
+		const issueTitle = encodeURIComponent('Build failure')
+		const createIssueLink = `https://github.com/microsoft/vscode/issues/new?body=${issueBody}&title=${issueTitle}`
 		return {
 			text: `${name}
 Result: ${build.data.conclusion} | Repository: ${owner}/${repo} | Branch: ${
@@ -237,6 +240,7 @@ Result: ${build.data.conclusion} | Repository: ${owner}/${repo} | Branch: ${
 				`None (rebuild)`
 			}
 Build: ${build.buildHtmlUrl}
+Create Issue: ${createIssueLink}
 Changes: ${build.changesHtmlUrl}`,
 			slackAuthors: build.authors.map((a) => githubAccountMap[a]?.slack).filter((a) => !!a),
 		}

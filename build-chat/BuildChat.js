@@ -168,11 +168,15 @@ async function buildComplete(octokit, owner, repo, runId, options) {
     const accounts = await readAccounts(options.storageConnectionString);
     const githubAccountMap = githubToAccounts(accounts);
     const messages = transitionedBuilds.map((build) => {
+        const issueBody = encodeURIComponent(`Build: ${build.buildHtmlUrl}\nChanges: ${build.changesHtmlUrl}`);
+        const issueTitle = encodeURIComponent('Build failure');
+        const createIssueLink = `https://github.com/microsoft/vscode/issues/new?body=${issueBody}&title=${issueTitle}`;
         return {
             text: `${name}
 Result: ${build.data.conclusion} | Repository: ${owner}/${repo} | Branch: ${build.data.head_branch} | Authors: ${githubToSlackUsers(githubAccountMap, build.authors, build.degraded).sort().join(', ') ||
                 `None (rebuild)`}
 Build: ${build.buildHtmlUrl}
+Create Issue: ${createIssueLink}
 Changes: ${build.changesHtmlUrl}`,
             slackAuthors: build.authors.map((a) => { var _a; return (_a = githubAccountMap[a]) === null || _a === void 0 ? void 0 : _a.slack; }).filter((a) => !!a),
         };
