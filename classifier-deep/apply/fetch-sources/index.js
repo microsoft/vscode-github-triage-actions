@@ -33,27 +33,33 @@ class FetchIssues extends Action_1.Action {
                 let performedPRAssignment = false;
                 let additionalInfo = '';
                 if (issueData.isPr) {
-                    try {
-                        utils_1.safeLog('issue is a PR, attempting to read find a linked issue');
-                        const linkedIssue = (_a = issueData.body.match(/#(\d{3,7})/)) === null || _a === void 0 ? void 0 : _a[1];
-                        if (linkedIssue) {
-                            utils_1.safeLog('PR is linked to', linkedIssue);
-                            const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue();
-                            const normalized = utils_1.normalizeIssue(linkedIssueData);
-                            additionalInfo = `\n\n${normalized.title}\n\n${normalized.body}`;
-                            const linkedIssueAssignee = linkedIssueData.assignees[0];
-                            if (linkedIssueAssignee) {
-                                utils_1.safeLog('linked issue is assigned to', linkedIssueAssignee);
-                                await issue.addAssignee(linkedIssueAssignee);
-                                performedPRAssignment = true;
-                            }
-                            else {
-                                utils_1.safeLog('unable to find assignee for linked issue. falling back to normal classification');
+                    if (await github.hasWriteAccess(issueData.author)) {
+                        await issue.addAssignee(issueData.author.name);
+                        performedPRAssignment = true;
+                    }
+                    else {
+                        try {
+                            utils_1.safeLog('issue is a PR, attempting to read find a linked issue');
+                            const linkedIssue = (_a = issueData.body.match(/#(\d{3,7})/)) === null || _a === void 0 ? void 0 : _a[1];
+                            if (linkedIssue) {
+                                utils_1.safeLog('PR is linked to', linkedIssue);
+                                const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue();
+                                const normalized = utils_1.normalizeIssue(linkedIssueData);
+                                additionalInfo = `\n\n${normalized.title}\n\n${normalized.body}`;
+                                const linkedIssueAssignee = linkedIssueData.assignees[0];
+                                if (linkedIssueAssignee) {
+                                    utils_1.safeLog('linked issue is assigned to', linkedIssueAssignee);
+                                    await issue.addAssignee(linkedIssueAssignee);
+                                    performedPRAssignment = true;
+                                }
+                                else {
+                                    utils_1.safeLog('unable to find assignee for linked issue. falling back to normal classification');
+                                }
                             }
                         }
-                    }
-                    catch (e) {
-                        utils_1.safeLog('Encountered error finding linked issue assignee. Falling back to normal classification');
+                        catch (e) {
+                            utils_1.safeLog('Encountered error finding linked issue assignee. Falling back to normal classification');
+                        }
                     }
                 }
                 if (!performedPRAssignment) {

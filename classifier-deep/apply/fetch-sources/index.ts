@@ -37,29 +37,34 @@ class FetchIssues extends Action {
 				let performedPRAssignment = false
 				let additionalInfo = ''
 				if (issueData.isPr) {
-					try {
-						safeLog('issue is a PR, attempting to read find a linked issue')
-						const linkedIssue = issueData.body.match(/#(\d{3,7})/)?.[1]
-						if (linkedIssue) {
-							safeLog('PR is linked to', linkedIssue)
-							const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue()
-							const normalized = normalizeIssue(linkedIssueData)
-							additionalInfo = `\n\n${normalized.title}\n\n${normalized.body}`
-							const linkedIssueAssignee = linkedIssueData.assignees[0]
-							if (linkedIssueAssignee) {
-								safeLog('linked issue is assigned to', linkedIssueAssignee)
-								await issue.addAssignee(linkedIssueAssignee)
-								performedPRAssignment = true
-							} else {
-								safeLog(
-									'unable to find assignee for linked issue. falling back to normal classification',
-								)
+					if (await github.hasWriteAccess(issueData.author)) {
+						await issue.addAssignee(issueData.author.name)
+						performedPRAssignment = true
+					} else {
+						try {
+							safeLog('issue is a PR, attempting to read find a linked issue')
+							const linkedIssue = issueData.body.match(/#(\d{3,7})/)?.[1]
+							if (linkedIssue) {
+								safeLog('PR is linked to', linkedIssue)
+								const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue()
+								const normalized = normalizeIssue(linkedIssueData)
+								additionalInfo = `\n\n${normalized.title}\n\n${normalized.body}`
+								const linkedIssueAssignee = linkedIssueData.assignees[0]
+								if (linkedIssueAssignee) {
+									safeLog('linked issue is assigned to', linkedIssueAssignee)
+									await issue.addAssignee(linkedIssueAssignee)
+									performedPRAssignment = true
+								} else {
+									safeLog(
+										'unable to find assignee for linked issue. falling back to normal classification',
+									)
+								}
 							}
+						} catch (e) {
+							safeLog(
+								'Encountered error finding linked issue assignee. Falling back to normal classification',
+							)
 						}
-					} catch (e) {
-						safeLog(
-							'Encountered error finding linked issue assignee. Falling back to normal classification',
-						)
 					}
 				}
 				if (!performedPRAssignment) {
