@@ -15,7 +15,7 @@ const hydrate = (comment: string, issue: Issue) => {
 	const importantLabels = issue.labels.filter((label) => label !== '*duplicate')
 	const labelsQueryString = encodeURIComponent(importantLabels.map((label) => `label:"${label}"`).join(' '))
 	const url = baseQueryString + labelsQueryString
-	return comment.replace('${duplicateQuery}', url)
+	return comment.replace('${duplicateQuery}', url).replace('${author}', issue.author.name)
 }
 
 class CommandsRunner extends Action {
