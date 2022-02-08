@@ -153,7 +153,7 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 	const response = data.data as Response
 
 	if (!response?.repository?.issues?.nodes) {
-		safeLog('recieved unexpected response', JSON.stringify(response))
+		safeLog('recieved unexpected response', JSON.stringify(data))
 		return new Promise<void>((resolve) => {
 			setTimeout(async () => {
 				await download(token, repo, endCursor)
@@ -200,7 +200,7 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 			setTimeout(async () => {
 				await download(token, repo, endCursor)
 				resolve()
-			}, 5000)
+			}, 10000)
 		})
 	}
 }

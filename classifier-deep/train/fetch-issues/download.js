@@ -82,7 +82,7 @@ exports.download = async (token, repo, endCursor) => {
         .then((r) => r.data);
     const response = data.data;
     if (!((_b = (_a = response === null || response === void 0 ? void 0 : response.repository) === null || _a === void 0 ? void 0 : _a.issues) === null || _b === void 0 ? void 0 : _b.nodes)) {
-        utils_1.safeLog('recieved unexpected response', JSON.stringify(response));
+        utils_1.safeLog('recieved unexpected response', JSON.stringify(data));
         return new Promise((resolve) => {
             setTimeout(async () => {
                 await exports.download(token, repo, endCursor);
@@ -120,7 +120,7 @@ exports.download = async (token, repo, endCursor) => {
             setTimeout(async () => {
                 await exports.download(token, repo, endCursor);
                 resolve();
-            }, 5000);
+            }, 10000);
         });
     }
 };
