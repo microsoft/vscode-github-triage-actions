@@ -7,7 +7,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
+const utils_1 = require("../../../common/utils");
 exports.download = async (token, repo, endCursor) => {
+    var _a, _b;
     const data = await axios_1.default
         .post('https://api.github.com/graphql', {
         query: `{
@@ -79,6 +81,15 @@ exports.download = async (token, repo, endCursor) => {
     })
         .then((r) => r.data);
     const response = data.data;
+    if (!((_b = (_a = response === null || response === void 0 ? void 0 : response.repository) === null || _a === void 0 ? void 0 : _a.issues) === null || _b === void 0 ? void 0 : _b.nodes)) {
+        utils_1.safeLog('recieved unexpected response', JSON.stringify(response));
+        return new Promise((resolve) => {
+            setTimeout(async () => {
+                await exports.download(token, repo, endCursor);
+                resolve();
+            }, 60000);
+        });
+    }
     const issues = response.repository.issues.nodes.map((issue) => ({
         number: issue.number,
         title: issue.title,

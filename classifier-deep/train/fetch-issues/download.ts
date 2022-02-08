@@ -6,6 +6,7 @@
 import axios from 'axios'
 import { writeFileSync } from 'fs'
 import { join } from 'path'
+import { safeLog } from '../../../common/utils'
 
 type Response = {
 	rateLimit: RateLimitResponse
@@ -150,6 +151,16 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 		.then((r) => r.data)
 
 	const response = data.data as Response
+
+	if (!response?.repository?.issues?.nodes) {
+		safeLog('recieved unexpected response', JSON.stringify(response))
+		return new Promise<void>((resolve) => {
+			setTimeout(async () => {
+				await download(token, repo, endCursor)
+				resolve()
+			}, 60000)
+		})
+	}
 
 	const issues: JSONOutputLine[] = response.repository.issues.nodes.map((issue) => ({
 		number: issue.number,
