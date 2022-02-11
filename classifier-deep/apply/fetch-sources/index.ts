@@ -14,7 +14,10 @@ import { downloadBlobFile } from '../../blobStorage'
 
 const minToDay = 0.0007
 const fromInput = getInput('from') || undefined
-
+const excludeLabels = (getInput('excludeLabels') || '')
+	.split('|')
+	.map((l) => `-label:${l}`)
+	.join(' ')
 const from = fromInput ? daysAgoToHumanReadbleDate(+fromInput * minToDay) : undefined
 const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay)
 
@@ -27,7 +30,7 @@ class FetchIssues extends Action {
 	id = 'Clasifier-Deep/Apply/FetchIssues'
 
 	async onTriggered(github: OctoKit) {
-		const query = `${createdQuery} is:open no:assignee`
+		const query = `${createdQuery} is:open no:assignee ${excludeLabels}`
 
 		const data: { number: number; contents: string }[] = []
 		for await (const page of github.query({ q: query })) {

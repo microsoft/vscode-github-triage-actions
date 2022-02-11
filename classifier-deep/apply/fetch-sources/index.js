@@ -13,6 +13,10 @@ const core_1 = require("@actions/core");
 const blobStorage_1 = require("../../blobStorage");
 const minToDay = 0.0007;
 const fromInput = core_1.getInput('from') || undefined;
+const excludeLabels = (core_1.getInput('excludeLabels') || '')
+    .split('|')
+    .map((l) => `-label:${l}`)
+    .join(' ');
 const from = fromInput ? utils_1.daysAgoToHumanReadbleDate(+fromInput * minToDay) : undefined;
 const until = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('until') * minToDay);
 const createdQuery = `created:` + (from ? `${from}..${until}` : `<${until}`);
@@ -25,7 +29,7 @@ class FetchIssues extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a;
-        const query = `${createdQuery} is:open no:assignee`;
+        const query = `${createdQuery} is:open no:assignee ${excludeLabels}`;
         const data = [];
         for await (const page of github.query({ q: query })) {
             for (const issue of page) {
