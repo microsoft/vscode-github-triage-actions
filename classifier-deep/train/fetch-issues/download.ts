@@ -33,7 +33,7 @@ type GHCloseEvent = {
 
 type RateLimitResponse = { cost: number; remaining: number }
 type IssueResponse = {
-	pageInfo: { endCursor: string; hasNextPage: boolean }
+	pageInfo: { startCursor: string; hasPreviousPage: boolean }
 	nodes: {
 		body: string
 		title: string
@@ -74,17 +74,22 @@ export type RemovedLabelEvent = {
 	label: string
 }
 
-export const download = async (token: string, repo: { owner: string; repo: string }, endCursor?: string) => {
+export const download = async (
+	token: string,
+	repo: { owner: string; repo: string },
+	startCursor?: string,
+	isRetry = false,
+) => {
 	const data = await axios
 		.post(
 			'https://api.github.com/graphql',
 			{
 				query: `{
       repository(name: "${repo.repo}", owner: "${repo.owner}") {
-        issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
+        issues(last: 100 ${startCursor ? `before: "${startCursor}"` : ''}) {
           pageInfo {
-            endCursor
-            hasNextPage
+            startCursor
+            hasPreviousPage
           }
           nodes {
             body
@@ -154,9 +159,12 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 
 	if (!response?.repository?.issues?.nodes) {
 		safeLog('recieved unexpected response', JSON.stringify(data))
+		if (isRetry) {
+			throw Error('max retries exceeded')
+		}
 		return new Promise<void>((resolve) => {
 			setTimeout(async () => {
-				await download(token, repo, endCursor)
+				await download(token, repo, startCursor, true)
 				resolve()
 			}, 60000)
 		})
@@ -191,16 +199,16 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 	console.log({
 		lastIssue: issues[issues.length - 1].number,
 		quota: rateInfo.remaining,
-		endCursor: pageInfo.endCursor,
+		startCursor: pageInfo.startCursor,
 	})
 
-	endCursor = pageInfo.endCursor
-	if (pageInfo.hasNextPage) {
+	startCursor = pageInfo.startCursor
+	if (pageInfo.hasPreviousPage) {
 		return new Promise<void>((resolve) => {
 			setTimeout(async () => {
-				await download(token, repo, endCursor)
+				await download(token, repo, startCursor)
 				resolve()
-			}, 10000)
+			}, 5000)
 		})
 	}
 }

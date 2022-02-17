@@ -8,16 +8,16 @@ const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const utils_1 = require("../../../common/utils");
-exports.download = async (token, repo, endCursor) => {
+exports.download = async (token, repo, startCursor, isRetry = false) => {
     var _a, _b;
     const data = await axios_1.default
         .post('https://api.github.com/graphql', {
         query: `{
       repository(name: "${repo.repo}", owner: "${repo.owner}") {
-        issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
+        issues(last: 100 ${startCursor ? `before: "${startCursor}"` : ''}) {
           pageInfo {
-            endCursor
-            hasNextPage
+            startCursor
+            hasPreviousPage
           }
           nodes {
             body
@@ -83,9 +83,12 @@ exports.download = async (token, repo, endCursor) => {
     const response = data.data;
     if (!((_b = (_a = response === null || response === void 0 ? void 0 : response.repository) === null || _a === void 0 ? void 0 : _a.issues) === null || _b === void 0 ? void 0 : _b.nodes)) {
         utils_1.safeLog('recieved unexpected response', JSON.stringify(data));
+        if (isRetry) {
+            throw Error('max retries exceeded');
+        }
         return new Promise((resolve) => {
             setTimeout(async () => {
-                await exports.download(token, repo, endCursor);
+                await exports.download(token, repo, startCursor, true);
                 resolve();
             }, 60000);
         });
@@ -112,15 +115,15 @@ exports.download = async (token, repo, endCursor) => {
     console.log({
         lastIssue: issues[issues.length - 1].number,
         quota: rateInfo.remaining,
-        endCursor: pageInfo.endCursor,
+        startCursor: pageInfo.startCursor,
     });
-    endCursor = pageInfo.endCursor;
-    if (pageInfo.hasNextPage) {
+    startCursor = pageInfo.startCursor;
+    if (pageInfo.hasPreviousPage) {
         return new Promise((resolve) => {
             setTimeout(async () => {
-                await exports.download(token, repo, endCursor);
+                await exports.download(token, repo, startCursor);
                 resolve();
-            }, 10000);
+            }, 5000);
         });
     }
 };
