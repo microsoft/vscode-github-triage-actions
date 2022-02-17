@@ -84,7 +84,8 @@ exports.download = async (token, repo, startCursor, isRetry = false) => {
     if (!((_b = (_a = response === null || response === void 0 ? void 0 : response.repository) === null || _a === void 0 ? void 0 : _a.issues) === null || _b === void 0 ? void 0 : _b.nodes)) {
         utils_1.safeLog('recieved unexpected response', JSON.stringify(data));
         if (isRetry) {
-            throw Error('max retries exceeded');
+            console.error('max retries exceeded');
+            return;
         }
         return new Promise((resolve) => {
             setTimeout(async () => {

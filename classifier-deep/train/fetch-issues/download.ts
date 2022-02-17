@@ -160,7 +160,8 @@ export const download = async (
 	if (!response?.repository?.issues?.nodes) {
 		safeLog('recieved unexpected response', JSON.stringify(data))
 		if (isRetry) {
-			throw Error('max retries exceeded')
+			console.error('max retries exceeded')
+			return
 		}
 		return new Promise<void>((resolve) => {
 			setTimeout(async () => {
