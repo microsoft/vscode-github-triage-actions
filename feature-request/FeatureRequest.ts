@@ -13,11 +13,12 @@ export const REJECT_MARKER = '<!-- 8f679c1b-b8df-69ca-c20a-0e1342f111e3 -->' // 
 export const ACCEPT_MARKER = '<!-- 9078ab2c-c9e0-7adb-d31b-1f23430222f4 -->' // do not change, this is how we find the comments the bot made when accepting an issue
 
 export type FeatureRequestConfig = {
-	milestones: { candidateID: number; backlogID: number; candidateName: string }
+	milestones: { candidateID: number; backlogID?: number; candidateName: string }
 	featureRequestLabel: string
 	upvotesRequired: number
 	numCommentsOverride: number
-	comments: { init: string; warn: string; accept: string; reject: string }
+	labelsToExclude: string[]
+	comments: { init?: string; warn: string; accept?: string; reject: string; rejectLabel?: string }
 	delays: { warn: number; close: number }
 }
 
@@ -25,14 +26,18 @@ export class FeatureRequestQueryer {
 	constructor(private github: GitHub, private config: FeatureRequestConfig) {}
 
 	async run(): Promise<void> {
-		const query = `is:open is:issue milestone:"${this.config.milestones.candidateName}" label:"${this.config.featureRequestLabel}"`
+		let query = `is:open is:issue milestone:"${this.config.milestones.candidateName}" label:"${this.config.featureRequestLabel}"`
+		query += this.config.labelsToExclude.map((l) => `-label:"${l}"`).join(' ')
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
 				const issueData = await issue.getIssue()
 				if (
 					issueData.open &&
 					issueData.milestoneId === this.config.milestones.candidateID &&
-					issueData.labels.includes(this.config.featureRequestLabel)
+					issueData.labels.includes(this.config.featureRequestLabel) &&
+					!issueData.labels.some((issueLabel) =>
+						this.config.labelsToExclude.some((excludeLabel) => issueLabel === excludeLabel),
+					)
 				) {
 					await this.actOn(issue)
 				} else {
@@ -46,7 +51,11 @@ export class FeatureRequestQueryer {
 		const issueData = await issue.getIssue()
 		if (!issueData.reactions) throw Error('No reaction data in issue ' + JSON.stringify(issueData))
 
-		if (issueData.reactions['+1'] >= this.config.upvotesRequired) {
+		if (
+			issueData.reactions['+1'] >= this.config.upvotesRequired &&
+			this.config.comments.accept &&
+			this.config.milestones.backlogID
+		) {
 			safeLog(`Issue #${issueData.number} sucessfully promoted`)
 			await trackEvent(issue, 'feature-request:accepted')
 			await Promise.all([
@@ -69,11 +78,13 @@ export class FeatureRequestQueryer {
 				}
 			}
 			if (!state.initTimestamp) {
-				await new FeatureRequestOnMilestone(
-					issue,
-					this.config.comments.init,
-					this.config.milestones.candidateID,
-				).run()
+				if (this.config.comments.init) {
+					await new FeatureRequestOnMilestone(
+						issue,
+						this.config.comments.init,
+						this.config.milestones.candidateID,
+					).run()
+				}
 			} else if (!state.warnTimestamp) {
 				if (
 					this.daysSince(state.initTimestamp) >
@@ -87,6 +98,10 @@ export class FeatureRequestQueryer {
 				await trackEvent(issue, 'feature-request:rejected')
 				await issue.postComment(REJECT_MARKER + '\n' + this.config.comments.reject)
 				await issue.closeIssue()
+
+				if (this.config.comments.rejectLabel) {
+					await issue.addLabel(this.config.comments.rejectLabel)
+				}
 			}
 		} else {
 			safeLog(`Issue #${issueData.number} has hot discussion. Ignoring.`)
