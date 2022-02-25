@@ -280,6 +280,8 @@ inputs:
   numCommentsOverride:
     description: Number of comments required to disable automatically closing an issue
     required: true
+  labelsToExclude:
+    description: A comma-separated list of labels to exclude from processing
   initComment:
     description: Comment when an issue is introduced to the backlog milestone
     required: true
@@ -292,6 +294,8 @@ inputs:
   rejectComment:
     description: Comment when an issue is rejected
     required: true
+  rejectLabel:
+    description: Label applied to issues that are rejected
   warnDays:
     description: Number of days before closing the issue to warn about it's impending closure
     required: true
@@ -371,6 +375,49 @@ inputs:
     required: true
   labelDescription:
     description: description of label to apply
+    required: true
+```
+
+### Stale Closer
+Closes stale issues that have not had activity or upvotes
+```yml
+inputs:
+  token:
+    description: GitHub token with issue, milestone, comment, and label read/write permissions
+    default: ${{ github.token }}
+  candidateMilestoneID:
+    description: Numeric ID of the candidate issues milestone
+    required: true
+  candidateMilestoneName:
+    description: Name of the candidate issues milestone
+    required: true
+  featureRequestLabel:
+    description: Label for feature requests
+    required: true
+  upvotesRequired:
+    description: Number of upvotes required to advance an issue
+    required: true
+  numCommentsOverride:
+    description: Number of comments required to disable automatically closing an issue
+    required: true
+  labelsToExclude:
+    description: A comma-separated list of labels to exclude from processing
+  warnComment:
+    description: Comment when an issue is nearing automatic closure
+    required: true
+  rejectComment:
+    description: Comment when an issue is rejected
+    required: true
+  rejectLabel:
+    description: Label applied to issues that are rejected
+  warnDays:
+    description: Number of days before closing the issue to warn about it's impending closure
+    required: true
+  closeDays:
+    description: Number of days to wait before closing an issue
+    required: true
+  milestoneDelaySeconds:
+    description: Delay between adding a feature request label and assigning the issue to candidate milestone
     required: true
 ```
 
