@@ -28,7 +28,7 @@ const config: FeatureRequestConfig = {
 		warn: getRequiredInput('warnComment'),
 		accept: getRequiredInput('acceptComment'),
 		reject: getRequiredInput('rejectComment'),
-		rejectLabel: getInput('rejectLabel')
+		rejectLabel: getInput('rejectLabel'),
 	},
 	delays: {
 		warn: +getRequiredInput('warnDays'),
@@ -55,7 +55,11 @@ class FeatureRequest extends Action {
 	}
 
 	async onMilestoned(github: OctoKitIssue) {
-		await new FeatureRequestOnMilestone(github, config.comments.init!, config.milestones.candidateID).run()
+		await new FeatureRequestOnMilestone(
+			github,
+			config.comments.init!,
+			config.milestones.candidateID,
+		).run()
 	}
 }
 
