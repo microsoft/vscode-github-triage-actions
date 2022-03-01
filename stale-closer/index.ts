@@ -9,24 +9,21 @@ import {
 	FeatureRequestConfig,
 	FeatureRequestOnLabel,
 	FeatureRequestQueryer,
-	FeatureRequestOnMilestone,
-} from './FeatureRequest'
+} from '../feature-request/FeatureRequest'
 import { Action } from '../common/Action'
 
 const config: FeatureRequestConfig = {
 	milestones: {
 		candidateID: +getRequiredInput('candidateMilestoneID'),
 		candidateName: getRequiredInput('candidateMilestoneName'),
-		backlogID: +getRequiredInput('backlogMilestoneID'),
 	},
 	featureRequestLabel: getRequiredInput('featureRequestLabel'),
 	upvotesRequired: +getRequiredInput('upvotesRequired'),
 	numCommentsOverride: +getRequiredInput('numCommentsOverride'),
 	labelsToExclude: ((getInput('labelsToExclude') as string) || '').split(',').filter((l) => !!l),
 	comments: {
-		init: getRequiredInput('initComment'),
+		init: getInput('initComment'),
 		warn: getRequiredInput('warnComment'),
-		accept: getRequiredInput('acceptComment'),
 		reject: getRequiredInput('rejectComment'),
 		rejectLabel: getInput('rejectLabel'),
 	},
@@ -36,8 +33,8 @@ const config: FeatureRequestConfig = {
 	},
 }
 
-class FeatureRequest extends Action {
-	id = 'FeatureRequest'
+class StaleCloser extends Action {
+	id = 'StaleCloser'
 
 	async onTriggered(github: OctoKit) {
 		await new FeatureRequestQueryer(github, config).run()
@@ -53,14 +50,6 @@ class FeatureRequest extends Action {
 			).run()
 		}
 	}
-
-	async onMilestoned(github: OctoKitIssue) {
-		await new FeatureRequestOnMilestone(
-			github,
-			config.comments.init!,
-			config.milestones.candidateID,
-		).run()
-	}
 }
 
-new FeatureRequest().run() // eslint-disable-line
+new StaleCloser().run() // eslint-disable-line

@@ -16,13 +16,15 @@ class FeatureRequestQueryer {
         this.config = config;
     }
     async run() {
-        const query = `is:open is:issue milestone:"${this.config.milestones.candidateName}" label:"${this.config.featureRequestLabel}"`;
+        let query = `is:open is:issue milestone:"${this.config.milestones.candidateName}" label:"${this.config.featureRequestLabel}"`;
+        query += this.config.labelsToExclude.map((l) => `-label:"${l}"`).join(' ');
         for await (const page of this.github.query({ q: query })) {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
                 if (issueData.open &&
                     issueData.milestoneId === this.config.milestones.candidateID &&
-                    issueData.labels.includes(this.config.featureRequestLabel)) {
+                    issueData.labels.includes(this.config.featureRequestLabel) &&
+                    !issueData.labels.some((issueLabel) => this.config.labelsToExclude.some((excludeLabel) => issueLabel === excludeLabel))) {
                     await this.actOn(issue);
                 }
                 else {
@@ -35,7 +37,9 @@ class FeatureRequestQueryer {
         const issueData = await issue.getIssue();
         if (!issueData.reactions)
             throw Error('No reaction data in issue ' + JSON.stringify(issueData));
-        if (issueData.reactions['+1'] >= this.config.upvotesRequired) {
+        if (issueData.reactions['+1'] >= this.config.upvotesRequired &&
+            this.config.comments.accept &&
+            this.config.milestones.backlogID) {
             utils_1.safeLog(`Issue #${issueData.number} sucessfully promoted`);
             await telemetry_1.trackEvent(issue, 'feature-request:accepted');
             await Promise.all([
@@ -56,7 +60,9 @@ class FeatureRequestQueryer {
                 }
             }
             if (!state.initTimestamp) {
-                await new FeatureRequestOnMilestone(issue, this.config.comments.init, this.config.milestones.candidateID).run();
+                if (this.config.comments.init) {
+                    await new FeatureRequestOnMilestone(issue, this.config.comments.init, this.config.milestones.candidateID).run();
+                }
             }
             else if (!state.warnTimestamp) {
                 if (this.daysSince(state.initTimestamp) >
@@ -70,6 +76,9 @@ class FeatureRequestQueryer {
                 await telemetry_1.trackEvent(issue, 'feature-request:rejected');
                 await issue.postComment(exports.REJECT_MARKER + '\n' + this.config.comments.reject);
                 await issue.closeIssue();
+                if (this.config.comments.rejectLabel) {
+                    await issue.addLabel(this.config.comments.rejectLabel);
+                }
             }
         }
         else {
