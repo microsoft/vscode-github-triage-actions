@@ -24,6 +24,7 @@ const testConfig: FeatureRequestConfig = {
 	featureRequestLabel: 'featureRequestLabel',
 	upvotesRequired: 3,
 	numCommentsOverride: 4,
+	labelsToExclude: [],
 	comments: {
 		init: 'initComment',
 		warn: 'warnComment',
@@ -65,7 +66,7 @@ const initalizeTestbed = (
 }
 
 const getAllComments = async (issue: TestbedIssue): Promise<Comment[]> => {
-	const comments = []
+	const comments: Comment[] = []
 	for await (const page of issue.getComments()) comments.push(...page)
 	return comments
 }

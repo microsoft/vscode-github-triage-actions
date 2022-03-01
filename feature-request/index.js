@@ -22,7 +22,7 @@ const config = {
         warn: utils_1.getRequiredInput('warnComment'),
         accept: utils_1.getRequiredInput('acceptComment'),
         reject: utils_1.getRequiredInput('rejectComment'),
-        rejectLabel: utils_1.getInput('rejectLabel')
+        rejectLabel: utils_1.getInput('rejectLabel'),
     },
     delays: {
         warn: +utils_1.getRequiredInput('warnDays'),
