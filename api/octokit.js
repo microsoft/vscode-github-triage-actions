@@ -200,10 +200,14 @@ class OctoKitIssue extends OctoKit {
     async closeIssue() {
         utils_1.safeLog('Closing issue ' + this.issueData.number);
         if (!this.options.readonly)
-            await this.octokit.issues.update({
+            await this.octokit.issues
+                .update({
                 ...this.params,
                 issue_number: this.issueData.number,
                 state: 'closed',
+            })
+                .catch((e) => {
+                utils_1.safeLog('error closing issue:', e);
             });
     }
     async lockIssue() {

@@ -226,11 +226,15 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 	async closeIssue(): Promise<void> {
 		safeLog('Closing issue ' + this.issueData.number)
 		if (!this.options.readonly)
-			await this.octokit.issues.update({
-				...this.params,
-				issue_number: this.issueData.number,
-				state: 'closed',
-			})
+			await this.octokit.issues
+				.update({
+					...this.params,
+					issue_number: this.issueData.number,
+					state: 'closed',
+				})
+				.catch((e) => {
+					safeLog('error closing issue:', e)
+				})
 	}
 
 	async lockIssue(): Promise<void> {
