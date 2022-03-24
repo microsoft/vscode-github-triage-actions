@@ -60,9 +60,7 @@ class FeatureRequestQueryer {
                 }
             }
             if (!state.initTimestamp) {
-                if (this.config.comments.init) {
-                    await new FeatureRequestOnMilestone(issue, this.config.comments.init, this.config.milestones.candidateID).run();
-                }
+                await new FeatureRequestOnMilestone(issue, this.config.comments.init, this.config.milestones.candidateID).run();
             }
             else if (!state.warnTimestamp) {
                 if (this.daysSince(state.initTimestamp) >

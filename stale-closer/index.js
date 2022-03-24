@@ -17,7 +17,7 @@ const config = {
     numCommentsOverride: +utils_1.getRequiredInput('numCommentsOverride'),
     labelsToExclude: (utils_1.getInput('labelsToExclude') || '').split(',').filter((l) => !!l),
     comments: {
-        init: utils_1.getInput('initComment'),
+        init: utils_1.getRequiredInput('initComment'),
         warn: utils_1.getRequiredInput('warnComment'),
         reject: utils_1.getRequiredInput('rejectComment'),
         rejectLabel: utils_1.getInput('rejectLabel'),
@@ -39,6 +39,9 @@ class StaleCloser extends Action_1.Action {
         if (label === config.featureRequestLabel) {
             await new FeatureRequest_1.FeatureRequestOnLabel(github, +utils_1.getRequiredInput('milestoneDelaySeconds'), config.milestones.candidateID, config.featureRequestLabel).run();
         }
+    }
+    async onMilestoned(github) {
+        await new FeatureRequest_1.FeatureRequestOnMilestone(github, config.comments.init, config.milestones.candidateID).run();
     }
 }
 new StaleCloser().run(); // eslint-disable-line
