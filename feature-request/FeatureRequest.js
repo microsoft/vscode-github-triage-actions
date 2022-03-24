@@ -37,9 +37,7 @@ class FeatureRequestQueryer {
         const issueData = await issue.getIssue();
         if (!issueData.reactions)
             throw Error('No reaction data in issue ' + JSON.stringify(issueData));
-        if (issueData.reactions['+1'] >= this.config.upvotesRequired &&
-            this.config.comments.accept &&
-            this.config.milestones.backlogID) {
+        if (issueData.reactions['+1'] >= this.config.upvotesRequired) {
             utils_1.safeLog(`Issue #${issueData.number} sucessfully promoted`);
             await telemetry_1.trackEvent(issue, 'feature-request:accepted');
             await Promise.all([
@@ -60,9 +58,7 @@ class FeatureRequestQueryer {
                 }
             }
             if (!state.initTimestamp) {
-                if (this.config.comments.init) {
-                    await new FeatureRequestOnMilestone(issue, this.config.comments.init, this.config.milestones.candidateID).run();
-                }
+                await new FeatureRequestOnMilestone(issue, this.config.comments.init, this.config.milestones.candidateID).run();
             }
             else if (!state.warnTimestamp) {
                 if (this.daysSince(state.initTimestamp) >
