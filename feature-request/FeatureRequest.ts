@@ -18,7 +18,7 @@ export type FeatureRequestConfig = {
 	upvotesRequired: number
 	numCommentsOverride: number
 	labelsToExclude: string[]
-	comments: { init?: string; warn: string; accept?: string; reject: string; rejectLabel?: string }
+	comments: { init: string; warn: string; accept?: string; reject: string; rejectLabel?: string }
 	delays: { warn: number; close: number }
 }
 
@@ -78,13 +78,11 @@ export class FeatureRequestQueryer {
 				}
 			}
 			if (!state.initTimestamp) {
-				if (this.config.comments.init) {
-					await new FeatureRequestOnMilestone(
-						issue,
-						this.config.comments.init,
-						this.config.milestones.candidateID,
-					).run()
-				}
+				await new FeatureRequestOnMilestone(
+					issue,
+					this.config.comments.init,
+					this.config.milestones.candidateID,
+				).run()
 			} else if (!state.warnTimestamp) {
 				if (
 					this.daysSince(state.initTimestamp) >

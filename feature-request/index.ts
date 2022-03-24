@@ -57,7 +57,7 @@ class FeatureRequest extends Action {
 	async onMilestoned(github: OctoKitIssue) {
 		await new FeatureRequestOnMilestone(
 			github,
-			config.comments.init!,
+			config.comments.init,
 			config.milestones.candidateID,
 		).run()
 	}

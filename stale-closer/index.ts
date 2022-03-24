@@ -8,6 +8,7 @@ import { getInput, getRequiredInput } from '../common/utils'
 import {
 	FeatureRequestConfig,
 	FeatureRequestOnLabel,
+	FeatureRequestOnMilestone,
 	FeatureRequestQueryer,
 } from '../feature-request/FeatureRequest'
 import { Action } from '../common/Action'
@@ -22,7 +23,7 @@ const config: FeatureRequestConfig = {
 	numCommentsOverride: +getRequiredInput('numCommentsOverride'),
 	labelsToExclude: ((getInput('labelsToExclude') as string) || '').split(',').filter((l) => !!l),
 	comments: {
-		init: getInput('initComment'),
+		init: getRequiredInput('initComment'),
 		warn: getRequiredInput('warnComment'),
 		reject: getRequiredInput('rejectComment'),
 		rejectLabel: getInput('rejectLabel'),
@@ -49,6 +50,14 @@ class StaleCloser extends Action {
 				config.featureRequestLabel,
 			).run()
 		}
+	}
+
+	async onMilestoned(github: OctoKitIssue) {
+		await new FeatureRequestOnMilestone(
+			github,
+			config.comments.init,
+			config.milestones.candidateID,
+		).run()
 	}
 }
 

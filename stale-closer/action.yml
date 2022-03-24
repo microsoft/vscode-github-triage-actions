@@ -21,6 +21,9 @@ inputs:
     required: true
   labelsToExclude:
     description: A comma-separated list of labels to exclude from processing
+  initComment:
+    description: Comment when an issue is introduced to the backlog milestone
+    required: true
   warnComment:
     description: Comment when an issue is nearing automatic closure
     required: true
