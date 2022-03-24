@@ -13,12 +13,12 @@ export const REJECT_MARKER = '<!-- 8f679c1b-b8df-69ca-c20a-0e1342f111e3 -->' // 
 export const ACCEPT_MARKER = '<!-- 9078ab2c-c9e0-7adb-d31b-1f23430222f4 -->' // do not change, this is how we find the comments the bot made when accepting an issue
 
 export type FeatureRequestConfig = {
-	milestones: { candidateID: number; backlogID?: number; candidateName: string }
+	milestones: { candidateID: number; backlogID: number; candidateName: string }
 	featureRequestLabel: string
 	upvotesRequired: number
 	numCommentsOverride: number
 	labelsToExclude: string[]
-	comments: { init: string; warn: string; accept?: string; reject: string; rejectLabel?: string }
+	comments: { init: string; warn: string; accept: string; reject: string; rejectLabel?: string }
 	delays: { warn: number; close: number }
 }
 
@@ -51,11 +51,7 @@ export class FeatureRequestQueryer {
 		const issueData = await issue.getIssue()
 		if (!issueData.reactions) throw Error('No reaction data in issue ' + JSON.stringify(issueData))
 
-		if (
-			issueData.reactions['+1'] >= this.config.upvotesRequired &&
-			this.config.comments.accept &&
-			this.config.milestones.backlogID
-		) {
+		if (issueData.reactions['+1'] >= this.config.upvotesRequired) {
 			safeLog(`Issue #${issueData.number} sucessfully promoted`)
 			await trackEvent(issue, 'feature-request:accepted')
 			await Promise.all([
