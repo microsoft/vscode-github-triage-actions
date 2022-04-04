@@ -15,6 +15,7 @@ class Commands {
         this.hydrate = hydrate;
     }
     async matches(command, issue) {
+        var _a, _b, _c;
         if (command.requireLabel && !issue.labels.includes(command.requireLabel)) {
             return false;
         }
@@ -29,12 +30,10 @@ class Commands {
             return !!(nameMatch || regexMatch);
         }
         else {
-            return (command.type === 'comment' &&
+            return !!(command.type === 'comment' &&
                 !!this.action.comment.match(new RegExp(`(/|\\\\)${escapeRegExp(command.name)}(\\s|$)`, 'i')) &&
-                ((await this.github.hasWriteAccess(this.action.user)) ||
-                    command.allowUsers.includes(this.action.user.name) ||
-                    command.allowUsers.includes('*') ||
-                    (this.action.user.name === issue.author.name && command.allowUsers.includes('@author'))));
+                ((await this.github.hasWriteAccess(this.action.user)) || ((_a = command.allowUsers) === null || _a === void 0 ? void 0 : _a.includes(this.action.user.name)) || ((_b = command.allowUsers) === null || _b === void 0 ? void 0 : _b.includes('*')) ||
+                    (this.action.user.name === issue.author.name && ((_c = command.allowUsers) === null || _c === void 0 ? void 0 : _c.includes('@author')))));
         }
     }
     async perform(command, issue) {

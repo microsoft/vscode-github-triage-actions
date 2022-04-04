@@ -11,7 +11,7 @@ import { safeLog } from '../common/utils'
 // confusing when eslint formats
 export type Command =
 	& { name: string }
-	& ({ type: 'comment'; allowUsers: string[] } | { type: 'label', regex?: string })
+	& ({ type: 'comment'; allowUsers?: string[] } | { type: 'label', regex?: string })
 	& { action?: 'close' }
 	& Partial<{ comment: string; addLabel: string; removeLabel: string, assign: string[] }>
 	& Partial<{ requireLabel: string; disallowLabel: string }>
@@ -39,15 +39,15 @@ export class Commands {
 			const nameMatch = this.action.label === command.name
 			return !!(nameMatch || regexMatch)
 		} else {
-			return (
+			return !!(
 				command.type === 'comment' &&
 				!!this.action.comment.match(
 					new RegExp(`(/|\\\\)${escapeRegExp(command.name)}(\\s|$)`, 'i'),
 				) &&
 				((await this.github.hasWriteAccess(this.action.user)) ||
-					command.allowUsers.includes(this.action.user.name) ||
-					command.allowUsers.includes('*') ||
-					(this.action.user.name === issue.author.name && command.allowUsers.includes('@author')))
+					command.allowUsers?.includes(this.action.user.name) ||
+					command.allowUsers?.includes('*') ||
+					(this.action.user.name === issue.author.name && command.allowUsers?.includes('@author')))
 			)
 		}
 	}
