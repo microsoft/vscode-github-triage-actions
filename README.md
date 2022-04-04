@@ -44,7 +44,7 @@ inputs:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
   requestVerificationComment:
-    description: Comment to add whenn asking authors to verify the issue. ${commit} and ${author} will be substituted
+    description: Comment to add when asking authors to verify the issue. ${commit} and ${author} will be substituted
     required: true
   releasedLabel:
     description: Label of issues which are released and thus able to be verified
