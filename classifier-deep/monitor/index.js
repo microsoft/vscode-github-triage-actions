@@ -19,9 +19,15 @@ class DeepClassifierMonitor extends Action_1.Action {
         }
     }
     async onUnassigned(issue, assignee) {
-        const assigner = await issue.getAssigner(assignee);
-        if (assigner === utils_1.getRequiredInput('botName')) {
-            await telemetry_1.trackEvent(issue, 'deep-classifier:unassigned', { assignee });
+        try {
+            const assigner = await issue.getAssigner(assignee);
+            if (assigner === utils_1.getRequiredInput('botName')) {
+                await telemetry_1.trackEvent(issue, 'deep-classifier:unassigned', { assignee });
+            }
+        }
+        catch {
+            // issue deleted or something, just ignore
+            utils_1.safeLog('error reading unassign data');
         }
     }
 }

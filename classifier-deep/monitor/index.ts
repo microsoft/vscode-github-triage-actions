@@ -5,7 +5,7 @@
 
 import { OctoKitIssue } from '../../api/octokit'
 import { Action } from '../../common/Action'
-import { getRequiredInput } from '../../common/utils'
+import { getRequiredInput, safeLog } from '../../common/utils'
 import { trackEvent } from '../../common/telemetry'
 
 class DeepClassifierMonitor extends Action {
@@ -19,9 +19,14 @@ class DeepClassifierMonitor extends Action {
 	}
 
 	async onUnassigned(issue: OctoKitIssue, assignee: string) {
-		const assigner = await issue.getAssigner(assignee)
-		if (assigner === getRequiredInput('botName')) {
-			await trackEvent(issue, 'deep-classifier:unassigned', { assignee })
+		try {
+			const assigner = await issue.getAssigner(assignee)
+			if (assigner === getRequiredInput('botName')) {
+				await trackEvent(issue, 'deep-classifier:unassigned', { assignee })
+			}
+		} catch {
+			// issue deleted or something, just ignore
+			safeLog('error reading unassign data')
 		}
 	}
 }
