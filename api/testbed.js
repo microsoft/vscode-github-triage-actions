@@ -123,6 +123,9 @@ class TestbedIssue extends Testbed {
     async lockIssue() {
         this.issueConfig.issue.locked = true;
     }
+    async unlockIssue() {
+        this.issueConfig.issue.locked = false;
+    }
     async getClosingInfo() {
         return this.issueConfig.closingCommit;
     }

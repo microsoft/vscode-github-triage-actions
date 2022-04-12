@@ -44,6 +44,9 @@ export class AuthorVerifiedLabeler {
 			if (!latestRelease) throw Error('Error loading latest release')
 			await trackEvent(this.github, 'author-verified:verifiable')
 			if (!issue.labels.includes(this.verifiedLabel)) {
+				if (issue.locked) {
+					await this.github.unlockIssue()
+				}
 				await this.commentVerficationRequest(
 					this.comment
 						.replace('${commit}', latestRelease.version)

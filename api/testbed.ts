@@ -173,6 +173,10 @@ export class TestbedIssue extends Testbed implements GitHubIssue {
 		this.issueConfig.issue.locked = true
 	}
 
+	async unlockIssue(): Promise<void> {
+		this.issueConfig.issue.locked = false
+	}
+
 	async getClosingInfo(): Promise<{ hash: string | undefined; timestamp: number } | undefined> {
 		return this.issueConfig.closingCommit
 	}

@@ -84,6 +84,26 @@ describe('AuthorVerified', () => {
 		expect(comments[0].body).to.contain('plz verify thx')
 	})
 
+	it.only('Unlocks the issue', async () => {
+		setup()
+		const testbed = new TestbedIssue(
+			{ releasedCommits: ['commit'] },
+			{
+				labels: ['verify-plz', 'released'],
+				closingCommit: { hash: 'commit', timestamp: 0 },
+				issue: { open: false, locked: true },
+			},
+		)
+		await new AuthorVerifiedLabeler(testbed, 'plz verify thx', 'released', 'verify-plz', 'verified').run()
+
+		const comments: Comment[] = []
+		for await (const page of testbed.getComments()) {
+			comments.push(...page)
+		}
+		expect(comments[0].body).to.contain('plz verify thx')
+		expect(testbed.issueConfig.issue.locked).to.be.false
+	})
+
 	it('Does not add comment to issues which are verified already', async () => {
 		setup()
 		const testbed = new TestbedIssue(

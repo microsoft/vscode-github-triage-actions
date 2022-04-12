@@ -215,6 +215,11 @@ class OctoKitIssue extends OctoKit {
         if (!this.options.readonly)
             await this.octokit.issues.lock({ ...this.params, issue_number: this.issueData.number });
     }
+    async unlockIssue() {
+        utils_1.safeLog('Unlocking issue ' + this.issueData.number);
+        if (!this.options.readonly)
+            await this.octokit.issues.unlock({ ...this.params, issue_number: this.issueData.number });
+    }
     async getIssue() {
         if (isIssue(this.issueData)) {
             utils_1.safeLog('Got issue data from query result ' + this.issueData.number);
