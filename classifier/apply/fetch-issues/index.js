@@ -10,10 +10,10 @@ const utils_1 = require("../../../common/utils");
 const blobStorage_1 = require("../../blobStorage");
 const Action_1 = require("../../../common/Action");
 const minToDay = 0.0007;
-const from = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('from') * minToDay);
-const until = utils_1.daysAgoToHumanReadbleDate(+utils_1.getRequiredInput('until') * minToDay);
-const blobContainer = utils_1.getRequiredInput('blobContainerName');
-const blobStorageKey = utils_1.getRequiredInput('blobStorageKey');
+const from = (0, utils_1.daysAgoToHumanReadbleDate)(+(0, utils_1.getRequiredInput)('from') * minToDay);
+const until = (0, utils_1.daysAgoToHumanReadbleDate)(+(0, utils_1.getRequiredInput)('until') * minToDay);
+const blobContainer = (0, utils_1.getRequiredInput)('blobContainerName');
+const blobStorageKey = (0, utils_1.getRequiredInput)('blobStorageKey');
 class FetchIssues extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -25,15 +25,15 @@ class FetchIssues extends Action_1.Action {
         for await (const page of github.query({ q: query })) {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
-                const cleansed = utils_1.normalizeIssue(issueData);
+                const cleansed = (0, utils_1.normalizeIssue)(issueData);
                 data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
             }
         }
-        fs_1.writeFileSync(path_1.join(__dirname, '../issue_data.json'), JSON.stringify(data));
-        await blobStorage_1.downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey);
-        await blobStorage_1.downloadBlobFile('area-model-config.json', blobContainer, blobStorageKey);
-        await blobStorage_1.downloadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey);
-        await blobStorage_1.downloadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey);
+        (0, fs_1.writeFileSync)((0, path_1.join)(__dirname, '../issue_data.json'), JSON.stringify(data));
+        await (0, blobStorage_1.downloadBlobFile)('area-model.pickle', blobContainer, blobStorageKey);
+        await (0, blobStorage_1.downloadBlobFile)('area-model-config.json', blobContainer, blobStorageKey);
+        await (0, blobStorage_1.downloadBlobFile)('assignee-model.pickle', blobContainer, blobStorageKey);
+        await (0, blobStorage_1.downloadBlobFile)('assignee-model-config.json', blobContainer, blobStorageKey);
     }
 }
 new FetchIssues().run(); // eslint-disable-line

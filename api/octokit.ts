@@ -119,7 +119,8 @@ export class OctoKit implements GitHub {
 			await this.octokit.issues.getLabel({ ...this.params, name })
 			return true
 		} catch (err) {
-			if (err.status === 404) {
+			const statusErorr = err as Octokit.HookError
+			if (statusErorr.status === 404) {
 				return this.options.readonly && this.mockLabels.has(name)
 			}
 			throw err
@@ -138,7 +139,8 @@ export class OctoKit implements GitHub {
 		try {
 			if (!this.options.readonly) await this.octokit.issues.deleteLabel({ ...this.params, name })
 		} catch (err) {
-			if (err.status === 404) {
+			const statusErorr = err as Octokit.HookError
+			if (statusErorr.status === 404) {
 				return
 			}
 			throw err
@@ -373,7 +375,8 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 					name,
 				})
 		} catch (err) {
-			if (err.status === 404) {
+			const statusErorr = err as Octokit.HookError
+			if (statusErorr.status === 404) {
 				safeLog(`Label ${name} not found on issue`)
 				return
 			}

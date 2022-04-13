@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.AuthorVerifiedLabeler = void 0;
 const utils_1 = require("../common/utils");
 const telemetry_1 = require("../common/telemetry");
 class AuthorVerifiedLabeler {
@@ -32,10 +33,10 @@ class AuthorVerifiedLabeler {
         if (!issue.open &&
             issue.labels.includes(this.authorVerificationRequestedLabel) &&
             issue.labels.includes(this.releasedLabel)) {
-            const latestRelease = await utils_1.loadLatestRelease('insider');
+            const latestRelease = await (0, utils_1.loadLatestRelease)('insider');
             if (!latestRelease)
                 throw Error('Error loading latest release');
-            await telemetry_1.trackEvent(this.github, 'author-verified:verifiable');
+            await (0, telemetry_1.trackEvent)(this.github, 'author-verified:verifiable');
             if (!issue.labels.includes(this.verifiedLabel)) {
                 if (issue.locked) {
                     await this.github.unlockIssue();

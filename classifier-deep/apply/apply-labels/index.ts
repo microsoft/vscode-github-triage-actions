@@ -54,11 +54,13 @@ class ApplyLabels extends Action {
 
 		if (manifestDbConnectionString) {
 			safeLog('has manifestDbConnectionString')
-			manifest = mongodb.MongoClient.connect(manifestDbConnectionString).then(async (db) => {
+			manifest = mongodb.MongoClient.connect(manifestDbConnectionString).then(async (client) => {
 				safeLog('connected to db')
 				try {
+					// Get the database from the mongo client
+					const db = client.db()
 					const collection = db.collection('testers')
-					const triagers = await collection.find<Triager>().toArray()
+					const triagers = await collection.find<Triager>({}).toArray()
 					return triagers
 						.filter((t) => t.triager && t.availability !== Availability.NOT_AVAILABLE)
 						.map((t) => t.id)
@@ -68,7 +70,7 @@ class ApplyLabels extends Action {
 				} finally {
 					safeLog('disconnected from db')
 					// eslint-disable-next-line @typescript-eslint/no-floating-promises
-					db.close()
+					client.close()
 				}
 			})
 		} else {

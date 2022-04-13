@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.rtrimSpaceAndEOL = exports.parseHeaderRange = exports.parseTestPlanItem = exports.TesterRole = exports.Platform = void 0;
 /* eslint-disable */
 var Platform;
 (function (Platform) {

@@ -15,7 +15,7 @@ class RegexFlaggerActon extends Action_1.Action {
         this.id = 'RegexFlagger';
     }
     async onOpened() {
-        await new RegexLabeler_1.RegexFlagger(new octokit_1.OctoKitIssue(utils_1.getRequiredInput('token'), github_1.context.repo, { number: github_1.context.issue.number }), utils_1.getInput('label'), utils_1.getInput('comment'), utils_1.getInput('mustMatch'), utils_1.getInput('mustNotMatch')).run();
+        await new RegexLabeler_1.RegexFlagger(new octokit_1.OctoKitIssue((0, utils_1.getRequiredInput)('token'), github_1.context.repo, { number: github_1.context.issue.number }), (0, utils_1.getInput)('label'), (0, utils_1.getInput)('comment'), (0, utils_1.getInput)('mustMatch'), (0, utils_1.getInput)('mustNotMatch')).run();
     }
 }
 new RegexFlaggerActon().run(); // eslint-disable-line

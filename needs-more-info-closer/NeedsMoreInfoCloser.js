@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NeedsMoreInfoCloser = void 0;
 const utils_1 = require("../common/utils");
 class NeedsMoreInfoCloser {
     constructor(github, label, closeDays, pingDays, closeComment, pingComment, additionalTeam) {
@@ -17,8 +18,8 @@ class NeedsMoreInfoCloser {
     }
     async run() {
         var _a;
-        const updatedTimestamp = utils_1.daysAgoToHumanReadbleDate(this.closeDays);
-        const pingTimestamp = utils_1.daysAgoToTimestamp(this.pingDays);
+        const updatedTimestamp = (0, utils_1.daysAgoToHumanReadbleDate)(this.closeDays);
+        const pingTimestamp = (0, utils_1.daysAgoToTimestamp)(this.pingDays);
         const query = `updated:<${updatedTimestamp} label:"${this.label}" is:open is:unlocked`;
         for await (const page of this.github.query({ q: query })) {
             for (const issue of page) {
@@ -38,10 +39,10 @@ class NeedsMoreInfoCloser {
                         this.additionalTeam.includes(lastComment.author.name) ||
                         (await issue.hasWriteAccess(lastComment.author))) {
                         if (lastComment) {
-                            utils_1.safeLog(`Last comment on ${hydrated.number} by team. Closing.`);
+                            (0, utils_1.safeLog)(`Last comment on ${hydrated.number} by team. Closing.`);
                         }
                         else {
-                            utils_1.safeLog(`No comments on ${hydrated.number}. Closing.`);
+                            (0, utils_1.safeLog)(`No comments on ${hydrated.number}. Closing.`);
                         }
                         if (this.closeComment) {
                             await issue.postComment(this.closeComment);
@@ -50,7 +51,7 @@ class NeedsMoreInfoCloser {
                     }
                     else {
                         if (hydrated.updatedAt < pingTimestamp && hydrated.assignee) {
-                            utils_1.safeLog(`Last comment on ${hydrated.number} by rando. Pinging @${hydrated.assignee}`);
+                            (0, utils_1.safeLog)(`Last comment on ${hydrated.number} by rando. Pinging @${hydrated.assignee}`);
                             if (this.pingComment) {
                                 await issue.postComment(this.pingComment
                                     .replace('${assignee}', ((_a = hydrated.assignees) === null || _a === void 0 ? void 0 : _a.join(' ')) || hydrated.assignee)
@@ -58,12 +59,12 @@ class NeedsMoreInfoCloser {
                             }
                         }
                         else {
-                            utils_1.safeLog(`Last comment on ${hydrated.number} by rando. Skipping.${hydrated.assignee ? ' cc @' + hydrated.assignee : ''}`);
+                            (0, utils_1.safeLog)(`Last comment on ${hydrated.number} by rando. Skipping.${hydrated.assignee ? ' cc @' + hydrated.assignee : ''}`);
                         }
                     }
                 }
                 else {
-                    utils_1.safeLog('Query returned an invalid issue:' + hydrated.number);
+                    (0, utils_1.safeLog)('Query returned an invalid issue:' + hydrated.number);
                 }
             }
         }

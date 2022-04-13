@@ -93,10 +93,11 @@ export abstract class Action {
 				await this.onTriggered(new OctoKit(token, context.repo, { readonly }))
 			}
 		} catch (e) {
+			const err = e as Error
 			try {
-				await this.error(e)
+				await this.error(err)
 			} catch {
-				safeLog(e?.stack || e?.message || String(e))
+				safeLog(err?.stack || err?.message || String(e))
 			}
 		}
 

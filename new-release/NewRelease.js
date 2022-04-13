@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NewRelease = void 0;
 const utils_1 = require("../common/utils");
 class NewRelease {
     constructor(github, label, labelColor, labelDescription, days) {
@@ -14,13 +15,13 @@ class NewRelease {
         this.days = days;
     }
     async run() {
-        const release = await utils_1.loadLatestRelease('stable');
+        const release = await (0, utils_1.loadLatestRelease)('stable');
         if (!(release && release.timestamp))
             throw Error('Could not load latest release');
         const daysSinceRelease = (Date.now() - release.timestamp) / (24 * 60 * 60 * 1000);
         if (daysSinceRelease > this.days) {
             // delete the label from the repo as a whole to remove it from all issues
-            utils_1.safeLog('New release window passed. Globally deleting label ' + this.label);
+            (0, utils_1.safeLog)('New release window passed. Globally deleting label ' + this.label);
             return this.github.deleteLabel(this.label);
         }
         const issue = await this.github.getIssue();
@@ -28,10 +29,10 @@ class NewRelease {
         if (!/VS ?Code Version:.*Insider/i.test(cleansed) &&
             new RegExp(`VS ?Code Version:(.*[^\\d])?${release.productVersion.replace('.', '\\.')}([^\\d]|$)`, 'i').test(cleansed)) {
             if (!(await this.github.repoHasLabel(this.label))) {
-                utils_1.safeLog('First release issue found. Globally creating label ' + this.label);
+                (0, utils_1.safeLog)('First release issue found. Globally creating label ' + this.label);
                 await this.github.createLabel(this.label, this.labelColor, this.labelDescription);
             }
-            utils_1.safeLog('New release issue found. Adding label ' + this.label);
+            (0, utils_1.safeLog)('New release issue found. Adding label ' + this.label);
             await this.github.addLabel(this.label);
         }
     }

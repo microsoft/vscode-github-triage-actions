@@ -84,7 +84,7 @@ describe('AuthorVerified', () => {
 		expect(comments[0].body).to.contain('plz verify thx')
 	})
 
-	it.only('Unlocks the issue', async () => {
+	it('Unlocks the issue', async () => {
 		setup()
 		const testbed = new TestbedIssue(
 			{ releasedCommits: ['commit'] },

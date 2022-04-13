@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TestbedIssue = exports.Testbed = void 0;
 const utils_1 = require("../common/utils");
 class Testbed {
     constructor(config) {
@@ -45,7 +46,7 @@ class Testbed {
         return this.config.releasedCommits.includes(commit) ? 'yes' : 'no';
     }
     async dispatch(title) {
-        utils_1.safeLog('dispatching for', title);
+        (0, utils_1.safeLog)('dispatching for', title);
     }
 }
 exports.Testbed = Testbed;
