@@ -4,13 +4,16 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.safeLog = exports.logErrorToIssue = exports.errorLoggingIssue = exports.getRateLimit = exports.daysAgoToHumanReadbleDate = exports.daysAgoToTimestamp = exports.loadLatestRelease = exports.normalizeIssue = exports.getRequiredInput = exports.getInput = void 0;
 const core = require("@actions/core");
 const github_1 = require("@actions/github");
 const axios_1 = require("axios");
 const octokit_1 = require("../api/octokit");
-exports.getInput = (name) => core.getInput(name) || undefined;
-exports.getRequiredInput = (name) => core.getInput(name, { required: true });
-exports.normalizeIssue = (issue) => {
+const getInput = (name) => core.getInput(name) || undefined;
+exports.getInput = getInput;
+const getRequiredInput = (name) => core.getInput(name, { required: true });
+exports.getRequiredInput = getRequiredInput;
+const normalizeIssue = (issue) => {
     let { body, title } = issue;
     body = body !== null && body !== void 0 ? body : '';
     title = title !== null && title !== void 0 ? title : '';
@@ -42,10 +45,14 @@ exports.normalizeIssue = (issue) => {
         issueType: isBug ? 'bug' : isFeatureRequest ? 'feature_request' : 'unknown',
     };
 };
-exports.loadLatestRelease = async (quality) => (await axios_1.default.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`)).data;
-exports.daysAgoToTimestamp = (days) => +new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-exports.daysAgoToHumanReadbleDate = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}\w$/, '');
-exports.getRateLimit = async (token) => {
+exports.normalizeIssue = normalizeIssue;
+const loadLatestRelease = async (quality) => (await axios_1.default.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`)).data;
+exports.loadLatestRelease = loadLatestRelease;
+const daysAgoToTimestamp = (days) => +new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+exports.daysAgoToTimestamp = daysAgoToTimestamp;
+const daysAgoToHumanReadbleDate = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}\w$/, '');
+exports.daysAgoToHumanReadbleDate = daysAgoToHumanReadbleDate;
+const getRateLimit = async (token) => {
     const usageData = (await new github_1.GitHub(token).rateLimit.get()).data.resources;
     const usage = {};
     ['core', 'graphql', 'search'].forEach(async (category) => {
@@ -53,6 +60,7 @@ exports.getRateLimit = async (token) => {
     });
     return usage;
 };
+exports.getRateLimit = getRateLimit;
 exports.errorLoggingIssue = (() => {
     try {
         const repo = github_1.context.repo.owner.toLowerCase() + '/' + github_1.context.repo.repo.toLowerCase();
@@ -62,8 +70,8 @@ exports.errorLoggingIssue = (() => {
         else if (/microsoft\//.test(repo)) {
             return { repo: 'vscode-internalbacklog', owner: 'Microsoft', issue: 974 };
         }
-        else if (exports.getInput('errorLogIssueNumber')) {
-            return { ...github_1.context.repo, issue: +exports.getRequiredInput('errorLogIssueNumber') };
+        else if ((0, exports.getInput)('errorLogIssueNumber')) {
+            return { ...github_1.context.repo, issue: +(0, exports.getRequiredInput)('errorLogIssueNumber') };
         }
         else {
             return undefined;
@@ -74,7 +82,7 @@ exports.errorLoggingIssue = (() => {
         return undefined;
     }
 })();
-exports.logErrorToIssue = async (message, ping, token) => {
+const logErrorToIssue = async (message, ping, token) => {
     // Attempt to wait out abuse detection timeout if present
     await new Promise((resolve) => setTimeout(resolve, 10000));
     const dest = exports.errorLoggingIssue;
@@ -98,8 +106,10 @@ ${JSON.stringify(github_1.context, null, 2)
 -->
 `);
 };
-exports.safeLog = (message, ...args) => {
+exports.logErrorToIssue = logErrorToIssue;
+const safeLog = (message, ...args) => {
     const clean = (val) => ('' + val).replace(/:|#/g, '');
     console.log(clean(message), ...args.map(clean));
 };
+exports.safeLog = safeLog;
 //# sourceMappingURL=utils.js.map

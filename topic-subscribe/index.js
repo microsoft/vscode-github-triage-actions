@@ -12,7 +12,7 @@ class SubscribeRunner extends Action_1.Action {
         this.id = 'Subscribe';
     }
     async onLabeled(issue, label) {
-        const subscribe = await issue.readConfig(utils_1.getRequiredInput('config-path'));
+        const subscribe = await issue.readConfig((0, utils_1.getRequiredInput)('config-path'));
         const config = subscribe === null || subscribe === void 0 ? void 0 : subscribe[label];
         const prefix = `Pinging \`${label}\` topic followers: `;
         if (config) {

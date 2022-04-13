@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.unenrollIssue = exports.enrollIssue = exports.ReleasePipeline = void 0;
 const utils_1 = require("../common/utils");
 const telemetry_1 = require("../common/telemetry");
 class ReleasePipeline {
@@ -13,7 +14,7 @@ class ReleasePipeline {
         this.insidersReleasedLabel = insidersReleasedLabel;
     }
     async run() {
-        const latestRelease = await utils_1.loadLatestRelease('insider');
+        const latestRelease = await (0, utils_1.loadLatestRelease)('insider');
         if (!latestRelease)
             throw Error('Error loading latest release');
         const query = `is:closed label:${this.notYetReleasedLabel}`;
@@ -25,7 +26,7 @@ class ReleasePipeline {
                     await new Promise((resolve) => setTimeout(resolve, 1000));
                 }
                 else {
-                    utils_1.safeLog('Query returned an invalid issue:' + issueData.number);
+                    (0, utils_1.safeLog)('Query returned an invalid issue:' + issueData.number);
                 }
             }
         }
@@ -60,7 +61,7 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
             .releaseContainsCommit(latestRelease.version, closingHash)
             .catch(() => 'unknown');
         if (releaseContainsCommit === 'yes') {
-            await telemetry_1.trackEvent(issue, 'insiders-released:released');
+            await (0, telemetry_1.trackEvent)(issue, 'insiders-released:released');
             await issue.removeLabel(this.notYetReleasedLabel);
             await issue.addLabel(this.insidersReleasedLabel);
         }
@@ -75,19 +76,21 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
     }
 }
 exports.ReleasePipeline = ReleasePipeline;
-exports.enrollIssue = async (issue, notYetReleasedLabel) => {
+const enrollIssue = async (issue, notYetReleasedLabel) => {
     var _a;
     const closingHash = (_a = (await issue.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
     if (closingHash) {
         await issue.addLabel(notYetReleasedLabel);
-        await telemetry_1.trackEvent(issue, 'insiders-released:unreleased');
+        await (0, telemetry_1.trackEvent)(issue, 'insiders-released:unreleased');
     }
     else {
-        await telemetry_1.trackEvent(issue, 'insiders-released:skipped');
+        await (0, telemetry_1.trackEvent)(issue, 'insiders-released:skipped');
     }
 };
-exports.unenrollIssue = async (issue, notYetReleasedLabel, insidersReleasedLabel) => {
+exports.enrollIssue = enrollIssue;
+const unenrollIssue = async (issue, notYetReleasedLabel, insidersReleasedLabel) => {
     await issue.removeLabel(insidersReleasedLabel);
     await issue.removeLabel(notYetReleasedLabel);
 };
+exports.unenrollIssue = unenrollIssue;
 //# sourceMappingURL=ReleasePipeline.js.map

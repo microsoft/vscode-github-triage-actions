@@ -54,12 +54,13 @@ export class TestPlanItemValidator {
 		await Promise.all(tasks)
 	}
 
-	private getErrors(issue: Issue): { hash: string | undefined; timestamp: number } | undefined {
+	private getErrors(issue: Issue): string | undefined {
 		try {
 			parseTestPlanItem(issue.body, issue.author.name)
 			return
 		} catch (error) {
-			return error.message
+			const err = error as Error
+			return err.message
 		}
 	}
 }

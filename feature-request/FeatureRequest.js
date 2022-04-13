@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FeatureRequestOnMilestone = exports.FeatureRequestOnLabel = exports.FeatureRequestQueryer = exports.ACCEPT_MARKER = exports.REJECT_MARKER = exports.WARN_MARKER = exports.CREATE_MARKER = void 0;
 const telemetry_1 = require("../common/telemetry");
 const utils_1 = require("../common/utils");
 exports.CREATE_MARKER = '<!-- 6d457af9-96bd-47a8-a0e8-ecf120dfffc1 -->'; // do not change, this is how we find the comments the bot made when assigning the issue was assigned to the candidate milestone
@@ -28,7 +29,7 @@ class FeatureRequestQueryer {
                     await this.actOn(issue);
                 }
                 else {
-                    utils_1.safeLog('Query returned an invalid issue:', issueData.number);
+                    (0, utils_1.safeLog)('Query returned an invalid issue:', issueData.number);
                 }
             }
         }
@@ -40,8 +41,8 @@ class FeatureRequestQueryer {
         if (issueData.reactions['+1'] >= this.config.upvotesRequired &&
             this.config.comments.accept &&
             this.config.milestones.backlogID) {
-            utils_1.safeLog(`Issue #${issueData.number} sucessfully promoted`);
-            await telemetry_1.trackEvent(issue, 'feature-request:accepted');
+            (0, utils_1.safeLog)(`Issue #${issueData.number} sucessfully promoted`);
+            await (0, telemetry_1.trackEvent)(issue, 'feature-request:accepted');
             await Promise.all([
                 issue.setMilestone(this.config.milestones.backlogID),
                 issue.postComment(exports.ACCEPT_MARKER + '\n' + this.config.comments.accept),
@@ -67,13 +68,13 @@ class FeatureRequestQueryer {
             else if (!state.warnTimestamp) {
                 if (this.daysSince(state.initTimestamp) >
                     this.config.delays.close - this.config.delays.warn) {
-                    utils_1.safeLog(`Issue #${issueData.number} nearing rejection`);
+                    (0, utils_1.safeLog)(`Issue #${issueData.number} nearing rejection`);
                     await issue.postComment(exports.WARN_MARKER + '\n' + this.config.comments.warn);
                 }
             }
             else if (this.daysSince(state.warnTimestamp) > this.config.delays.warn) {
-                utils_1.safeLog(`Issue #${issueData.number} rejected`);
-                await telemetry_1.trackEvent(issue, 'feature-request:rejected');
+                (0, utils_1.safeLog)(`Issue #${issueData.number} rejected`);
+                await (0, telemetry_1.trackEvent)(issue, 'feature-request:rejected');
                 await issue.postComment(exports.REJECT_MARKER + '\n' + this.config.comments.reject);
                 await issue.closeIssue();
                 if (this.config.comments.rejectLabel) {
@@ -82,7 +83,7 @@ class FeatureRequestQueryer {
             }
         }
         else {
-            utils_1.safeLog(`Issue #${issueData.number} has hot discussion. Ignoring.`);
+            (0, utils_1.safeLog)(`Issue #${issueData.number} has hot discussion. Ignoring.`);
         }
     }
     daysSince(timestamp) {

@@ -4,11 +4,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createDataDirectories = void 0;
 const fs = require("fs");
 const path = require("path");
 const utils_1 = require("../../../common/utils");
 const DATA_DIR = 'train_data';
-exports.createDataDirectories = async (areas, assignees) => {
+const createDataDirectories = async (areas, assignees) => {
     var _a;
     const classifications = [
         {
@@ -74,14 +75,15 @@ exports.createDataDirectories = async (areas, assignees) => {
                     await new Promise((resolve) => setTimeout(resolve, 100)); // ?
                 }
                 const filepath = path.join(__dirname, '..', DATA_DIR, name, Math.random() < 0.8 || seen[category] == 0 ? 'train' : 'test', category);
-                const { title, body } = utils_1.normalizeIssue(issue);
+                const { title, body } = (0, utils_1.normalizeIssue)(issue);
                 const filename = `${issue.number}.txt`;
                 const content = `${title}\n\n${body}`;
                 fs.writeFileSync(path.join(filepath, filename), content);
                 seen[category]++;
             }
         }
-        utils_1.safeLog('Ignored', ignoredLabels);
+        (0, utils_1.safeLog)('Ignored', ignoredLabels);
     }
 };
+exports.createDataDirectories = createDataDirectories;
 //# sourceMappingURL=createDataDir.js.map

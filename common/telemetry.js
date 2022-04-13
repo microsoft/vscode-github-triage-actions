@@ -4,11 +4,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.trackEvent = exports.aiHandle = void 0;
 const github_1 = require("@actions/github");
 const appInsights = require("applicationinsights");
 const utils_1 = require("./utils");
 let _aiHandle = undefined;
-const aiKey = utils_1.getInput('appInsightsKey');
+const aiKey = (0, utils_1.getInput)('appInsightsKey');
 if (aiKey) {
     appInsights
         .setup(aiKey)
@@ -23,7 +24,7 @@ if (aiKey) {
     _aiHandle = appInsights.defaultClient;
 }
 exports.aiHandle = _aiHandle;
-exports.trackEvent = async (issue, event, props) => {
+const trackEvent = async (issue, event, props) => {
     if (exports.aiHandle) {
         exports.aiHandle.trackEvent({
             name: event,
@@ -36,4 +37,5 @@ exports.trackEvent = async (issue, event, props) => {
         });
     }
 };
+exports.trackEvent = trackEvent;
 //# sourceMappingURL=telemetry.js.map

@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CopyCat = void 0;
 const utils_1 = require("../common/utils");
 class CopyCat {
     constructor(github, owner, repo) {
@@ -14,7 +15,7 @@ class CopyCat {
     async run() {
         var _a;
         const issue = await this.github.getIssue();
-        utils_1.safeLog(`Mirroring issue \`${issue.number}\` to ${this.owner}/${this.repo}`);
+        (0, utils_1.safeLog)(`Mirroring issue \`${issue.number}\` to ${this.owner}/${this.repo}`);
         await this.github.createIssue(this.owner, this.repo, issue.title, ((_a = issue.body) !== null && _a !== void 0 ? _a : '').replace(/@|#|issues/g, '-').replace(/\/github.com\//g, '/github-com/'));
     }
 }

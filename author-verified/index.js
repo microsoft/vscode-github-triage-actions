@@ -7,10 +7,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../common/utils");
 const AuthorVerified_1 = require("./AuthorVerified");
 const Action_1 = require("../common/Action");
-const requestVerificationComment = utils_1.getRequiredInput('requestVerificationComment');
-const releasedLabel = utils_1.getRequiredInput('releasedLabel');
-const verifiedLabel = utils_1.getRequiredInput('verifiedLabel');
-const authorVerificationRequestedLabel = utils_1.getRequiredInput('authorVerificationRequestedLabel');
+const requestVerificationComment = (0, utils_1.getRequiredInput)('requestVerificationComment');
+const releasedLabel = (0, utils_1.getRequiredInput)('releasedLabel');
+const verifiedLabel = (0, utils_1.getRequiredInput)('verifiedLabel');
+const authorVerificationRequestedLabel = (0, utils_1.getRequiredInput)('authorVerificationRequestedLabel');
 class AuthorVerified extends Action_1.Action {
     constructor() {
         super(...arguments);

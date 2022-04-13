@@ -14,7 +14,7 @@ class NeedsMoreInfo extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a;
-        await new NeedsMoreInfoCloser_1.NeedsMoreInfoCloser(github, utils_1.getRequiredInput('label'), +utils_1.getRequiredInput('closeDays'), +utils_1.getRequiredInput('pingDays'), utils_1.getInput('closeComment') || '', utils_1.getInput('pingComment') || '', ((_a = utils_1.getInput('additionalTeam')) !== null && _a !== void 0 ? _a : '').split('|')).run();
+        await new NeedsMoreInfoCloser_1.NeedsMoreInfoCloser(github, (0, utils_1.getRequiredInput)('label'), +(0, utils_1.getRequiredInput)('closeDays'), +(0, utils_1.getRequiredInput)('pingDays'), (0, utils_1.getInput)('closeComment') || '', (0, utils_1.getInput)('pingComment') || '', ((_a = (0, utils_1.getInput)('additionalTeam')) !== null && _a !== void 0 ? _a : '').split('|')).run();
     }
 }
 new NeedsMoreInfo().run(); // eslint-disable-line

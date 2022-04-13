@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Action = void 0;
 const octokit_1 = require("../api/octokit");
 const github_1 = require("@actions/github");
 const utils_1 = require("./utils");
@@ -12,8 +13,8 @@ const telemetry_1 = require("./telemetry");
 const uuid_1 = require("uuid");
 class Action {
     constructor() {
-        this.token = utils_1.getRequiredInput('token');
-        console.log('::stop-commands::' + uuid_1.v4());
+        this.token = (0, utils_1.getRequiredInput)('token');
+        console.log('::stop-commands::' + (0, uuid_1.v4)());
         this.username = new github_1.GitHub(this.token).users.getAuthenticated().then((v) => v.data.name, () => 'unknown');
     }
     async trackMetric(telemetry) {
@@ -36,12 +37,12 @@ class Action {
             if (github_1.context.repo.repo === repo &&
                 github_1.context.repo.owner === owner &&
                 ((_a = github_1.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number) === issue) {
-                return utils_1.safeLog('refusing to run on error logging issue to prevent cascading errors');
+                return (0, utils_1.safeLog)('refusing to run on error logging issue to prevent cascading errors');
             }
         }
         try {
-            const token = utils_1.getRequiredInput('token');
-            const readonly = !!core_1.getInput('readonly');
+            const token = (0, utils_1.getRequiredInput)('token');
+            const readonly = !!(0, core_1.getInput)('readonly');
             const issue = (_b = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _b === void 0 ? void 0 : _b.number;
             if (issue) {
                 const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: issue }, { readonly });
@@ -84,15 +85,16 @@ class Action {
             }
         }
         catch (e) {
+            const err = e;
             try {
-                await this.error(e);
+                await this.error(err);
             }
             catch {
-                utils_1.safeLog((e === null || e === void 0 ? void 0 : e.stack) || (e === null || e === void 0 ? void 0 : e.message) || String(e));
+                (0, utils_1.safeLog)((err === null || err === void 0 ? void 0 : err.stack) || (err === null || err === void 0 ? void 0 : err.message) || String(e));
             }
         }
-        await this.trackMetric({ name: 'octokit_request_count', value: octokit_1.getNumRequests() });
-        const usage = await utils_1.getRateLimit(this.token);
+        await this.trackMetric({ name: 'octokit_request_count', value: (0, octokit_1.getNumRequests)() });
+        const usage = await (0, utils_1.getRateLimit)(this.token);
         await this.trackMetric({ name: 'usage_core', value: usage.core });
         await this.trackMetric({ name: 'usage_graphql', value: usage.graphql });
         await this.trackMetric({ name: 'usage_search', value: usage.search });
@@ -112,11 +114,11 @@ Actor: ${details.user}
 
 ID: ${details.id}
 `;
-        await utils_1.logErrorToIssue(rendered, true, this.token);
+        await (0, utils_1.logErrorToIssue)(rendered, true, this.token);
         if (telemetry_1.aiHandle) {
             telemetry_1.aiHandle.trackException({ exception: error });
         }
-        core_1.setFailed(error.message);
+        (0, core_1.setFailed)(error.message);
     }
     async onTriggered(_octokit) {
         throw Error('not implemented');

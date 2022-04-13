@@ -13,7 +13,7 @@ class NewReleaseAction extends Action_1.Action {
         this.id = 'NewRelease';
     }
     async onOpened(issue) {
-        await new NewRelease_1.NewRelease(issue, utils_1.getRequiredInput('label'), utils_1.getRequiredInput('labelColor'), utils_1.getRequiredInput('labelDescription'), +utils_1.getRequiredInput('days')).run();
+        await new NewRelease_1.NewRelease(issue, (0, utils_1.getRequiredInput)('label'), (0, utils_1.getRequiredInput)('labelColor'), (0, utils_1.getRequiredInput)('labelDescription'), +(0, utils_1.getRequiredInput)('days')).run();
     }
 }
 new NewReleaseAction().run(); // eslint-disable-line

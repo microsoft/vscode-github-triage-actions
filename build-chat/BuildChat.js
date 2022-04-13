@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.buildChat = void 0;
 const rest_1 = require("@octokit/rest");
 const web_api_1 = require("@slack/web-api");
 const storage_blob_1 = require("@azure/storage-blob");
@@ -128,7 +129,7 @@ async function buildComplete(octokit, owner, repo, runId, options) {
         repo,
         workflow_id: workflowId,
         branch: buildResult.head_branch || undefined,
-        per_page: 5,
+        per_page: 5, // More returns 502s.
     })).data.workflow_runs.filter((run) => run.status === 'completed' && conclusions.indexOf(run.conclusion || 'success') !== -1);
     buildResults.sort((a, b) => -a.created_at.localeCompare(b.created_at));
     const currentBuildIndex = buildResults.findIndex((build) => build.id === buildResult.id);

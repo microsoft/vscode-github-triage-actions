@@ -9,22 +9,22 @@ const FeatureRequest_1 = require("../feature-request/FeatureRequest");
 const Action_1 = require("../common/Action");
 const config = {
     milestones: {
-        candidateID: +utils_1.getRequiredInput('candidateMilestoneID'),
-        candidateName: utils_1.getRequiredInput('candidateMilestoneName'),
+        candidateID: +(0, utils_1.getRequiredInput)('candidateMilestoneID'),
+        candidateName: (0, utils_1.getRequiredInput)('candidateMilestoneName'),
     },
-    featureRequestLabel: utils_1.getRequiredInput('featureRequestLabel'),
-    upvotesRequired: +utils_1.getRequiredInput('upvotesRequired'),
-    numCommentsOverride: +utils_1.getRequiredInput('numCommentsOverride'),
-    labelsToExclude: (utils_1.getInput('labelsToExclude') || '').split(',').filter((l) => !!l),
+    featureRequestLabel: (0, utils_1.getRequiredInput)('featureRequestLabel'),
+    upvotesRequired: +(0, utils_1.getRequiredInput)('upvotesRequired'),
+    numCommentsOverride: +(0, utils_1.getRequiredInput)('numCommentsOverride'),
+    labelsToExclude: ((0, utils_1.getInput)('labelsToExclude') || '').split(',').filter((l) => !!l),
     comments: {
-        init: utils_1.getInput('initComment'),
-        warn: utils_1.getRequiredInput('warnComment'),
-        reject: utils_1.getRequiredInput('rejectComment'),
-        rejectLabel: utils_1.getInput('rejectLabel'),
+        init: (0, utils_1.getInput)('initComment'),
+        warn: (0, utils_1.getRequiredInput)('warnComment'),
+        reject: (0, utils_1.getRequiredInput)('rejectComment'),
+        rejectLabel: (0, utils_1.getInput)('rejectLabel'),
     },
     delays: {
-        warn: +utils_1.getRequiredInput('warnDays'),
-        close: +utils_1.getRequiredInput('closeDays'),
+        warn: +(0, utils_1.getRequiredInput)('warnDays'),
+        close: +(0, utils_1.getRequiredInput)('closeDays'),
     },
 };
 class StaleCloser extends Action_1.Action {
@@ -37,7 +37,7 @@ class StaleCloser extends Action_1.Action {
     }
     async onLabeled(github, label) {
         if (label === config.featureRequestLabel) {
-            await new FeatureRequest_1.FeatureRequestOnLabel(github, +utils_1.getRequiredInput('milestoneDelaySeconds'), config.milestones.candidateID, config.featureRequestLabel).run();
+            await new FeatureRequest_1.FeatureRequestOnLabel(github, +(0, utils_1.getRequiredInput)('milestoneDelaySeconds'), config.milestones.candidateID, config.featureRequestLabel).run();
         }
     }
 }

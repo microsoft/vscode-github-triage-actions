@@ -14,18 +14,18 @@ class BuildChatAction extends Action_1.Action {
         this.id = 'BuildChat';
     }
     async onTriggered() {
-        const slackToken = utils_1.getInput('slack_token');
+        const slackToken = (0, utils_1.getInput)('slack_token');
         if (!slackToken) {
             return;
         }
-        const auth = utils_1.getRequiredInput('token');
+        const auth = (0, utils_1.getRequiredInput)('token');
         const github = new rest_1.Octokit({ auth });
-        await BuildChat_1.buildChat(github, utils_1.getRequiredInput('workflow_run_url'), {
+        await (0, BuildChat_1.buildChat)(github, (0, utils_1.getRequiredInput)('workflow_run_url'), {
             slackToken,
-            storageConnectionString: utils_1.getInput('storage_connection_string') || undefined,
-            notifyAuthors: utils_1.getInput('notify_authors') === 'true',
-            notificationChannel: utils_1.getInput('notification_channel') || undefined,
-            logChannel: utils_1.getInput('log_channel') || undefined,
+            storageConnectionString: (0, utils_1.getInput)('storage_connection_string') || undefined,
+            notifyAuthors: (0, utils_1.getInput)('notify_authors') === 'true',
+            notificationChannel: (0, utils_1.getInput)('notification_channel') || undefined,
+            logChannel: (0, utils_1.getInput)('log_channel') || undefined,
         });
     }
 }
