@@ -31,8 +31,7 @@ describe('NeedsMoreInfoLabeler', () => {
 			{},
 			{
 				issue: {
-					body:
-						'We have written the needed data into your clipboard because it was too large to send. Please paste.',
+					body: 'We have written the needed data into your clipboard because it was too large to send. Please paste.',
 				},
 			},
 		)

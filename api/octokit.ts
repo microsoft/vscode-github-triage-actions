@@ -94,7 +94,7 @@ export class OctoKit implements GitHub {
 			milestoneId: issue.milestone?.number ?? null,
 			createdAt: +new Date(issue.created_at),
 			updatedAt: +new Date(issue.updated_at),
-			closedAt: issue.closed_at ? +new Date((issue.closed_at as unknown) as string) : undefined,
+			closedAt: issue.closed_at ? +new Date(issue.closed_at as unknown as string) : undefined,
 		}
 	}
 
@@ -396,7 +396,8 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			return
 		}
 
-		const closingHashComment = /(?:\\|\/)closedWith (?:https:\/\/github\.com\/microsoft\/vscode\/commit\/)?([a-fA-F0-9]{7,40})/
+		const closingHashComment =
+			/(?:\\|\/)closedWith (?:https:\/\/github\.com\/microsoft\/vscode\/commit\/)?([a-fA-F0-9]{7,40})/
 
 		const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
 			...this.params,

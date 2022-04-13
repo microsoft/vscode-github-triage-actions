@@ -86,7 +86,7 @@ async function handleNotification(
 		const usersByName: Record<string, UserOrChannel> = {}
 		if (options.notifyAuthors) {
 			for await (const page of web.paginate('users.list')) {
-				for (const member of ((page as unknown) as Team).members) {
+				for (const member of (page as unknown as Team).members) {
 					usersByName[member.name] = member
 				}
 			}
@@ -312,11 +312,11 @@ async function listAllMemberships(web: WebClient) {
 	let groups: ConversationsList | undefined
 	const channels: Channel[] = []
 	do {
-		groups = ((await web.conversations.list({
+		groups = (await web.conversations.list({
 			types: 'public_channel,private_channel',
 			cursor: groups?.response_metadata?.next_cursor,
 			limit: 100,
-		})) as unknown) as ConversationsList
+		})) as unknown as ConversationsList
 		channels.push(...groups.channels)
 	} while (groups.response_metadata?.next_cursor)
 	return channels.filter((c) => c.is_member)
