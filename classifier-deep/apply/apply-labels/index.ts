@@ -58,7 +58,7 @@ class ApplyLabels extends Action {
 				safeLog('connected to db')
 				try {
 					// Get the database from the mongo client
-					const db = client.db()
+					const db = client.db('admin')
 					const collection = db.collection('testers')
 					const triagers = await collection.find<Triager>({}).toArray()
 					return triagers
