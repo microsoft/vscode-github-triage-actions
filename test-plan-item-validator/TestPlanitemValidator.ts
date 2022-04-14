@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Comment, GitHubIssue, Issue } from '../api/api'
-import { safeLog } from '../common/utils'
-import { parseTestPlanItem } from './validator'
+import { Comment, GitHubIssue, Issue } from '../api/api';
+import { safeLog } from '../common/utils';
+import { parseTestPlanItem } from './validator';
 
-const commentTag = '<!-- INVALID TEST PLAN ITEM -->'
+const commentTag = '<!-- INVALID TEST PLAN ITEM -->';
 
 export class TestPlanItemValidator {
 	constructor(
@@ -18,49 +18,49 @@ export class TestPlanItemValidator {
 	) {}
 
 	async run() {
-		const issue = await this.github.getIssue()
+		const issue = await this.github.getIssue();
 		if (!(issue.labels.includes(this.label) || issue.labels.includes(this.invalidLabel))) {
 			safeLog(
 				`Labels ${this.label}/${this.invalidLabel} not in issue labels ${issue.labels.join(
 					',',
 				)}. Aborting.`,
-			)
-			return
+			);
+			return;
 		}
 
-		const tasks: Promise<void>[] = []
+		const tasks: Promise<void>[] = [];
 
-		let priorComments: Comment[] | undefined = undefined
+		let priorComments: Comment[] | undefined = undefined;
 		for await (const page of this.github.getComments()) {
-			priorComments = page.filter((comment) => comment.body.indexOf(commentTag) !== -1)
+			priorComments = page.filter((comment) => comment.body.indexOf(commentTag) !== -1);
 			if (priorComments) {
-				safeLog('Found prior comment. Deleting.')
-				tasks.push(...priorComments.map((comment) => this.github.deleteComment(comment.id)))
+				safeLog('Found prior comment. Deleting.');
+				tasks.push(...priorComments.map((comment) => this.github.deleteComment(comment.id)));
 			}
-			break
+			break;
 		}
 
-		const errors = this.getErrors(issue)
+		const errors = this.getErrors(issue);
 		if (errors) {
-			tasks.push(this.github.postComment(`${commentTag}\n${this.comment}\n\n**Error:** ${errors}`))
-			tasks.push(this.github.addLabel(this.invalidLabel))
-			tasks.push(this.github.removeLabel(this.label))
+			tasks.push(this.github.postComment(`${commentTag}\n${this.comment}\n\n**Error:** ${errors}`));
+			tasks.push(this.github.addLabel(this.invalidLabel));
+			tasks.push(this.github.removeLabel(this.label));
 		} else {
-			safeLog('All good!')
-			tasks.push(this.github.removeLabel(this.invalidLabel))
-			tasks.push(this.github.addLabel(this.label))
+			safeLog('All good!');
+			tasks.push(this.github.removeLabel(this.invalidLabel));
+			tasks.push(this.github.addLabel(this.label));
 		}
 
-		await Promise.all(tasks)
+		await Promise.all(tasks);
 	}
 
 	private getErrors(issue: Issue): string | undefined {
 		try {
-			parseTestPlanItem(issue.body, issue.author.name)
-			return
+			parseTestPlanItem(issue.body, issue.author.name);
+			return;
 		} catch (error) {
-			const err = error as Error
-			return err.message
+			const err = error as Error;
+			return err.message;
 		}
 	}
 }

@@ -1,19 +1,19 @@
-import { getRequiredInput } from '../common/utils'
-import { LanguageSpecificLabeler, EnglishPleaseLabler } from './EnglishPlease'
-import { OctoKitIssue } from '../api/octokit'
-import { Action } from '../common/Action'
+import { getRequiredInput } from '../common/utils';
+import { LanguageSpecificLabeler, EnglishPleaseLabler } from './EnglishPlease';
+import { OctoKitIssue } from '../api/octokit';
+import { Action } from '../common/Action';
 
-const nonEnglishLabel = getRequiredInput('nonEnglishLabel')
-const needsMoreInfoLabel = getRequiredInput('needsMoreInfoLabel')
-const translatorRequestedLabelPrefix = getRequiredInput('translatorRequestedLabelPrefix')
-const translatorRequestedLabelColor = getRequiredInput('translatorRequestedLabelColor')
-const cognitiveServicesAPIKey = getRequiredInput('cognitiveServicesAPIKey')
+const nonEnglishLabel = getRequiredInput('nonEnglishLabel');
+const needsMoreInfoLabel = getRequiredInput('needsMoreInfoLabel');
+const translatorRequestedLabelPrefix = getRequiredInput('translatorRequestedLabelPrefix');
+const translatorRequestedLabelColor = getRequiredInput('translatorRequestedLabelColor');
+const cognitiveServicesAPIKey = getRequiredInput('cognitiveServicesAPIKey');
 
 class EnglishPlease extends Action {
-	id = 'EnglishPlease'
+	id = 'EnglishPlease';
 
 	async onOpened(issue: OctoKitIssue) {
-		await new EnglishPleaseLabler(issue, nonEnglishLabel).run()
+		await new EnglishPleaseLabler(issue, nonEnglishLabel).run();
 	}
 
 	async doLanguageSpecific(issue: OctoKitIssue) {
@@ -24,14 +24,14 @@ class EnglishPlease extends Action {
 			nonEnglishLabel,
 			needsMoreInfoLabel,
 			cognitiveServicesAPIKey,
-		).run()
+		).run();
 	}
 
 	async onEdited(issue: OctoKitIssue) {
-		await this.doLanguageSpecific(issue)
+		await this.doLanguageSpecific(issue);
 	}
 	async onLabeled(issue: OctoKitIssue, label: string) {
-		if (label == nonEnglishLabel) await this.doLanguageSpecific(issue)
+		if (label == nonEnglishLabel) await this.doLanguageSpecific(issue);
 	}
 }
 

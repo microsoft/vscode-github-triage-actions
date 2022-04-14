@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKit, OctoKitIssue } from '../api/octokit'
-import { getInput, getRequiredInput } from '../common/utils'
+import { OctoKit, OctoKitIssue } from '../api/octokit';
+import { getInput, getRequiredInput } from '../common/utils';
 import {
 	FeatureRequestConfig,
 	FeatureRequestOnLabel,
 	FeatureRequestQueryer,
-} from '../feature-request/FeatureRequest'
-import { Action } from '../common/Action'
+} from '../feature-request/FeatureRequest';
+import { Action } from '../common/Action';
 
 const config: FeatureRequestConfig = {
 	milestones: {
@@ -31,13 +31,13 @@ const config: FeatureRequestConfig = {
 		warn: +getRequiredInput('warnDays'),
 		close: +getRequiredInput('closeDays'),
 	},
-}
+};
 
 class StaleCloser extends Action {
-	id = 'StaleCloser'
+	id = 'StaleCloser';
 
 	async onTriggered(github: OctoKit) {
-		await new FeatureRequestQueryer(github, config).run()
+		await new FeatureRequestQueryer(github, config).run();
 	}
 
 	async onLabeled(github: OctoKitIssue, label: string) {
@@ -47,7 +47,7 @@ class StaleCloser extends Action {
 				+getRequiredInput('milestoneDelaySeconds'),
 				config.milestones.candidateID,
 				config.featureRequestLabel,
-			).run()
+			).run();
 		}
 	}
 }
