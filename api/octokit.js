@@ -63,7 +63,7 @@ class OctoKit {
             await this.octokit.issues.create({ owner, repo, title, body });
     }
     octokitIssueToIssue(issue) {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        var _a, _b, _c, _d, _e, _f, _g;
         return {
             author: { name: issue.user.login, isGitHubApp: issue.user.type === 'Bot' },
             body: issue.body,
@@ -77,10 +77,22 @@ class OctoKit {
             reactions: issue.reactions,
             assignee: (_c = (_b = issue.assignee) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : (_e = (_d = issue.assignees) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.login,
             assignees: (_g = (_f = issue.assignees) === null || _f === void 0 ? void 0 : _f.map((assignee) => assignee.login)) !== null && _g !== void 0 ? _g : [],
-            milestoneId: (_j = (_h = issue.milestone) === null || _h === void 0 ? void 0 : _h.number) !== null && _j !== void 0 ? _j : null,
+            milestone: issue.milestone ? this.octokitMilestoneToMilestone(issue.milestone) : null,
             createdAt: +new Date(issue.created_at),
             updatedAt: +new Date(issue.updated_at),
             closedAt: issue.closed_at ? +new Date(issue.closed_at) : undefined,
+        };
+    }
+    octokitMilestoneToMilestone(milestone) {
+        return {
+            title: milestone.title,
+            closedAt: milestone.closed_at,
+            dueOn: milestone.due_on,
+            milestoneId: milestone.id,
+            createdAt: milestone.created_at,
+            description: milestone.description,
+            numClosedIssues: milestone.closed_issues,
+            numOpenIssues: milestone.open_issues,
         };
     }
     async hasWriteAccess(user) {

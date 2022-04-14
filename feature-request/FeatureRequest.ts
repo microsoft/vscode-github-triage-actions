@@ -33,7 +33,7 @@ export class FeatureRequestQueryer {
 				const issueData = await issue.getIssue()
 				if (
 					issueData.open &&
-					issueData.milestoneId === this.config.milestones.candidateID &&
+					issueData.milestone?.milestoneId === this.config.milestones.candidateID &&
 					issueData.labels.includes(this.config.featureRequestLabel) &&
 					!issueData.labels.some((issueLabel) =>
 						this.config.labelsToExclude.some((excludeLabel) => issueLabel === excludeLabel),
@@ -128,7 +128,7 @@ export class FeatureRequestOnLabel {
 
 		if (
 			!issue.open ||
-			issue.milestoneId ||
+			issue.milestone?.milestoneId ||
 			!issue.labels.includes(this.label) ||
 			(await this.github.hasWriteAccess(issue.author))
 		) {
@@ -144,7 +144,7 @@ export class FeatureRequestOnMilestone {
 
 	async run(): Promise<void> {
 		const issue = await this.github.getIssue()
-		if (issue.open && issue.milestoneId === this.milestone) {
+		if (issue.open && issue.milestone?.milestoneId === this.milestone) {
 			await this.github.postComment(CREATE_MARKER + '\n' + this.comment)
 		}
 	}

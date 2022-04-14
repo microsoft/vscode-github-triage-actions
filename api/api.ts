@@ -88,12 +88,22 @@ export interface Issue {
 	isPr: boolean
 	numComments: number
 	reactions: Reactions
-	milestoneId: number | null
+	milestone: Milestone | null
 	assignee?: string
 	assignees: string[]
 	createdAt: number
 	updatedAt: number
 	closedAt?: number
+}
+export interface Milestone {
+	milestoneId: number
+	title: string
+	description: string
+	numClosedIssues: number
+	numOpenIssues: number
+	dueOn: string
+	createdAt: string
+	closedAt: string
 }
 export interface Query {
 	q: string

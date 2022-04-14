@@ -7,7 +7,7 @@ import { GitHub as GitHubAPI } from '@actions/github'
 import { Octokit } from '@octokit/rest'
 import { exec } from 'child_process'
 import { safeLog } from '../common/utils'
-import { Comment, GitHub, GitHubIssue, Issue, Query, User } from './api'
+import { Comment, GitHub, GitHubIssue, Issue, Milestone, Query, User } from './api'
 
 let numRequests = 0
 export const getNumRequests = () => numRequests
@@ -91,10 +91,23 @@ export class OctoKit implements GitHub {
 			assignee: issue.assignee?.login ?? (issue as Octokit.IssuesGetResponse).assignees?.[0]?.login,
 			assignees:
 				(issue as Octokit.IssuesGetResponse).assignees?.map((assignee) => assignee.login) ?? [],
-			milestoneId: issue.milestone?.number ?? null,
+			milestone: issue.milestone ? this.octokitMilestoneToMilestone(issue.milestone) : null,
 			createdAt: +new Date(issue.created_at),
 			updatedAt: +new Date(issue.updated_at),
 			closedAt: issue.closed_at ? +new Date(issue.closed_at as unknown as string) : undefined,
+		}
+	}
+
+	protected octokitMilestoneToMilestone(milestone: Octokit.IssuesGetResponseMilestone): Milestone {
+		return {
+			title: milestone.title,
+			closedAt: milestone.closed_at,
+			dueOn: milestone.due_on,
+			milestoneId: milestone.id,
+			createdAt: milestone.created_at,
+			description: milestone.description,
+			numClosedIssues: milestone.closed_issues,
+			numOpenIssues: milestone.open_issues,
 		}
 	}
 
