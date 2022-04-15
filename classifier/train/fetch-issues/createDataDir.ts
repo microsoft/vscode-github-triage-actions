@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fs from 'fs'
-import * as path from 'path'
-import { JSONOutputLine } from './download'
-import { normalizeIssue, safeLog } from '../../../common/utils'
+import * as fs from 'fs';
+import * as path from 'path';
+import { JSONOutputLine } from './download';
+import { normalizeIssue, safeLog } from '../../../common/utils';
 
 interface Classification {
-	name: string
-	categoryPriority: string[] | ((candidates: string[]) => string | undefined)
-	labelToCategory: Record<string, string> | ((label: string) => string)
-	categoriesExtractor: (issue: JSONOutputLine) => string[]
+	name: string;
+	categoryPriority: string[] | ((candidates: string[]) => string | undefined);
+	labelToCategory: Record<string, string> | ((label: string) => string);
+	categoriesExtractor: (issue: JSONOutputLine) => string[];
 }
 
-const DATA_DIR = 'train_data'
+const DATA_DIR = 'train_data';
 
 export const createDataDirectories = async (areas: string[], assignees: string[]) => {
 	const classifications: Classification[] = [
@@ -31,28 +31,28 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 			categoriesExtractor: (issue) => issue.assignees,
 			categoryPriority: assignees,
 		},
-	]
+	];
 
-	const dumpFile = path.join(__dirname, 'issues.json')
+	const dumpFile = path.join(__dirname, 'issues.json');
 	const issues: JSONOutputLine[] = fs
 		.readFileSync(dumpFile, { encoding: 'utf8' })
 		.split('\n')
 		.filter((l) => l)
-		.map((l) => JSON.parse(l))
+		.map((l) => JSON.parse(l));
 
 	for (const classification of classifications) {
-		const { name, categoryPriority, labelToCategory, categoriesExtractor } = classification
+		const { name, categoryPriority, labelToCategory, categoriesExtractor } = classification;
 		const labelToCategoryFn =
 			typeof labelToCategory === 'function'
 				? labelToCategory
-				: (label: string) => labelToCategory[label]
+				: (label: string) => labelToCategory[label];
 		const categoryPriorityFn =
 			typeof categoryPriority === 'function'
 				? categoryPriority
 				: (categories: string[]) =>
-						categoryPriority.find((candidate) => categories.indexOf(candidate) !== -1)
+						categoryPriority.find((candidate) => categories.indexOf(candidate) !== -1);
 
-		const seen: Record<string, number> = {}
+		const seen: Record<string, number> = {};
 
 		const ignoredLabels = Object.entries(
 			issues
@@ -60,12 +60,12 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 				.map((labels) => categoryPriorityFn(labels))
 				.filter((x): x is string => !!x)
 				.reduce((record: Record<string, number>, label) => {
-					record[label] = (record[label] ?? 0) + 1
-					return record
+					record[label] = (record[label] ?? 0) + 1;
+					return record;
 				}, {}),
 		)
 			.filter(([_, count]) => count < 5)
-			.map(([label]) => label)
+			.map(([label]) => label);
 
 		for (const issue of issues) {
 			const category =
@@ -78,16 +78,16 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 					? name === 'area' && Math.random() < 0.2
 						? '__OTHER__'
 						: undefined
-					: undefined)
+					: undefined);
 
-			const isDuplicate = issue.labels.includes('*duplicate')
+			const isDuplicate = issue.labels.includes('*duplicate');
 
 			const isHumanLabeled = !!issue.labelEvents.find(
 				(event) =>
 					event.type === 'added' &&
 					event.label === category &&
 					!['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor),
-			)
+			);
 
 			if (
 				category &&
@@ -95,15 +95,15 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 				(name === 'assignee' || (!isDuplicate && (isHumanLabeled || category === '__OTHER__')))
 			) {
 				if (!seen[category]) {
-					seen[category] = 0
+					seen[category] = 0;
 					fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, 'train', category), {
 						recursive: true,
-					})
+					});
 					fs.mkdirSync(path.join(__dirname, '..', DATA_DIR, name, 'test', category), {
 						recursive: true,
-					})
+					});
 
-					await new Promise((resolve) => setTimeout(resolve, 100)) // ?
+					await new Promise((resolve) => setTimeout(resolve, 100)); // ?
 				}
 
 				const filepath = path.join(
@@ -113,16 +113,16 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 					name,
 					Math.random() < 0.8 || seen[category] == 0 ? 'train' : 'test',
 					category,
-				)
+				);
 
-				const { title, body } = normalizeIssue(issue)
-				const filename = `${issue.number}.txt`
-				const content = `${title}\n\n${body}`
-				fs.writeFileSync(path.join(filepath, filename), content)
+				const { title, body } = normalizeIssue(issue);
+				const filename = `${issue.number}.txt`;
+				const content = `${title}\n\n${body}`;
+				fs.writeFileSync(path.join(filepath, filename), content);
 
-				seen[category]++
+				seen[category]++;
 			}
 		}
-		safeLog('Ignored', ignoredLabels)
+		safeLog('Ignored', ignoredLabels);
 	}
-}
+};

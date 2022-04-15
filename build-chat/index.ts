@@ -3,28 +3,28 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Octokit } from '@octokit/rest'
-import { getInput, getRequiredInput } from '../common/utils'
-import { buildChat } from './BuildChat'
-import { Action } from '../common/Action'
+import { Octokit } from '@octokit/rest';
+import { getInput, getRequiredInput } from '../common/utils';
+import { buildChat } from './BuildChat';
+import { Action } from '../common/Action';
 
 class BuildChatAction extends Action {
-	id = 'BuildChat'
+	id = 'BuildChat';
 
 	async onTriggered() {
-		const slackToken = getInput('slack_token')
+		const slackToken = getInput('slack_token');
 		if (!slackToken) {
-			return
+			return;
 		}
-		const auth = getRequiredInput('token')
-		const github = new Octokit({ auth })
+		const auth = getRequiredInput('token');
+		const github = new Octokit({ auth });
 		await buildChat(github, getRequiredInput('workflow_run_url'), {
 			slackToken,
 			storageConnectionString: getInput('storage_connection_string') || undefined,
 			notifyAuthors: getInput('notify_authors') === 'true',
 			notificationChannel: getInput('notification_channel') || undefined,
 			logChannel: getInput('log_channel') || undefined,
-		})
+		});
 	}
 }
 

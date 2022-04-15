@@ -47,7 +47,9 @@ class FetchIssues extends Action_1.Action {
                             const linkedIssue = (_a = issueData.body.match(/#(\d{3,7})/)) === null || _a === void 0 ? void 0 : _a[1];
                             if (linkedIssue) {
                                 (0, utils_1.safeLog)('PR is linked to', linkedIssue);
-                                const linkedIssueData = await github.getIssueByNumber(+linkedIssue).getIssue();
+                                const linkedIssueData = await github
+                                    .getIssueByNumber(+linkedIssue)
+                                    .getIssue();
                                 const normalized = (0, utils_1.normalizeIssue)(linkedIssueData);
                                 additionalInfo = `\n\n${normalized.title}\n\n${normalized.body}`;
                                 const linkedIssueAssignee = linkedIssueData.assignees[0];
