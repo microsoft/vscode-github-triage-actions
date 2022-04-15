@@ -90,7 +90,21 @@ class TestbedIssue extends Testbed {
         this.issueConfig.issue.assignee = undefined;
     }
     async setMilestone(milestoneId) {
-        this.issueConfig.issue.milestoneId = milestoneId;
+        if (this.issueConfig.issue.milestone) {
+            this.issueConfig.issue.milestone.milestoneId = milestoneId;
+        }
+        else {
+            this.issueConfig.issue.milestone = {
+                milestoneId,
+                title: '',
+                description: '',
+                dueOn: '',
+                closedAt: '',
+                createdAt: '',
+                numClosedIssues: 0,
+                numOpenIssues: 0,
+            };
+        }
     }
     async getIssue() {
         const labels = [...this.issueConfig.labels];

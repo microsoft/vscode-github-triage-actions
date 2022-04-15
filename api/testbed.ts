@@ -130,7 +130,20 @@ export class TestbedIssue extends Testbed implements GitHubIssue {
 	}
 
 	async setMilestone(milestoneId: number): Promise<void> {
-		this.issueConfig.issue.milestoneId = milestoneId;
+		if (this.issueConfig.issue.milestone) {
+			this.issueConfig.issue.milestone.milestoneId = milestoneId;
+		} else {
+			this.issueConfig.issue.milestone = {
+				milestoneId,
+				title: '',
+				description: '',
+				dueOn: '',
+				closedAt: '',
+				createdAt: '',
+				numClosedIssues: 0,
+				numOpenIssues: 0,
+			};
+		}
 	}
 
 	async getIssue(): Promise<Issue> {

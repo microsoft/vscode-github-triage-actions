@@ -17,13 +17,14 @@ class FeatureRequestQueryer {
         this.config = config;
     }
     async run() {
+        var _a;
         let query = `is:open is:issue milestone:"${this.config.milestones.candidateName}" label:"${this.config.featureRequestLabel}"`;
         query += this.config.labelsToExclude.map((l) => `-label:"${l}"`).join(' ');
         for await (const page of this.github.query({ q: query })) {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
                 if (issueData.open &&
-                    issueData.milestoneId === this.config.milestones.candidateID &&
+                    ((_a = issueData.milestone) === null || _a === void 0 ? void 0 : _a.milestoneId) === this.config.milestones.candidateID &&
                     issueData.labels.includes(this.config.featureRequestLabel) &&
                     !issueData.labels.some((issueLabel) => this.config.labelsToExclude.some((excludeLabel) => issueLabel === excludeLabel))) {
                     await this.actOn(issue);
@@ -99,10 +100,11 @@ class FeatureRequestOnLabel {
         this.label = label;
     }
     async run() {
+        var _a;
         await new Promise((resolve) => setTimeout(resolve, this.delay * 1000));
         const issue = await this.github.getIssue();
         if (!issue.open ||
-            issue.milestoneId ||
+            ((_a = issue.milestone) === null || _a === void 0 ? void 0 : _a.milestoneId) ||
             !issue.labels.includes(this.label) ||
             (await this.github.hasWriteAccess(issue.author))) {
             return;
@@ -118,8 +120,9 @@ class FeatureRequestOnMilestone {
         this.milestone = milestone;
     }
     async run() {
+        var _a;
         const issue = await this.github.getIssue();
-        if (issue.open && issue.milestoneId === this.milestone) {
+        if (issue.open && ((_a = issue.milestone) === null || _a === void 0 ? void 0 : _a.milestoneId) === this.milestone) {
             await this.github.postComment(exports.CREATE_MARKER + '\n' + this.comment);
         }
     }
