@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKit } from '../api/octokit'
-import { getInput, getRequiredInput } from '../common/utils'
-import { NeedsMoreInfoCloser } from './NeedsMoreInfoCloser'
-import { Action } from '../common/Action'
+import { OctoKit } from '../api/octokit';
+import { getInput, getRequiredInput } from '../common/utils';
+import { NeedsMoreInfoCloser } from './NeedsMoreInfoCloser';
+import { Action } from '../common/Action';
 
 class NeedsMoreInfo extends Action {
-	id = 'NeedsMoreInfo'
+	id = 'NeedsMoreInfo';
 
 	async onTriggered(github: OctoKit) {
 		await new NeedsMoreInfoCloser(
@@ -20,7 +20,7 @@ class NeedsMoreInfo extends Action {
 			getInput('closeComment') || '',
 			getInput('pingComment') || '',
 			(getInput('additionalTeam') ?? '').split('|'),
-		).run()
+		).run();
 	}
 }
 

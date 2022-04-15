@@ -1,6 +1,6 @@
-import * as yargs from 'yargs'
-import { LanguageSpecificLabeler } from './EnglishPlease'
-import { OctoKitIssue } from '../api/octokit'
+import * as yargs from 'yargs';
+import { LanguageSpecificLabeler } from './EnglishPlease';
+import { OctoKitIssue } from '../api/octokit';
 
 const argv = yargs
 	.option('token', {
@@ -34,9 +34,9 @@ const argv = yargs
 		default: false,
 	})
 	.help()
-	.alias('help', 'h').argv
+	.alias('help', 'h').argv;
 
-const [, owner, repo] = /(.*)\/(.*)/.exec(argv.repo)!
+const [, owner, repo] = /(.*)\/(.*)/.exec(argv.repo)!;
 
 const main = async () => {
 	await new LanguageSpecificLabeler(
@@ -46,7 +46,7 @@ const main = async () => {
 		'*english-please',
 		'needs more info',
 		argv.key,
-	).run()
-}
+	).run();
+};
 
-main().catch(console.error)
+main().catch(console.error);

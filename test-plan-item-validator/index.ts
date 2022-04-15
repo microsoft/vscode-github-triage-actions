@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKitIssue } from '../api/octokit'
-import { getRequiredInput } from '../common/utils'
-import { TestPlanItemValidator } from './TestPlanitemValidator'
-import { Action } from '../common/Action'
+import { OctoKitIssue } from '../api/octokit';
+import { getRequiredInput } from '../common/utils';
+import { TestPlanItemValidator } from './TestPlanitemValidator';
+import { Action } from '../common/Action';
 
 class TestPlanItemValidatorAction extends Action {
-	id = 'TestPlanItemValidator'
+	id = 'TestPlanItemValidator';
 
 	async runValidation(issue: OctoKitIssue) {
 		await new TestPlanItemValidator(
@@ -17,15 +17,15 @@ class TestPlanItemValidatorAction extends Action {
 			getRequiredInput('label'),
 			getRequiredInput('invalidLabel'),
 			getRequiredInput('comment'),
-		).run()
+		).run();
 	}
 
 	async onLabeled(issue: OctoKitIssue) {
-		await this.runValidation(issue)
+		await this.runValidation(issue);
 	}
 
 	async onEdited(issue: OctoKitIssue) {
-		await this.runValidation(issue)
+		await this.runValidation(issue);
 	}
 }
 

@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKit, OctoKitIssue } from '../api/octokit'
-import { getInput, getRequiredInput } from '../common/utils'
+import { OctoKit, OctoKitIssue } from '../api/octokit';
+import { getInput, getRequiredInput } from '../common/utils';
 import {
 	FeatureRequestConfig,
 	FeatureRequestOnLabel,
 	FeatureRequestQueryer,
 	FeatureRequestOnMilestone,
-} from './FeatureRequest'
-import { Action } from '../common/Action'
+} from './FeatureRequest';
+import { Action } from '../common/Action';
 
 const config: FeatureRequestConfig = {
 	milestones: {
@@ -34,13 +34,13 @@ const config: FeatureRequestConfig = {
 		warn: +getRequiredInput('warnDays'),
 		close: +getRequiredInput('closeDays'),
 	},
-}
+};
 
 class FeatureRequest extends Action {
-	id = 'FeatureRequest'
+	id = 'FeatureRequest';
 
 	async onTriggered(github: OctoKit) {
-		await new FeatureRequestQueryer(github, config).run()
+		await new FeatureRequestQueryer(github, config).run();
 	}
 
 	async onLabeled(github: OctoKitIssue, label: string) {
@@ -50,7 +50,7 @@ class FeatureRequest extends Action {
 				+getRequiredInput('milestoneDelaySeconds'),
 				config.milestones.candidateID,
 				config.featureRequestLabel,
-			).run()
+			).run();
 		}
 	}
 
@@ -59,7 +59,7 @@ class FeatureRequest extends Action {
 			github,
 			config.comments.init!,
 			config.milestones.candidateID,
-		).run()
+		).run();
 	}
 }
 

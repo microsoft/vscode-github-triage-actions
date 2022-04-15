@@ -3,75 +3,75 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import axios from 'axios'
-import { writeFileSync } from 'fs'
-import { join } from 'path'
+import axios from 'axios';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
 
 type Response = {
-	rateLimit: RateLimitResponse
-	repository: { issues: IssueResponse }
-}
+	rateLimit: RateLimitResponse;
+	repository: { issues: IssueResponse };
+};
 
 type GHLabelEvent = {
-	createdAt: string
-	__typename: 'LabeledEvent' | 'UnlabeledEvent'
-	label: { name: string }
-	actor: { login: string }
-}
+	createdAt: string;
+	__typename: 'LabeledEvent' | 'UnlabeledEvent';
+	label: { name: string };
+	actor: { login: string };
+};
 type GHRenameEvent = {
-	createdAt: string
-	__typename: 'RenamedTitleEvent'
-	currentTitle: string
-	previousTitle: string
-}
+	createdAt: string;
+	__typename: 'RenamedTitleEvent';
+	currentTitle: string;
+	previousTitle: string;
+};
 
 type GHCloseEvent = {
-	__typename: 'ClosedEvent'
-	closer: { __typename: 'Commit' | 'PullRequest' } | null
-}
+	__typename: 'ClosedEvent';
+	closer: { __typename: 'Commit' | 'PullRequest' } | null;
+};
 
-type RateLimitResponse = { cost: number; remaining: number }
+type RateLimitResponse = { cost: number; remaining: number };
 type IssueResponse = {
-	pageInfo: { endCursor: string; hasNextPage: boolean }
+	pageInfo: { endCursor: string; hasNextPage: boolean };
 	nodes: {
-		body: string
-		title: string
-		number: number
-		createdAt: number
-		userContentEdits: { nodes: { editedAt: string; diff: string }[] }
-		assignees: { nodes: { login: string }[] }
-		labels: { nodes: { name: string }[] }
+		body: string;
+		title: string;
+		number: number;
+		createdAt: number;
+		userContentEdits: { nodes: { editedAt: string; diff: string }[] };
+		assignees: { nodes: { login: string }[] };
+		labels: { nodes: { name: string }[] };
 		timelineItems: {
-			nodes: (GHLabelEvent | GHRenameEvent | GHCloseEvent)[]
-		}
-	}[]
-}
+			nodes: (GHLabelEvent | GHRenameEvent | GHCloseEvent)[];
+		};
+	}[];
+};
 
 export type JSONOutputLine = {
-	number: number
-	title: string
-	body: string
-	createdAt: number
-	labels: string[]
-	assignees: string[]
-	labelEvents: LabelEvent[]
-	closedWithCode: boolean
-}
+	number: number;
+	title: string;
+	body: string;
+	createdAt: number;
+	labels: string[];
+	assignees: string[];
+	labelEvents: LabelEvent[];
+	closedWithCode: boolean;
+};
 
-export type LabelEvent = AddedLabelEvent | RemovedLabelEvent
+export type LabelEvent = AddedLabelEvent | RemovedLabelEvent;
 
 export type AddedLabelEvent = {
-	type: 'added'
-	label: string
-	actor: string
-	title: string
-	body: string
-}
+	type: 'added';
+	label: string;
+	actor: string;
+	title: string;
+	body: string;
+};
 
 export type RemovedLabelEvent = {
-	type: 'removed'
-	label: string
-}
+	type: 'removed';
+	label: string;
+};
 
 export const download = async (token: string, repo: { owner: string; repo: string }, endCursor?: string) => {
 	const data = await axios
@@ -145,9 +145,9 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 				},
 			},
 		)
-		.then((r) => r.data)
+		.then((r) => r.data);
 
-	const response = data.data as Response
+	const response = data.data as Response;
 
 	const issues: JSONOutputLine[] = response.repository.issues.nodes.map((issue) => ({
 		number: issue.number,
@@ -162,7 +162,7 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 				event.__typename === 'ClosedEvent' &&
 				(event.closer?.__typename === 'PullRequest' || event.closer?.__typename === 'Commit'),
 		),
-	}))
+	}));
 
 	writeFileSync(
 		join(__dirname, 'issues.json'),
@@ -170,42 +170,42 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 		{
 			flag: 'a',
 		},
-	)
+	);
 
-	const pageInfo = response.repository.issues.pageInfo
-	const rateInfo = response.rateLimit
+	const pageInfo = response.repository.issues.pageInfo;
+	const rateInfo = response.rateLimit;
 
 	console.log({
 		lastIssue: issues[issues.length - 1].number,
 		quota: rateInfo.remaining,
 		endCursor: pageInfo.endCursor,
-	})
+	});
 
-	endCursor = pageInfo.endCursor
+	endCursor = pageInfo.endCursor;
 	if (pageInfo.hasNextPage) {
 		return new Promise<void>((resolve) => {
 			setTimeout(async () => {
-				await download(token, repo, endCursor)
-				resolve()
-			}, 1000)
-		})
+				await download(token, repo, endCursor);
+				resolve();
+			}, 1000);
+		});
 	}
-}
+};
 
 const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[] => {
-	const issue = _issue
+	const issue = _issue;
 	const events: ({ timestamp: number } & (
 		| { type: 'labeled'; label: string; actor: string }
 		| { type: 'titleEdited'; new: string; old: string }
 		| { type: 'bodyEdited'; new: string }
 		| { type: 'unlabeled'; label: string }
-	))[] = []
+	))[] = [];
 
 	events.push(
 		...issue.userContentEdits.nodes.map(
 			(node) => ({ timestamp: +new Date(node.editedAt), type: 'bodyEdited', new: node.diff } as const),
 		),
-	)
+	);
 
 	events.push(
 		...issue.timelineItems.nodes
@@ -220,7 +220,7 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 						actor: node.actor?.login ?? 'ghost',
 					} as const),
 			),
-	)
+	);
 
 	events.push(
 		...issue.timelineItems.nodes
@@ -233,7 +233,7 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 						label: node.label.name,
 					} as const),
 			),
-	)
+	);
 
 	events.push(
 		...issue.timelineItems.nodes
@@ -247,14 +247,14 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 						old: node.previousTitle,
 					} as const),
 			),
-	)
+	);
 
-	events.sort(({ timestamp: a }, { timestamp: b }) => a - b)
+	events.sort(({ timestamp: a }, { timestamp: b }) => a - b);
 
-	let currentTitle = (events.find((event) => event.type === 'titleEdited') as any)?.old ?? issue.title
-	let currentBody = (events.find((event) => event.type === 'bodyEdited') as any)?.new ?? issue.body
+	let currentTitle = (events.find((event) => event.type === 'titleEdited') as any)?.old ?? issue.title;
+	let currentBody = (events.find((event) => event.type === 'bodyEdited') as any)?.new ?? issue.body;
 
-	const labelEvents: LabelEvent[] = []
+	const labelEvents: LabelEvent[] = [];
 	for (const event of events) {
 		if (event.type === 'labeled') {
 			labelEvents.push({
@@ -263,15 +263,15 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 				label: event.label,
 				body: currentBody,
 				title: currentTitle,
-			})
+			});
 		} else if (event.type === 'bodyEdited') {
-			currentBody = event.new
+			currentBody = event.new;
 		} else if (event.type === 'titleEdited') {
-			currentTitle = event.new
+			currentTitle = event.new;
 		} else if (event.type === 'unlabeled') {
-			labelEvents.push({ type: 'removed', label: event.label })
+			labelEvents.push({ type: 'removed', label: event.label });
 		}
 	}
 
-	return labelEvents
-}
+	return labelEvents;
+};
