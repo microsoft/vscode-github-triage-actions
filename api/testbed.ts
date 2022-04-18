@@ -147,6 +147,13 @@ export class TestbedIssue extends Testbed implements GitHubIssue {
 		}
 	}
 
+	async getCurrentRepoMilestone(): Promise<number | undefined> {
+		if (this.issueConfig.issue.milestone) {
+			return this.issueConfig.issue.milestone.milestoneId;
+		}
+		return undefined;
+	}
+
 	async getIssue(): Promise<Issue> {
 		const labels = [...this.issueConfig.labels];
 		return { ...this.issueConfig.issue, labels };

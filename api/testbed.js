@@ -107,6 +107,12 @@ class TestbedIssue extends Testbed {
             };
         }
     }
+    async getCurrentRepoMilestone() {
+        if (this.issueConfig.issue.milestone) {
+            return this.issueConfig.issue.milestone.milestoneId;
+        }
+        return undefined;
+    }
     async getIssue() {
         const labels = [...this.issueConfig.labels];
         return { ...this.issueConfig.issue, labels };

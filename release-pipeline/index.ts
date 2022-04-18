@@ -33,4 +33,4 @@ class ReleasePipelineAction extends Action {
 	}
 }
 
-new ReleasePipelineAction().run() // eslint-disable-line
+new ReleasePipelineAction().run(); // eslint-disable-line
