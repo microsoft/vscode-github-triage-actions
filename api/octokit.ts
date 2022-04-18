@@ -201,7 +201,7 @@ export class OctoKit implements GitHub {
 	}
 
 	async getCurrentRepoMilestone(): Promise<number | undefined> {
-		safeLog(`Getting repo milestone for`);
+		safeLog(`Getting repo milestone for ${this.params.owner}/${this.params.repo}`);
 		// Fetch all milestones open for this repo
 		const allMilestones = (
 			await this.octokit.issues.listMilestonesForRepo({

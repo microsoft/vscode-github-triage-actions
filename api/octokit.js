@@ -182,7 +182,7 @@ class OctoKit {
         }));
     }
     async getCurrentRepoMilestone() {
-        (0, utils_1.safeLog)(`Getting repo milestone for`);
+        (0, utils_1.safeLog)(`Getting repo milestone for ${this.params.owner}/${this.params.repo}`);
         // Fetch all milestones open for this repo
         const allMilestones = (await this.octokit.issues.listMilestonesForRepo({
             owner: this.params.owner,
