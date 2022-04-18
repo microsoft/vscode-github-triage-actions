@@ -84,6 +84,13 @@ export const enrollIssue = async (issue: GitHubIssue, notYetReleasedLabel: strin
 	const closingHash = (await issue.getClosingInfo())?.hash;
 	if (closingHash) {
 		await issue.addLabel(notYetReleasedLabel);
+		// Get the milestone linked to the current release and set it if the issue doesn't have one
+		const releaseMilestone = (await issue.getIssue()).milestone
+			? undefined
+			: await issue.getCurrentRepoMilestone();
+		if (releaseMilestone !== undefined) {
+			await issue.setMilestone(releaseMilestone);
+		}
 		await trackEvent(issue, 'insiders-released:unreleased');
 	} else {
 		await trackEvent(issue, 'insiders-released:skipped');

@@ -72,6 +72,11 @@ export class Testbed implements GitHub {
 	async dispatch(title: string): Promise<void> {
 		safeLog('dispatching for', title);
 	}
+
+	async getCurrentRepoMilestone(): Promise<number | undefined> {
+		// pass
+		return undefined;
+	}
 }
 
 type TestbedIssueConfig = {

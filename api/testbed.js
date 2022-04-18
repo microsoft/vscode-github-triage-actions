@@ -48,6 +48,10 @@ class Testbed {
     async dispatch(title) {
         (0, utils_1.safeLog)('dispatching for', title);
     }
+    async getCurrentRepoMilestone() {
+        // pass
+        return undefined;
+    }
 }
 exports.Testbed = Testbed;
 class TestbedIssue extends Testbed {
