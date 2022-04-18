@@ -181,6 +181,23 @@ class OctoKit {
             }
         }));
     }
+    async getCurrentRepoMilestone() {
+        (0, utils_1.safeLog)(`Getting repo milestone for`);
+        // Fetch all milestones open for this repo
+        const allMilestones = (await this.octokit.issues.listMilestonesForRepo({
+            owner: this.params.owner,
+            repo: this.params.repo,
+            state: 'open',
+            sort: 'due_on',
+            direction: 'asc',
+        })).data;
+        const currentDate = new Date();
+        const possibleMilestones = allMilestones.filter((milestone) => new Date(milestone.due_on) > currentDate && currentDate > new Date(milestone.created_at));
+        if (possibleMilestones.length === 0) {
+            return undefined;
+        }
+        return possibleMilestones[0].id;
+    }
     async dispatch(title) {
         (0, utils_1.safeLog)('Dispatching ' + title);
         if (!this.options.readonly)
@@ -277,23 +294,6 @@ class OctoKitIssue extends OctoKit {
                 issue_number: this.issueData.number,
                 milestone: milestoneId,
             });
-    }
-    async getCurrentRepoMilestone() {
-        (0, utils_1.safeLog)(`Getting repo milestone for ${this.issueData.number}`);
-        // Fetch all milestones open for this repo
-        const allMilestones = (await this.octokit.issues.listMilestonesForRepo({
-            owner: this.params.owner,
-            repo: this.params.repo,
-            state: 'open',
-            sort: 'due_on',
-            direction: 'asc',
-        })).data;
-        const currentDate = new Date();
-        const possibleMilestones = allMilestones.filter((milestone) => new Date(milestone.due_on) > currentDate && currentDate > new Date(milestone.created_at));
-        if (possibleMilestones.length === 0) {
-            return undefined;
-        }
-        return possibleMilestones[0].id;
     }
     async *getComments(last) {
         (0, utils_1.safeLog)('Fetching comments for ' + this.issueData.number);

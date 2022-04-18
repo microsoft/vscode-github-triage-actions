@@ -19,6 +19,12 @@ export interface GitHub {
 	createIssue(owner: string, repo: string, title: string, body: string): Promise<void>;
 
 	releaseContainsCommit(release: string, commit: string): Promise<'yes' | 'no' | 'unknown'>;
+
+	/**
+	 * Returns what we think the current milestone for the repo is based on the due on date.
+	 * @returns The milestone id if one is found, else undefined
+	 */
+	getCurrentRepoMilestone(): Promise<number | undefined>;
 }
 
 export interface GitHubIssue extends GitHub {
@@ -33,11 +39,6 @@ export interface GitHubIssue extends GitHub {
 	unlockIssue(): Promise<void>;
 
 	setMilestone(milestoneId: number): Promise<void>;
-	/**
-	 * Returns what we think the current milestone for the repo is based on the due on date.
-	 * @returns The milestone id if one is found, else undefined
-	 */
-	getCurrentRepoMilestone(): Promise<number | undefined>;
 
 	addLabel(label: string): Promise<void>;
 	removeLabel(label: string): Promise<void>;

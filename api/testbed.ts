@@ -72,6 +72,11 @@ export class Testbed implements GitHub {
 	async dispatch(title: string): Promise<void> {
 		safeLog('dispatching for', title);
 	}
+
+	async getCurrentRepoMilestone(): Promise<number | undefined> {
+		// pass
+		return undefined;
+	}
 }
 
 type TestbedIssueConfig = {
@@ -145,13 +150,6 @@ export class TestbedIssue extends Testbed implements GitHubIssue {
 				state: 'open',
 			};
 		}
-	}
-
-	async getCurrentRepoMilestone(): Promise<number | undefined> {
-		if (this.issueConfig.issue.milestone) {
-			return this.issueConfig.issue.milestone.milestoneId;
-		}
-		return undefined;
 	}
 
 	async getIssue(): Promise<Issue> {

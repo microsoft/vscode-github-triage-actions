@@ -48,6 +48,10 @@ class Testbed {
     async dispatch(title) {
         (0, utils_1.safeLog)('dispatching for', title);
     }
+    async getCurrentRepoMilestone() {
+        // pass
+        return undefined;
+    }
 }
 exports.Testbed = Testbed;
 class TestbedIssue extends Testbed {
@@ -106,12 +110,6 @@ class TestbedIssue extends Testbed {
                 state: 'open',
             };
         }
-    }
-    async getCurrentRepoMilestone() {
-        if (this.issueConfig.issue.milestone) {
-            return this.issueConfig.issue.milestone.milestoneId;
-        }
-        return undefined;
     }
     async getIssue() {
         const labels = [...this.issueConfig.labels];
