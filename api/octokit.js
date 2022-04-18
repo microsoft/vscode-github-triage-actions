@@ -86,13 +86,15 @@ class OctoKit {
     octokitMilestoneToMilestone(milestone) {
         return {
             title: milestone.title,
-            closedAt: milestone.closed_at,
-            dueOn: milestone.due_on,
             milestoneId: milestone.id,
-            createdAt: milestone.created_at,
+            // Remove the time portions of the dates as they're not important
+            createdAt: new Date(milestone.created_at.split('T')[0]),
+            dueOn: new Date(milestone.due_on.split('T')[0]),
+            closedAt: milestone.closed_at ? new Date(milestone.closed_at.split('T')[0]) : null,
             description: milestone.description,
             numClosedIssues: milestone.closed_issues,
             numOpenIssues: milestone.open_issues,
+            state: milestone.state === 'open' ? 'open' : 'closed',
         };
     }
     async hasWriteAccess(user) {

@@ -98,11 +98,12 @@ class TestbedIssue extends Testbed {
                 milestoneId,
                 title: '',
                 description: '',
-                dueOn: '',
-                closedAt: '',
-                createdAt: '',
+                dueOn: new Date(),
+                closedAt: new Date(),
+                createdAt: new Date(),
                 numClosedIssues: 0,
                 numOpenIssues: 0,
+                state: 'open',
             };
         }
     }

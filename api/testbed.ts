@@ -137,11 +137,12 @@ export class TestbedIssue extends Testbed implements GitHubIssue {
 				milestoneId,
 				title: '',
 				description: '',
-				dueOn: '',
-				closedAt: '',
-				createdAt: '',
+				dueOn: new Date(),
+				closedAt: new Date(),
+				createdAt: new Date(),
 				numClosedIssues: 0,
 				numOpenIssues: 0,
+				state: 'open',
 			};
 		}
 	}
