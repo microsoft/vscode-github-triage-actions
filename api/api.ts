@@ -101,8 +101,8 @@ export interface Milestone {
 	description: string;
 	numClosedIssues: number;
 	numOpenIssues: number;
-	dueOn: Date;
-	createdAt: Date;
+	dueOn: Date | null;
+	createdAt: Date | null;
 	closedAt: Date | null;
 	state: 'open' | 'closed';
 }

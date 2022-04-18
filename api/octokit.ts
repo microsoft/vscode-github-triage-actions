@@ -103,9 +103,9 @@ export class OctoKit implements GitHub {
 			title: milestone.title,
 			milestoneId: milestone.id,
 			// Remove the time portions of the dates as they're not important
-			createdAt: new Date(milestone.created_at.split('T')[0]),
-			dueOn: new Date(milestone.due_on.split('T')[0]),
-			closedAt: milestone.closed_at ? new Date(milestone.closed_at.split('T')[0]) : null,
+			createdAt: milestone.created_at !== null ? new Date(milestone.created_at.split('T')[0]) : null,
+			dueOn: milestone.due_on !== null ? new Date(milestone.due_on.split('T')[0]) : null,
+			closedAt: milestone.closed_at !== null ? new Date(milestone.closed_at.split('T')[0]) : null,
 			description: milestone.description,
 			numClosedIssues: milestone.closed_issues,
 			numOpenIssues: milestone.open_issues,
