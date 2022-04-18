@@ -196,7 +196,7 @@ class OctoKit {
         if (possibleMilestones.length === 0) {
             return undefined;
         }
-        return possibleMilestones[0].id;
+        return possibleMilestones[0].number;
     }
     async dispatch(title) {
         (0, utils_1.safeLog)('Dispatching ' + title);

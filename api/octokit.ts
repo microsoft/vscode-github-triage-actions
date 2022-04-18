@@ -220,7 +220,7 @@ export class OctoKit implements GitHub {
 		if (possibleMilestones.length === 0) {
 			return undefined;
 		}
-		return possibleMilestones[0].id;
+		return possibleMilestones[0].number;
 	}
 
 	async dispatch(title: string): Promise<void> {
