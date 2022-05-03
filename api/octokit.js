@@ -86,7 +86,7 @@ class OctoKit {
     octokitMilestoneToMilestone(milestone) {
         return {
             title: milestone.title,
-            milestoneId: milestone.id,
+            milestoneId: milestone.number,
             // Remove the time portions of the dates as they're not important
             createdAt: milestone.created_at !== null ? new Date(milestone.created_at.split('T')[0]) : null,
             dueOn: milestone.due_on !== null ? new Date(milestone.due_on.split('T')[0]) : null,
