@@ -63,7 +63,7 @@ export class NeedsMoreInfoCloser {
 									this.pingComment
 										.replace(
 											'${assignee}',
-											hydrated.assignees?.join(' ') || hydrated.assignee,
+											hydrated.assignees?.join(' @') || hydrated.assignee,
 										)
 										.replace('${author}', hydrated.author.name),
 								);
