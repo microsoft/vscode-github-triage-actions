@@ -13,7 +13,7 @@ class TestPlanItemValidatorAction extends Action_1.Action {
         this.id = 'TestPlanItemValidator';
     }
     async runValidation(issue) {
-        await new TestPlanitemValidator_1.TestPlanItemValidator(issue, utils_1.getRequiredInput('label'), utils_1.getRequiredInput('invalidLabel'), utils_1.getRequiredInput('comment')).run();
+        await new TestPlanitemValidator_1.TestPlanItemValidator(issue, (0, utils_1.getRequiredInput)('label'), (0, utils_1.getRequiredInput)('invalidLabel'), (0, utils_1.getRequiredInput)('comment')).run();
     }
     async onLabeled(issue) {
         await this.runValidation(issue);

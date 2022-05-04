@@ -4,18 +4,21 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.download = void 0;
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
-exports.download = async (token, repo, endCursor) => {
+const utils_1 = require("../../../common/utils");
+const download = async (token, repo, startCursor, isRetry = false) => {
+    var _a, _b;
     const data = await axios_1.default
         .post('https://api.github.com/graphql', {
         query: `{
       repository(name: "${repo.repo}", owner: "${repo.owner}") {
-        issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
+        issues(last: 100 ${startCursor ? `before: "${startCursor}"` : ''}) {
           pageInfo {
-            endCursor
-            hasNextPage
+            startCursor
+            hasPreviousPage
           }
           nodes {
             body
@@ -79,6 +82,19 @@ exports.download = async (token, repo, endCursor) => {
     })
         .then((r) => r.data);
     const response = data.data;
+    if (!((_b = (_a = response === null || response === void 0 ? void 0 : response.repository) === null || _a === void 0 ? void 0 : _a.issues) === null || _b === void 0 ? void 0 : _b.nodes)) {
+        (0, utils_1.safeLog)('recieved unexpected response', JSON.stringify(data));
+        if (isRetry) {
+            console.error('max retries exceeded');
+            return;
+        }
+        return new Promise((resolve) => {
+            setTimeout(async () => {
+                await (0, exports.download)(token, repo, startCursor, true);
+                resolve();
+            }, 60000);
+        });
+    }
     const issues = response.repository.issues.nodes.map((issue) => ({
         number: issue.number,
         title: issue.title,
@@ -93,7 +109,7 @@ exports.download = async (token, repo, endCursor) => {
                 (((_a = event.closer) === null || _a === void 0 ? void 0 : _a.__typename) === 'PullRequest' || ((_b = event.closer) === null || _b === void 0 ? void 0 : _b.__typename) === 'Commit');
         }),
     }));
-    fs_1.writeFileSync(path_1.join(__dirname, 'issues.json'), issues.map((issue) => JSON.stringify(issue)).join('\n') + '\n', {
+    (0, fs_1.writeFileSync)((0, path_1.join)(__dirname, 'issues.json'), issues.map((issue) => JSON.stringify(issue)).join('\n') + '\n', {
         flag: 'a',
     });
     const pageInfo = response.repository.issues.pageInfo;
@@ -101,18 +117,19 @@ exports.download = async (token, repo, endCursor) => {
     console.log({
         lastIssue: issues[issues.length - 1].number,
         quota: rateInfo.remaining,
-        endCursor: pageInfo.endCursor,
+        startCursor: pageInfo.startCursor,
     });
-    endCursor = pageInfo.endCursor;
-    if (pageInfo.hasNextPage) {
+    startCursor = pageInfo.startCursor;
+    if (pageInfo.hasPreviousPage) {
         return new Promise((resolve) => {
             setTimeout(async () => {
-                await exports.download(token, repo, endCursor);
+                await (0, exports.download)(token, repo, startCursor);
                 resolve();
             }, 5000);
         });
     }
 };
+exports.download = download;
 const extractLabelEvents = (_issue) => {
     var _a, _b, _c, _d;
     const issue = _issue;

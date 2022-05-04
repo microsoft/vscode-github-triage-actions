@@ -3,25 +3,25 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKit, OctoKitIssue, getNumRequests } from '../api/octokit'
-import { context, GitHub } from '@actions/github'
-import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue, safeLog } from './utils'
-import { getInput, setFailed } from '@actions/core'
-import { aiHandle } from './telemetry'
-import { v4 as uuid } from 'uuid'
+import { OctoKit, OctoKitIssue, getNumRequests } from '../api/octokit';
+import { context, GitHub } from '@actions/github';
+import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue, safeLog } from './utils';
+import { getInput, setFailed } from '@actions/core';
+import { aiHandle } from './telemetry';
+import { v4 as uuid } from 'uuid';
 
 export abstract class Action {
-	abstract id: string
+	abstract id: string;
 
-	private username: Promise<string>
-	private token = getRequiredInput('token')
+	private username: Promise<string>;
+	private token = getRequiredInput('token');
 
 	constructor() {
-		console.log('::stop-commands::' + uuid())
+		console.log('::stop-commands::' + uuid());
 		this.username = new GitHub(this.token).users.getAuthenticated().then(
 			(v) => v.data.name,
 			() => 'unknown',
-		)
+		);
 	}
 
 	public async trackMetric(telemetry: { name: string; value: number }) {
@@ -34,78 +34,79 @@ export abstract class Action {
 					id: this.id,
 					user: await this.username,
 				},
-			})
+			});
 		}
 	}
 
 	public async run() {
 		if (errorLoggingIssue) {
-			const { repo, issue, owner } = errorLoggingIssue
+			const { repo, issue, owner } = errorLoggingIssue;
 			if (
 				context.repo.repo === repo &&
 				context.repo.owner === owner &&
 				context.payload.issue?.number === issue
 			) {
-				return safeLog('refusing to run on error logging issue to prevent cascading errors')
+				return safeLog('refusing to run on error logging issue to prevent cascading errors');
 			}
 		}
 
 		try {
-			const token = getRequiredInput('token')
-			const readonly = !!getInput('readonly')
+			const token = getRequiredInput('token');
+			const readonly = !!getInput('readonly');
 
-			const issue = context?.issue?.number
+			const issue = context?.issue?.number;
 			if (issue) {
-				const octokit = new OctoKitIssue(token, context.repo, { number: issue }, { readonly })
+				const octokit = new OctoKitIssue(token, context.repo, { number: issue }, { readonly });
 				if (context.eventName === 'issue_comment') {
-					await this.onCommented(octokit, context.payload.comment.body, context.actor)
+					await this.onCommented(octokit, context.payload.comment.body, context.actor);
 				} else if (context.eventName === 'issues') {
 					switch (context.payload.action) {
 						case 'opened':
-							await this.onOpened(octokit)
-							break
+							await this.onOpened(octokit);
+							break;
 						case 'reopened':
-							await this.onReopened(octokit)
-							break
+							await this.onReopened(octokit);
+							break;
 						case 'closed':
-							await this.onClosed(octokit)
-							break
+							await this.onClosed(octokit);
+							break;
 						case 'labeled':
-							await this.onLabeled(octokit, context.payload.label.name)
-							break
+							await this.onLabeled(octokit, context.payload.label.name);
+							break;
 						case 'assigned':
-							await this.onAssigned(octokit, context.payload.assignee.login)
-							break
+							await this.onAssigned(octokit, context.payload.assignee.login);
+							break;
 						case 'unassigned':
-							await this.onUnassigned(octokit, context.payload.assignee.login)
-							break
+							await this.onUnassigned(octokit, context.payload.assignee.login);
+							break;
 						case 'edited':
-							await this.onEdited(octokit)
-							break
+							await this.onEdited(octokit);
+							break;
 						case 'milestoned':
-							await this.onMilestoned(octokit)
-							break
+							await this.onMilestoned(octokit);
+							break;
 						default:
-							throw Error('Unexpected action: ' + context.payload.action)
+							throw Error('Unexpected action: ' + context.payload.action);
 					}
 				}
 			} else {
-				await this.onTriggered(new OctoKit(token, context.repo, { readonly }))
+				await this.onTriggered(new OctoKit(token, context.repo, { readonly }));
 			}
 		} catch (e) {
+			const err = e as Error;
 			try {
-				await this.error(e)
+				await this.error(err);
 			} catch {
-				safeLog(e?.stack || e?.message || String(e))
+				safeLog(err?.stack || err?.message || String(e));
 			}
 		}
 
-		await this.trackMetric({ name: 'octokit_request_count', value: getNumRequests() })
+		await this.trackMetric({ name: 'octokit_request_count', value: getNumRequests() });
 
-		const usage = await getRateLimit(this.token)
-		await this.trackMetric({ name: 'usage_core', value: usage.core })
-		await this.trackMetric({ name: 'usage_graphql', value: usage.graphql })
-		await this.trackMetric({ name: 'usage_search', value: usage.search })
+		const usage = await getRateLimit(this.token);
+		await this.trackMetric({ name: 'usage_core', value: usage.core });
+		await this.trackMetric({ name: 'usage_graphql', value: usage.graphql });
+		await this.trackMetric({ name: 'usage_search', value: usage.search });
 	}
 
 	private async error(error: Error) {
@@ -113,9 +114,9 @@ export abstract class Action {
 			message: `${error.message}\n${error.stack}`,
 			id: this.id,
 			user: await this.username,
-		}
+		};
 
-		if (context.issue.number) details.issue = context.issue.number
+		if (context.issue.number) details.issue = context.issue.number;
 
 		const rendered = `
 Message: ${details.message}
@@ -123,44 +124,44 @@ Message: ${details.message}
 Actor: ${details.user}
 
 ID: ${details.id}
-`
-		await logErrorToIssue(rendered, true, this.token)
+`;
+		await logErrorToIssue(rendered, true, this.token);
 
 		if (aiHandle) {
-			aiHandle.trackException({ exception: error })
+			aiHandle.trackException({ exception: error });
 		}
 
-		setFailed(error.message)
+		setFailed(error.message);
 	}
 
 	protected async onTriggered(_octokit: OctoKit): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onEdited(_issue: OctoKitIssue): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onLabeled(_issue: OctoKitIssue, _label: string): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onAssigned(_issue: OctoKitIssue, _assignee: string): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onUnassigned(_issue: OctoKitIssue, _assignee: string): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onOpened(_issue: OctoKitIssue): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onReopened(_issue: OctoKitIssue): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onClosed(_issue: OctoKitIssue): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onMilestoned(_issue: OctoKitIssue): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 	protected async onCommented(_issue: OctoKitIssue, _comment: string, _actor: string): Promise<void> {
-		throw Error('not implemented')
+		throw Error('not implemented');
 	}
 }

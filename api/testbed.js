@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TestbedIssue = exports.Testbed = void 0;
 const utils_1 = require("../common/utils");
 class Testbed {
     constructor(config) {
@@ -45,7 +46,11 @@ class Testbed {
         return this.config.releasedCommits.includes(commit) ? 'yes' : 'no';
     }
     async dispatch(title) {
-        utils_1.safeLog('dispatching for', title);
+        (0, utils_1.safeLog)('dispatching for', title);
+    }
+    async getCurrentRepoMilestone() {
+        // pass
+        return undefined;
     }
 }
 exports.Testbed = Testbed;
@@ -89,7 +94,22 @@ class TestbedIssue extends Testbed {
         this.issueConfig.issue.assignee = undefined;
     }
     async setMilestone(milestoneId) {
-        this.issueConfig.issue.milestoneId = milestoneId;
+        if (this.issueConfig.issue.milestone) {
+            this.issueConfig.issue.milestone.milestoneId = milestoneId;
+        }
+        else {
+            this.issueConfig.issue.milestone = {
+                milestoneId,
+                title: '',
+                description: '',
+                dueOn: new Date(),
+                closedAt: new Date(),
+                createdAt: new Date(),
+                numClosedIssues: 0,
+                numOpenIssues: 0,
+                state: 'open',
+            };
+        }
     }
     async getIssue() {
         const labels = [...this.issueConfig.labels];
@@ -122,6 +142,9 @@ class TestbedIssue extends Testbed {
     }
     async lockIssue() {
         this.issueConfig.issue.locked = true;
+    }
+    async unlockIssue() {
+        this.issueConfig.issue.locked = false;
     }
     async getClosingInfo() {
         return this.issueConfig.closingCommit;

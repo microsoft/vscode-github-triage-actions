@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { GitHub } from '../api/api'
-import { daysAgoToHumanReadbleDate, daysAgoToTimestamp, safeLog } from '../common/utils'
+import { GitHub } from '../api/api';
+import { daysAgoToHumanReadbleDate, daysAgoToTimestamp, safeLog } from '../common/utils';
 
 export class NeedsMoreInfoCloser {
 	constructor(
@@ -18,19 +18,19 @@ export class NeedsMoreInfoCloser {
 	) {}
 
 	async run() {
-		const updatedTimestamp = daysAgoToHumanReadbleDate(this.closeDays)
-		const pingTimestamp = daysAgoToTimestamp(this.pingDays)
+		const updatedTimestamp = daysAgoToHumanReadbleDate(this.closeDays);
+		const pingTimestamp = daysAgoToTimestamp(this.pingDays);
 
-		const query = `updated:<${updatedTimestamp} label:"${this.label}" is:open is:unlocked`
+		const query = `updated:<${updatedTimestamp} label:"${this.label}" is:open is:unlocked`;
 
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
-				const hydrated = await issue.getIssue()
-				const lastCommentIterator = await issue.getComments(true).next()
+				const hydrated = await issue.getIssue();
+				const lastCommentIterator = await issue.getComments(true).next();
 				if (lastCommentIterator.done) {
-					throw Error('Unexpected comment data')
+					throw Error('Unexpected comment data');
 				}
-				const lastComment = lastCommentIterator.value[0]
+				const lastComment = lastCommentIterator.value[0];
 
 				if (
 					hydrated.open &&
@@ -45,39 +45,39 @@ export class NeedsMoreInfoCloser {
 						(await issue.hasWriteAccess(lastComment.author))
 					) {
 						if (lastComment) {
-							safeLog(`Last comment on ${hydrated.number} by team. Closing.`)
+							safeLog(`Last comment on ${hydrated.number} by team. Closing.`);
 						} else {
-							safeLog(`No comments on ${hydrated.number}. Closing.`)
+							safeLog(`No comments on ${hydrated.number}. Closing.`);
 						}
 						if (this.closeComment) {
-							await issue.postComment(this.closeComment)
+							await issue.postComment(this.closeComment);
 						}
-						await issue.closeIssue()
+						await issue.closeIssue();
 					} else {
 						if (hydrated.updatedAt < pingTimestamp && hydrated.assignee) {
 							safeLog(
 								`Last comment on ${hydrated.number} by rando. Pinging @${hydrated.assignee}`,
-							)
+							);
 							if (this.pingComment) {
 								await issue.postComment(
 									this.pingComment
 										.replace(
 											'${assignee}',
-											hydrated.assignees?.join(' ') || hydrated.assignee,
+											hydrated.assignees?.join(' @') || hydrated.assignee,
 										)
 										.replace('${author}', hydrated.author.name),
-								)
+								);
 							}
 						} else {
 							safeLog(
 								`Last comment on ${hydrated.number} by rando. Skipping.${
 									hydrated.assignee ? ' cc @' + hydrated.assignee : ''
 								}`,
-							)
+							);
 						}
 					}
 				} else {
-					safeLog('Query returned an invalid issue:' + hydrated.number)
+					safeLog('Query returned an invalid issue:' + hydrated.number);
 				}
 			}
 		}

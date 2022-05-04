@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TestPlanItemValidator = void 0;
 const utils_1 = require("../common/utils");
 const validator_1 = require("./validator");
 const commentTag = '<!-- INVALID TEST PLAN ITEM -->';
@@ -17,7 +18,7 @@ class TestPlanItemValidator {
     async run() {
         const issue = await this.github.getIssue();
         if (!(issue.labels.includes(this.label) || issue.labels.includes(this.invalidLabel))) {
-            utils_1.safeLog(`Labels ${this.label}/${this.invalidLabel} not in issue labels ${issue.labels.join(',')}. Aborting.`);
+            (0, utils_1.safeLog)(`Labels ${this.label}/${this.invalidLabel} not in issue labels ${issue.labels.join(',')}. Aborting.`);
             return;
         }
         const tasks = [];
@@ -25,7 +26,7 @@ class TestPlanItemValidator {
         for await (const page of this.github.getComments()) {
             priorComments = page.filter((comment) => comment.body.indexOf(commentTag) !== -1);
             if (priorComments) {
-                utils_1.safeLog('Found prior comment. Deleting.');
+                (0, utils_1.safeLog)('Found prior comment. Deleting.');
                 tasks.push(...priorComments.map((comment) => this.github.deleteComment(comment.id)));
             }
             break;
@@ -37,7 +38,7 @@ class TestPlanItemValidator {
             tasks.push(this.github.removeLabel(this.label));
         }
         else {
-            utils_1.safeLog('All good!');
+            (0, utils_1.safeLog)('All good!');
             tasks.push(this.github.removeLabel(this.invalidLabel));
             tasks.push(this.github.addLabel(this.label));
         }
@@ -45,11 +46,12 @@ class TestPlanItemValidator {
     }
     getErrors(issue) {
         try {
-            validator_1.parseTestPlanItem(issue.body, issue.author.name);
+            (0, validator_1.parseTestPlanItem)(issue.body, issue.author.name);
             return;
         }
         catch (error) {
-            return error.message;
+            const err = error;
+            return err.message;
         }
     }
 }

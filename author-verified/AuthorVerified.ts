@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { GitHubIssue } from '../api/api'
-import { loadLatestRelease } from '../common/utils'
-import { trackEvent } from '../common/telemetry'
+import { GitHubIssue } from '../api/api';
+import { loadLatestRelease } from '../common/utils';
+import { trackEvent } from '../common/telemetry';
 
 export class AuthorVerifiedLabeler {
 	constructor(
@@ -17,7 +17,7 @@ export class AuthorVerifiedLabeler {
 	) {}
 
 	private async commentVerficationRequest(comment: string) {
-		const key = `<!-- AUTHOR_VERIFICATION_REQUEST -->`
+		const key = `<!-- AUTHOR_VERIFICATION_REQUEST -->`;
 
 		for await (const page of this.github.getComments()) {
 			for (const comment of page) {
@@ -25,30 +25,33 @@ export class AuthorVerifiedLabeler {
 					comment.body.includes(key) ||
 					comment.body.includes('you can help us out by commenting `/verified`') // legacy
 				) {
-					return
+					return;
 				}
 			}
 		}
-		await this.github.postComment(`${key}\n${comment}`)
+		await this.github.postComment(`${key}\n${comment}`);
 	}
 
 	async run(): Promise<void> {
-		const issue = await this.github.getIssue()
+		const issue = await this.github.getIssue();
 
 		if (
 			!issue.open &&
 			issue.labels.includes(this.authorVerificationRequestedLabel) &&
 			issue.labels.includes(this.releasedLabel)
 		) {
-			const latestRelease = await loadLatestRelease('insider')
-			if (!latestRelease) throw Error('Error loading latest release')
-			await trackEvent(this.github, 'author-verified:verifiable')
+			const latestRelease = await loadLatestRelease('insider');
+			if (!latestRelease) throw Error('Error loading latest release');
+			await trackEvent(this.github, 'author-verified:verifiable');
 			if (!issue.labels.includes(this.verifiedLabel)) {
+				if (issue.locked) {
+					await this.github.unlockIssue();
+				}
 				await this.commentVerficationRequest(
 					this.comment
 						.replace('${commit}', latestRelease.version)
 						.replace('${author}', issue.author.name),
-				)
+				);
 			}
 		}
 	}

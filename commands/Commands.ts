@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { GitHubIssue, Issue, User } from '../api/api'
-import { trackEvent } from '../common/telemetry'
-import { safeLog } from '../common/utils'
+import { GitHubIssue, Issue, User } from '../api/api';
+import { trackEvent } from '../common/telemetry';
+import { safeLog } from '../common/utils';
 
 /* eslint-disable */
 // confusing when eslint formats
 export type Command =
 	& { name: string }
-	& ({ type: 'comment'; allowUsers: string[] } | { type: 'label', regex?: string })
+	& ({ type: 'comment'; allowUsers?: string[] } | { type: 'label', regex?: string })
 	& { action?: 'close' }
 	& Partial<{ comment: string; addLabel: string; removeLabel: string, assign: string[] }>
 	& Partial<{ requireLabel: string; disallowLabel: string }>
@@ -27,64 +27,64 @@ export class Commands {
 
 	private async matches(command: Command, issue: Issue): Promise<boolean> {
 		if (command.requireLabel && !issue.labels.includes(command.requireLabel)) {
-			return false
+			return false;
 		}
 		if (command.disallowLabel && issue.labels.includes(command.disallowLabel)) {
-			return false
+			return false;
 		}
 
 		if ('label' in this.action) {
-			if (!(command.type === 'label')) return false
-			const regexMatch = command.regex && new RegExp(command.regex).test(this.action.label)
-			const nameMatch = this.action.label === command.name
-			return !!(nameMatch || regexMatch)
+			if (!(command.type === 'label')) return false;
+			const regexMatch = command.regex && new RegExp(command.regex).test(this.action.label);
+			const nameMatch = this.action.label === command.name;
+			return !!(nameMatch || regexMatch);
 		} else {
-			return (
+			return !!(
 				command.type === 'comment' &&
 				!!this.action.comment.match(
 					new RegExp(`(/|\\\\)${escapeRegExp(command.name)}(\\s|$)`, 'i'),
 				) &&
 				((await this.github.hasWriteAccess(this.action.user)) ||
-					command.allowUsers.includes(this.action.user.name) ||
-					command.allowUsers.includes('*') ||
-					(this.action.user.name === issue.author.name && command.allowUsers.includes('@author')))
-			)
+					command.allowUsers?.includes(this.action.user.name) ||
+					command.allowUsers?.includes('*') ||
+					(this.action.user.name === issue.author.name && command.allowUsers?.includes('@author')))
+			);
 		}
 	}
 
 	private async perform(command: Command, issue: Issue) {
-		if (!(await this.matches(command, issue))) return
-		safeLog(`Running command ${command.name}:`)
+		if (!(await this.matches(command, issue))) return;
+		safeLog(`Running command ${command.name}:`);
 
-		await trackEvent(this.github, 'command', { name: command.name })
+		await trackEvent(this.github, 'command', { name: command.name });
 
-		const tasks = []
+		const tasks = [];
 
 		if ('comment' in this.action && (command.name === 'label' || command.name === 'assign')) {
-			const args: { task: 'add' | 'remove'; name: string }[] = []
+			const args: { task: 'add' | 'remove'; name: string }[] = [];
 			let argList = (
 				this.action.comment.match(
 					new RegExp(String.raw`(?:^|\s)(?:\\|/)${command.name}(.*)(?:\r)?(?:\n|$)`),
 				)?.[1] ?? ''
-			).trim()
+			).trim();
 			while (argList) {
-				const task = argList[0] === '-' ? 'remove' : 'add'
-				if (task === 'remove') argList = argList.slice(1)
+				const task = argList[0] === '-' ? 'remove' : 'add';
+				if (task === 'remove') argList = argList.slice(1);
 
 				if (argList[0] === '"') {
-					const endIndex = argList.indexOf('"', 1)
+					const endIndex = argList.indexOf('"', 1);
 					if (endIndex === -1)
-						throw Error('Unable to parse arglist. Could not find matching double quote')
-					args.push({ task, name: argList.slice(1, endIndex) })
-					argList = argList.slice(endIndex + 1).trim()
+						throw Error('Unable to parse arglist. Could not find matching double quote');
+					args.push({ task, name: argList.slice(1, endIndex) });
+					argList = argList.slice(endIndex + 1).trim();
 				} else {
-					const endIndex = argList.indexOf(' ', 1)
+					const endIndex = argList.indexOf(' ', 1);
 					if (endIndex === -1) {
-						args.push({ task, name: argList })
-						argList = ''
+						args.push({ task, name: argList });
+						argList = '';
 					} else {
-						args.push({ task, name: argList.slice(0, endIndex) })
-						argList = argList.slice(endIndex + 1).trim()
+						args.push({ task, name: argList.slice(0, endIndex) });
+						argList = argList.slice(endIndex + 1).trim();
 					}
 				}
 			}
@@ -96,7 +96,7 @@ export class Commands {
 							? this.github.addLabel(arg.name)
 							: this.github.removeLabel(arg.name),
 					),
-				)
+				);
 			}
 
 			if (command.name === 'assign') {
@@ -106,40 +106,40 @@ export class Commands {
 							? this.github.addAssignee(arg.name[0] === '@' ? arg.name.slice(1) : arg.name)
 							: this.github.removeAssignee(arg.name[0] === '@' ? arg.name.slice(1) : arg.name),
 					),
-				)
+				);
 			}
 		}
 
 		if (command.action === 'close') {
-			tasks.push(this.github.closeIssue())
+			tasks.push(this.github.closeIssue());
 		}
 
 		if (command.comment && (command.action !== 'close' || issue.open)) {
-			tasks.push(this.github.postComment(this.hydrate(command.comment, issue)))
+			tasks.push(this.github.postComment(this.hydrate(command.comment, issue)));
 		}
 
 		if (command.addLabel) {
-			tasks.push(this.github.addLabel(command.addLabel))
+			tasks.push(this.github.addLabel(command.addLabel));
 		}
 
 		if (command.assign) {
-			tasks.push(...command.assign.map((assignee) => this.github.addAssignee(assignee)))
+			tasks.push(...command.assign.map((assignee) => this.github.addAssignee(assignee)));
 		}
 
 		if (command.removeLabel) {
-			tasks.push(this.github.removeLabel(command.removeLabel))
+			tasks.push(this.github.removeLabel(command.removeLabel));
 		}
 
-		await Promise.all(tasks)
+		await Promise.all(tasks);
 	}
 
 	async run() {
-		const issue = await this.github.getIssue()
-		return Promise.all(this.config.map((command) => this.perform(command, issue)))
+		const issue = await this.github.getIssue();
+		return Promise.all(this.config.map((command) => this.perform(command, issue)));
 	}
 }
 
 // From user CoolAJ86 on https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
 function escapeRegExp(string: string) {
-	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
+	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }

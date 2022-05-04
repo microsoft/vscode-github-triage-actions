@@ -21,11 +21,11 @@ class CommandsRunner extends Action_1.Action {
         this.id = 'Commands';
     }
     async onCommented(issue, comment, actor) {
-        const commands = await issue.readConfig(utils_1.getRequiredInput('config-path'));
+        const commands = await issue.readConfig((0, utils_1.getRequiredInput)('config-path'));
         await new Commands_1.Commands(issue, commands, { comment, user: { name: actor } }, hydrate).run();
     }
     async onLabeled(issue, label) {
-        const commands = await issue.readConfig(utils_1.getRequiredInput('config-path'));
+        const commands = await issue.readConfig((0, utils_1.getRequiredInput)('config-path'));
         await new Commands_1.Commands(issue, commands, { label }, hydrate).run();
     }
 }

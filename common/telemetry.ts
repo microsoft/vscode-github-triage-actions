@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { context } from '@actions/github'
-import * as appInsights from 'applicationinsights'
-import { getInput } from './utils'
-import { GitHubIssue } from '../api/api'
+import { context } from '@actions/github';
+import * as appInsights from 'applicationinsights';
+import { getInput } from './utils';
+import { GitHubIssue } from '../api/api';
 
-let _aiHandle: appInsights.TelemetryClient | undefined = undefined
-const aiKey = getInput('appInsightsKey')
+let _aiHandle: appInsights.TelemetryClient | undefined = undefined;
+const aiKey = getInput('appInsightsKey');
 if (aiKey) {
 	appInsights
 		.setup(aiKey)
@@ -20,11 +20,11 @@ if (aiKey) {
 		.setAutoCollectDependencies(false)
 		.setAutoCollectConsole(false)
 		.setUseDiskRetryCaching(false)
-		.start()
-	_aiHandle = appInsights.defaultClient
+		.start();
+	_aiHandle = appInsights.defaultClient;
 }
 
-export const aiHandle = _aiHandle
+export const aiHandle = _aiHandle;
 export const trackEvent = async (issue: GitHubIssue, event: string, props?: Record<string, string>) => {
 	if (aiHandle) {
 		aiHandle.trackEvent({
@@ -35,6 +35,6 @@ export const trackEvent = async (issue: GitHubIssue, event: string, props?: Reco
 				workflow: context.workflow,
 				...props,
 			},
-		})
+		});
 	}
-}
+};

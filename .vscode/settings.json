@@ -9,10 +9,8 @@
 	"files.exclude": {
 		"node_modules": true,
 	},
-	"explorer.experimental.fileNesting.enabled": true,
-	"explorer.experimental.fileNesting.expand": false,
-	"python.pythonPath": "/usr/local/bin/python3",
 	"python.formatting.provider": "black",
 	"python.linting.enabled": true,
-	"python.linting.pylintEnabled": true
+	"python.linting.pylintEnabled": true,
+	"explorer.fileNesting.expand": false,
 }

@@ -4,10 +4,11 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.download = void 0;
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
-exports.download = async (token, repo, endCursor) => {
+const download = async (token, repo, endCursor) => {
     const data = await axios_1.default
         .post('https://api.github.com/graphql', JSON.stringify({
         query: `{
@@ -91,7 +92,7 @@ exports.download = async (token, repo, endCursor) => {
                 (((_a = event.closer) === null || _a === void 0 ? void 0 : _a.__typename) === 'PullRequest' || ((_b = event.closer) === null || _b === void 0 ? void 0 : _b.__typename) === 'Commit');
         }),
     }));
-    fs_1.writeFileSync(path_1.join(__dirname, 'issues.json'), issues.map((issue) => JSON.stringify(issue)).join('\n') + '\n', {
+    (0, fs_1.writeFileSync)((0, path_1.join)(__dirname, 'issues.json'), issues.map((issue) => JSON.stringify(issue)).join('\n') + '\n', {
         flag: 'a',
     });
     const pageInfo = response.repository.issues.pageInfo;
@@ -105,12 +106,13 @@ exports.download = async (token, repo, endCursor) => {
     if (pageInfo.hasNextPage) {
         return new Promise((resolve) => {
             setTimeout(async () => {
-                await exports.download(token, repo, endCursor);
+                await (0, exports.download)(token, repo, endCursor);
                 resolve();
             }, 1000);
         });
     }
 };
+exports.download = download;
 const extractLabelEvents = (_issue) => {
     var _a, _b, _c, _d;
     const issue = _issue;
