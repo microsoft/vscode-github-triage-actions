@@ -12,6 +12,5 @@
 	"python.formatting.provider": "black",
 	"python.linting.enabled": true,
 	"python.linting.pylintEnabled": true,
-	"explorer.experimental.fileNesting.expand": false,
-	"explorer.experimental.fileNesting.enabled": true,
+	"explorer.fileNesting.expand": false,
 }

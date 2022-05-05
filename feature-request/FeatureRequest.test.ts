@@ -39,6 +39,7 @@ const testConfig: FeatureRequestConfig = {
 
 const initalizeTestbed = (
 	issueConfig: TestbedIssueConstructorArgs,
+	milestoneId: number,
 	comments: { body: string; daysAgo: number }[],
 ): { testbed: Testbed; issueTestbed: TestbedIssue } => {
 	const issue = new TestbedIssue(
@@ -54,6 +55,8 @@ const initalizeTestbed = (
 			})),
 		},
 	);
+
+	void issue.setMilestone(milestoneId);
 
 	return {
 		testbed: new Testbed({
@@ -76,7 +79,8 @@ describe('FeatureRequest', () => {
 		describe('Initial', () => {
 			it('Does not add a comment to issues without the label', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
-					{ issue: { milestoneId: testConfig.milestones.candidateID } },
+					{ issue: {} },
+					testConfig.milestones.candidateID,
 					[],
 				);
 				await new FeatureRequestQueryer(testbed, testConfig).run();
@@ -86,9 +90,11 @@ describe('FeatureRequest', () => {
 			it('Does not add a comment to closed issues', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { open: false, milestoneId: testConfig.milestones.candidateID },
+						issue: { open: false },
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[],
 				);
 				await new FeatureRequestQueryer(testbed, testConfig).run();
@@ -98,9 +104,11 @@ describe('FeatureRequest', () => {
 			it('Adds a comment to issues which have feature request label and candidate milestone but not init comment', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { milestoneId: testConfig.milestones.candidateID },
+						issue: {},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[],
 				);
 				await new FeatureRequestQueryer(testbed, testConfig).run();
@@ -112,9 +120,11 @@ describe('FeatureRequest', () => {
 			it('Does not double add init comment', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { milestoneId: testConfig.milestones.candidateID },
+						issue: {},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[],
 				);
 				await new FeatureRequestQueryer(testbed, testConfig).run();
@@ -127,9 +137,11 @@ describe('FeatureRequest', () => {
 			it('Adds a warning to issues which are nearing closure', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { milestoneId: testConfig.milestones.candidateID },
+						issue: {},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[{ body: CREATE_MARKER + 'initComment', daysAgo: 2 }],
 				);
 				await new FeatureRequestQueryer(testbed, testConfig).run();
@@ -141,9 +153,11 @@ describe('FeatureRequest', () => {
 			it('Does not warn if the issue has a large conversation', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { milestoneId: testConfig.milestones.candidateID },
+						issue: {},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[
 						{ body: CREATE_MARKER + 'initComment', daysAgo: 2 },
 						{ body: 'hello', daysAgo: 1.7 },
@@ -159,9 +173,11 @@ describe('FeatureRequest', () => {
 			it('Does not double add a warning comment', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { milestoneId: testConfig.milestones.candidateID },
+						issue: {},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[{ body: CREATE_MARKER + 'initComment', daysAgo: 2 }],
 				);
 				await new FeatureRequestQueryer(testbed, testConfig).run();
@@ -176,9 +192,11 @@ describe('FeatureRequest', () => {
 			it('Closes issues only after the proper days have passed since warning', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { milestoneId: testConfig.milestones.candidateID },
+						issue: {},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[
 						{ body: CREATE_MARKER + 'initComment', daysAgo: 7 },
 						// warnComment delayed for wahtever reason. Issue should be closed until N days have passed, as thats that the warn comment says.
@@ -192,9 +210,11 @@ describe('FeatureRequest', () => {
 			it('Closes & rejects issues which have not recieved enough upvotes', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { milestoneId: testConfig.milestones.candidateID },
+						issue: {},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[
 						{ body: CREATE_MARKER + 'initComment', daysAgo: 7 },
 						{ body: WARN_MARKER + 'warnComment', daysAgo: 6 },
@@ -210,9 +230,11 @@ describe('FeatureRequest', () => {
 			it('Does not close issues which have an ongoing hearty conversation', async () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
-						issue: { milestoneId: testConfig.milestones.candidateID },
+						issue: {},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[
 						{ body: CREATE_MARKER + 'initComment', daysAgo: 7 },
 						{ body: WARN_MARKER + 'warnComment', daysAgo: 6 },
@@ -233,7 +255,6 @@ describe('FeatureRequest', () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
 						issue: {
-							milestoneId: testConfig.milestones.candidateID,
 							reactions: {
 								'+1': 3,
 								'-1': 0,
@@ -247,6 +268,8 @@ describe('FeatureRequest', () => {
 						},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
+
 					[
 						{ body: CREATE_MARKER + 'initComment', daysAgo: 7 },
 						{ body: WARN_MARKER + 'warnComment', daysAgo: 6 },
@@ -259,7 +282,7 @@ describe('FeatureRequest', () => {
 				await new FeatureRequestQueryer(testbed, testConfig).run();
 				expect((await getAllComments(issueTestbed)).length).equal(7);
 				expect(issueTestbed.issueConfig.issue.open).true;
-				expect(issueTestbed.issueConfig.issue.milestoneId).equal(2);
+				expect(issueTestbed.issueConfig.issue.milestone?.milestoneId).equal(2);
 				expect((await getAllComments(issueTestbed))[6].body).contains(ACCEPT_MARKER);
 				expect((await getAllComments(issueTestbed))[6].body).contains('acceptComment');
 			});
@@ -268,7 +291,6 @@ describe('FeatureRequest', () => {
 				const { testbed, issueTestbed } = initalizeTestbed(
 					{
 						issue: {
-							milestoneId: testConfig.milestones.candidateID,
 							reactions: {
 								'+1': 1,
 								'-1': 1,
@@ -282,6 +304,7 @@ describe('FeatureRequest', () => {
 						},
 						labels: ['featureRequestLabel'],
 					},
+					testConfig.milestones.candidateID,
 					[{ body: CREATE_MARKER + 'initComment', daysAgo: 0 }],
 				);
 				await new FeatureRequestQueryer(testbed, testConfig).run();
