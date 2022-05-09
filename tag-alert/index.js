@@ -13,7 +13,7 @@ class TagAlert extends Action_1.Action {
     }
     async onCreated(_github, ref, creator) {
         if ((0, utils_1.getRequiredInput)('tag-name') === ref) {
-            throw Error(`Warning: ${creator} pushed bad tag ${ref}`);
+            throw Error(`Warning: @${creator} pushed bad tag ${ref}`);
         }
     }
 }

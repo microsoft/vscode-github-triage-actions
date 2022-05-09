@@ -12,7 +12,7 @@ class TagAlert extends Action {
 
 	async onCreated(_github: OctoKit, ref: string, creator: string): Promise<void> {
 		if (getRequiredInput('tag-name') === ref) {
-			throw Error(`Warning: ${creator} pushed bad tag ${ref}`);
+			throw Error(`Warning: @${creator} pushed bad tag ${ref}`);
 		}
 	}
 }
