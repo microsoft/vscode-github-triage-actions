@@ -108,7 +108,7 @@ Workflow: ${context.workflow}
 
 Error: ${message}
 
-Issue: ${ping ? `${context.repo.owner}/${context.repo.repo}#` : ''}${context.issue.number}
+Issue: ${ping ? `${context.repo.owner}/${context.repo.repo}#` : ''}${context.issue?.number}
 
 Repo: ${context.repo.owner}/${context.repo.repo}
 

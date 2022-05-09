@@ -83,6 +83,7 @@ exports.errorLoggingIssue = (() => {
     }
 })();
 const logErrorToIssue = async (message, ping, token) => {
+    var _a;
     // Attempt to wait out abuse detection timeout if present
     await new Promise((resolve) => setTimeout(resolve, 10000));
     const dest = exports.errorLoggingIssue;
@@ -94,7 +95,7 @@ Workflow: ${github_1.context.workflow}
 
 Error: ${message}
 
-Issue: ${ping ? `${github_1.context.repo.owner}/${github_1.context.repo.repo}#` : ''}${github_1.context.issue.number}
+Issue: ${ping ? `${github_1.context.repo.owner}/${github_1.context.repo.repo}#` : ''}${(_a = github_1.context.issue) === null || _a === void 0 ? void 0 : _a.number}
 
 Repo: ${github_1.context.repo.owner}/${github_1.context.repo.repo}
 

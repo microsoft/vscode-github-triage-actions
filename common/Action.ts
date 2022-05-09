@@ -89,6 +89,12 @@ export abstract class Action {
 							throw Error('Unexpected action: ' + context.payload.action);
 					}
 				}
+			} else if (context.eventName === 'create') {
+				await this.onCreated(
+					new OctoKit(token, context.repo, { readonly }),
+					context?.payload?.ref,
+					context?.payload?.sender?.login,
+				);
 			} else {
 				await this.onTriggered(new OctoKit(token, context.repo, { readonly }));
 			}
@@ -116,7 +122,7 @@ export abstract class Action {
 			user: await this.username,
 		};
 
-		if (context.issue.number) details.issue = context.issue.number;
+		if (context.issue?.number) details.issue = context.issue.number;
 
 		const rendered = `
 Message: ${details.message}
@@ -135,6 +141,9 @@ ID: ${details.id}
 	}
 
 	protected async onTriggered(_octokit: OctoKit): Promise<void> {
+		throw Error('not implemented');
+	}
+	protected async onCreated(_octokit: OctoKit, _ref: string, _creator: string): Promise<void> {
 		throw Error('not implemented');
 	}
 	protected async onEdited(_issue: OctoKitIssue): Promise<void> {
