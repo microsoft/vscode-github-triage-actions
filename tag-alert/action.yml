@@ -1,0 +1,12 @@
+name: TagAlert
+description: Alert when a given tag is pushed to the repo
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
+  tag-name:
+    description: Name of the tag to alert on
+    required: true
+runs:
+  using: 'node12'
+  main: 'index.js'

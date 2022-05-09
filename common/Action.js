@@ -31,7 +31,7 @@ class Action {
         }
     }
     async run() {
-        var _a, _b;
+        var _a, _b, _c, _d, _e;
         if (utils_1.errorLoggingIssue) {
             const { repo, issue, owner } = utils_1.errorLoggingIssue;
             if (github_1.context.repo.repo === repo &&
@@ -80,6 +80,9 @@ class Action {
                     }
                 }
             }
+            else if (github_1.context.eventName === 'create') {
+                await this.onCreated(new octokit_1.OctoKit(token, github_1.context.repo, { readonly }), (_c = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _c === void 0 ? void 0 : _c.ref, (_e = (_d = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _d === void 0 ? void 0 : _d.sender) === null || _e === void 0 ? void 0 : _e.login);
+            }
             else {
                 await this.onTriggered(new octokit_1.OctoKit(token, github_1.context.repo, { readonly }));
             }
@@ -100,12 +103,13 @@ class Action {
         await this.trackMetric({ name: 'usage_search', value: usage.search });
     }
     async error(error) {
+        var _a;
         const details = {
             message: `${error.message}\n${error.stack}`,
             id: this.id,
             user: await this.username,
         };
-        if (github_1.context.issue.number)
+        if ((_a = github_1.context.issue) === null || _a === void 0 ? void 0 : _a.number)
             details.issue = github_1.context.issue.number;
         const rendered = `
 Message: ${details.message}
@@ -121,6 +125,9 @@ ID: ${details.id}
         (0, core_1.setFailed)(error.message);
     }
     async onTriggered(_octokit) {
+        throw Error('not implemented');
+    }
+    async onCreated(_octokit, _ref, _creator) {
         throw Error('not implemented');
     }
     async onEdited(_issue) {
