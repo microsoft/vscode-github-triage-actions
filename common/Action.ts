@@ -63,6 +63,7 @@ export abstract class Action {
 				} else if (context.eventName === 'issues' || context.eventName === 'pull_request') {
 					switch (context.payload.action) {
 						case 'opened':
+						case 'ready_for_review':
 							await this.onOpened(octokit, context.payload);
 							break;
 						case 'reopened':

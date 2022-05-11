@@ -52,6 +52,7 @@ class Action {
                 else if (github_1.context.eventName === 'issues' || github_1.context.eventName === 'pull_request') {
                     switch (github_1.context.payload.action) {
                         case 'opened':
+                        case 'ready_for_review':
                             await this.onOpened(octokit, github_1.context.payload);
                             break;
                         case 'reopened':
