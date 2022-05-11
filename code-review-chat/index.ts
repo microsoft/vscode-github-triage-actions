@@ -29,7 +29,6 @@ class CodeReviewChatAction extends Action {
 
 		await new BuildChat(github, issue, {
 			slackToken,
-			storageConnectionString: getRequiredInput('storage_connection_string'),
 			codereviewChannel: getRequiredInput('notification_channel'),
 			payload: {
 				owner: payload.repository.owner.login,

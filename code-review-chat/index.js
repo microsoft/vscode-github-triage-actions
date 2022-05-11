@@ -26,7 +26,6 @@ class CodeReviewChatAction extends Action_1.Action {
         await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
         await new CodeReviewChat_1.BuildChat(github, issue, {
             slackToken,
-            storageConnectionString: (0, utils_1.getRequiredInput)('storage_connection_string'),
             codereviewChannel: (0, utils_1.getRequiredInput)('notification_channel'),
             payload: {
                 owner: payload.repository.owner.login,

@@ -6,7 +6,6 @@
 import { Octokit } from '@octokit/rest';
 import { WebClient } from '@slack/web-api';
 import { GitHubIssue } from '../api/api';
-// import { BlobServiceClient } from '@azure/storage-blob';
 import { safeLog } from '../common/utils';
 
 interface PR {
@@ -22,7 +21,6 @@ interface PR {
 
 export interface Options {
 	slackToken: string;
-	storageConnectionString: string;
 	codereviewChannel: string;
 	payload: {
 		owner: string;

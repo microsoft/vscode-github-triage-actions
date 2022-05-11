@@ -6,7 +6,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BuildChat = void 0;
 const web_api_1 = require("@slack/web-api");
-// import { BlobServiceClient } from '@azure/storage-blob';
 const utils_1 = require("../common/utils");
 class BuildChat {
     constructor(octokit, issue, options) {
