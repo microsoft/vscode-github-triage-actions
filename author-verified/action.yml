@@ -17,5 +17,5 @@ inputs:
     description: Label added by issue fixer to signal that the author can verify the issue
     required: true
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

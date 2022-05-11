@@ -11,5 +11,5 @@ inputs:
     description: Label for issues that have been released to Insiders
     required: true
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

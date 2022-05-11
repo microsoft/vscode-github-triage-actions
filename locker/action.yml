@@ -17,5 +17,5 @@ inputs:
   labelUntil:
     description: items with this will not automatically locked, even if they have the ignoreLabelUntil label
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

@@ -9,12 +9,9 @@ inputs:
   slack_token:
     description: Slack token.
     required: true
-  storage_connection_string:
-    description: Storage connection string.
-    required: false
   notification_channel:
     description: 'Which channel to send notifications to. Defaults to none.'
-    required: false
+    required: true
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

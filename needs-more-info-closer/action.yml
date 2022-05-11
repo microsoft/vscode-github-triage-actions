@@ -20,5 +20,5 @@ inputs:
   pingComment:
     description: Comment to add when pinging assignee. ${assignee} and ${author} are replaced.
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'
