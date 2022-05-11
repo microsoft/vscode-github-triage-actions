@@ -45,6 +45,7 @@ class CodeReviewChatAction extends Action {
 					changed_files: payload.pull_request.changed_files,
 					url: payload.pull_request.html_url || '',
 					owner: payload.pull_request.user.login,
+					draft: payload.pull_request.draft || false,
 				},
 			},
 		}).run();

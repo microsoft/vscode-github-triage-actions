@@ -17,6 +17,7 @@ interface PR {
 	changed_files: number;
 	url: string;
 	owner: string;
+	draft: boolean;
 }
 
 export interface Options {
@@ -51,11 +52,23 @@ export class BuildChat {
 	}
 
 	async run() {
+		if (this.pr.draft) {
+			safeLog('PR is draft, ignoring');
+			return;
+		}
+
 		const data = await this.issue.getIssue();
 		const author = data.author;
 		if (!(await this.issue.hasWriteAccess(author))) {
 			safeLog('Issue author not team member, ignoring');
+			return;
 		}
+		await this.issue.addAssignee(author.name);
+		const currentMilestone = await this.issue.getCurrentRepoMilestone();
+		if (!data.milestone && currentMilestone) {
+			await this.issue.setMilestone(currentMilestone);
+		}
+
 		const existing = await this.octokit.pulls.listReviewRequests({
 			owner: this.options.payload.owner,
 			repo: this.options.payload.repo,
@@ -66,12 +79,10 @@ export class BuildChat {
 			safeLog('exiting, had existing review requests:', JSON.stringify(existing.data));
 			return;
 		}
-		const message = `${
-			this.pr.owner
-		}: +${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()} (${
-			this.pr.changed_files
-		} files): ${this.pr.url}`;
-
+		const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
+		const message = `${this.pr.owner}
++${this.pr.additions.toLocaleString()} | -${this.pr.deletions.toLocaleString()} | ${changedFilesMessage}
+${this.pr.url}`;
 		safeLog(message);
 	}
 }

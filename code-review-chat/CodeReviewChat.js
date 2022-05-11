@@ -27,10 +27,20 @@ class BuildChat {
     }
     async run() {
         var _a, _b;
+        if (this.pr.draft) {
+            (0, utils_1.safeLog)('PR is draft, ignoring');
+            return;
+        }
         const data = await this.issue.getIssue();
         const author = data.author;
         if (!(await this.issue.hasWriteAccess(author))) {
             (0, utils_1.safeLog)('Issue author not team member, ignoring');
+            return;
+        }
+        await this.issue.addAssignee(author.name);
+        const currentMilestone = await this.issue.getCurrentRepoMilestone();
+        if (!data.milestone && currentMilestone) {
+            await this.issue.setMilestone(currentMilestone);
         }
         const existing = await this.octokit.pulls.listReviewRequests({
             owner: this.options.payload.owner,
@@ -42,7 +52,10 @@ class BuildChat {
             (0, utils_1.safeLog)('exiting, had existing review requests:', JSON.stringify(existing.data));
             return;
         }
-        const message = `${this.pr.owner}: +${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()} (${this.pr.changed_files} files): ${this.pr.url}`;
+        const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
+        const message = `${this.pr.owner}
++${this.pr.additions.toLocaleString()} | -${this.pr.deletions.toLocaleString()} | ${changedFilesMessage}
+${this.pr.url}`;
         (0, utils_1.safeLog)(message);
     }
 }

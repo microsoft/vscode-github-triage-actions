@@ -102,7 +102,7 @@ class OctoKit {
             (0, utils_1.safeLog)('Got permissions from cache for ' + user);
             return this.writeAccessCache[user.name];
         }
-        (0, utils_1.safeLog)('Fetching permissions for ' + user);
+        (0, utils_1.safeLog)('Fetching permissions for ' + user.name);
         const permissions = (await this.octokit.repos.getCollaboratorPermissionLevel({
             ...this.params,
             username: user.name,
