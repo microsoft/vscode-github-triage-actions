@@ -25,7 +25,10 @@ class CodeReviewChatAction extends Action {
 		const auth = getRequiredInput('token');
 		const github = new Octokit({ auth });
 
-		await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000));
+		// await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000));
+
+		//TEST only.. remove later!
+		console.log(JSON.stringify({ payload }));
 
 		await new BuildChat(github, issue, {
 			slackToken,

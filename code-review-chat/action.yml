@@ -1,6 +1,6 @@
-name: 'Build Chat'
+name: 'Code Review Chat'
 description: 'Notify in chat about build results.'
-author: 'Christof Marti'
+author: 'Jackson Kearl'
 inputs:
   token:
     description: GitHub token.
@@ -12,17 +12,8 @@ inputs:
   storage_connection_string:
     description: Storage connection string.
     required: false
-  workflow_run_url:
-    description: 'Workflow run URL of the completed build.'
-    required: true
-  notify_authors:
-    description: 'Whether the notifications should be sent directly to users. Defaults to false.'
-    required: false
   notification_channel:
     description: 'Which channel to send notifications to. Defaults to none.'
-    required: false
-  log_channel:
-    description: 'Which channel to send log messages to. Defaults to none.'
     required: false
 runs:
   using: 'node12'
