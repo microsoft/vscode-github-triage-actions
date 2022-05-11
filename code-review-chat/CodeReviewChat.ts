@@ -78,7 +78,7 @@ export class BuildChat {
 		});
 		const hasRequests = existing?.data?.users?.length;
 		if (hasRequests) {
-			safeLog('had existing review requests:', JSON.stringify(existing.data));
+			safeLog('had existing review requests, exiting');
 			return;
 		}
 		const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');

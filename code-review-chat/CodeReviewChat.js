@@ -51,7 +51,7 @@ class BuildChat {
         });
         const hasRequests = (_b = (_a = existing === null || existing === void 0 ? void 0 : existing.data) === null || _a === void 0 ? void 0 : _a.users) === null || _b === void 0 ? void 0 : _b.length;
         if (hasRequests) {
-            (0, utils_1.safeLog)('had existing review requests:', JSON.stringify(existing.data));
+            (0, utils_1.safeLog)('had existing review requests, exiting');
             return;
         }
         const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
