@@ -23,9 +23,7 @@ class CodeReviewChatAction extends Action_1.Action {
         }
         const auth = (0, utils_1.getRequiredInput)('token');
         const github = new rest_1.Octokit({ auth });
-        // await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000));
-        //TEST only.. remove later!
-        console.log(JSON.stringify({ payload }));
+        await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000));
         await new CodeReviewChat_1.BuildChat(github, issue, {
             slackToken,
             storageConnectionString: (0, utils_1.getRequiredInput)('storage_connection_string'),
