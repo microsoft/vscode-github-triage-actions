@@ -119,7 +119,7 @@ export class OctoKit implements GitHub {
 			safeLog('Got permissions from cache for ' + user);
 			return this.writeAccessCache[user.name];
 		}
-		safeLog('Fetching permissions for ' + user);
+		safeLog('Fetching permissions for ' + user.name);
 		const permissions = (
 			await this.octokit.repos.getCollaboratorPermissionLevel({
 				...this.params,

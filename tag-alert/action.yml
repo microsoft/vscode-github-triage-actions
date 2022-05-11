@@ -8,5 +8,5 @@ inputs:
     description: Name of the tag to alert on
     required: true
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

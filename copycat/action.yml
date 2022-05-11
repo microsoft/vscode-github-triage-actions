@@ -11,5 +11,5 @@ inputs:
     description: name of the destination repo (the vscode part of microsoft/vscode)
     required: true
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

@@ -9,6 +9,7 @@ import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue, saf
 import { getInput, setFailed } from '@actions/core';
 import { aiHandle } from './telemetry';
 import { v4 as uuid } from 'uuid';
+import { WebhookPayload } from '@actions/github/lib/interfaces';
 
 export abstract class Action {
 	abstract id: string;
@@ -59,10 +60,11 @@ export abstract class Action {
 				const octokit = new OctoKitIssue(token, context.repo, { number: issue }, { readonly });
 				if (context.eventName === 'issue_comment') {
 					await this.onCommented(octokit, context.payload.comment.body, context.actor);
-				} else if (context.eventName === 'issues') {
+				} else if (context.eventName === 'issues' || context.eventName === 'pull_request') {
 					switch (context.payload.action) {
 						case 'opened':
-							await this.onOpened(octokit);
+						case 'ready_for_review':
+							await this.onOpened(octokit, context.payload);
 							break;
 						case 'reopened':
 							await this.onReopened(octokit);
@@ -158,7 +160,7 @@ ID: ${details.id}
 	protected async onUnassigned(_issue: OctoKitIssue, _assignee: string): Promise<void> {
 		throw Error('not implemented');
 	}
-	protected async onOpened(_issue: OctoKitIssue): Promise<void> {
+	protected async onOpened(_issue: OctoKitIssue, _payload: WebhookPayload): Promise<void> {
 		throw Error('not implemented');
 	}
 	protected async onReopened(_issue: OctoKitIssue): Promise<void> {

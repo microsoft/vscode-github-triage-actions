@@ -9,5 +9,5 @@ inputs:
   assignees:
     description: Pipe-seperated list of assignees to classify
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

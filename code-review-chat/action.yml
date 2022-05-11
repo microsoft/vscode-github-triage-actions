@@ -1,0 +1,17 @@
+name: 'Code Review Chat'
+description: 'Notify in chat about build results.'
+author: 'Jackson Kearl'
+inputs:
+  token:
+    description: GitHub token.
+    default: ${{ github.token }}
+    required: true
+  slack_token:
+    description: Slack token.
+    required: true
+  notification_channel:
+    description: 'Which channel to send notifications to. Defaults to none.'
+    required: true
+runs:
+  using: 'node16'
+  main: 'index.js'

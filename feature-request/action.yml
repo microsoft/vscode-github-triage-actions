@@ -48,5 +48,5 @@ inputs:
     description: Delay between adding a feature request label and assigning the issue to candidate milestone
     required: true
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'

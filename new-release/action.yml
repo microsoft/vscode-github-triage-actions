@@ -17,5 +17,5 @@ inputs:
     description: description of label to apply
     required: true
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'index.js'
