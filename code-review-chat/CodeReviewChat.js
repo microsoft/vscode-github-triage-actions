@@ -15,7 +15,7 @@ class BuildChat {
         this.options = options;
         this.pr = options.payload.pr;
     }
-    async getChannel() {
+    async postMessage(message) {
         const web = new web_api_1.WebClient(this.options.slackToken);
         const memberships = await listAllMemberships(web);
         const codereviewChannel = this.options.codereviewChannel &&
@@ -23,7 +23,11 @@ class BuildChat {
         if (!codereviewChannel) {
             throw Error(`Slack channel not found: ${this.options.codereviewChannel}`);
         }
-        return codereviewChannel;
+        await web.chat.postMessage({
+            text: message,
+            link_names: true,
+            channel: codereviewChannel.id,
+        });
     }
     async run() {
         var _a, _b;
@@ -59,6 +63,7 @@ class BuildChat {
 +${this.pr.additions.toLocaleString()} | -${this.pr.deletions.toLocaleString()} | ${changedFilesMessage}
 ${this.pr.url}`;
         (0, utils_1.safeLog)(message);
+        await this.postMessage(message);
     }
 }
 exports.BuildChat = BuildChat;
@@ -76,12 +81,4 @@ async function listAllMemberships(web) {
     } while ((_b = groups.response_metadata) === null || _b === void 0 ? void 0 : _b.next_cursor);
     return channels.filter((c) => c.is_member);
 }
-// interface Build {
-// 	data: Octokit.ActionsListWorkflowRunsResponseWorkflowRunsItem;
-// 	previousSourceVersion: string | undefined;
-// 	authors: string[];
-// 	buildHtmlUrl: string;
-// 	changesHtmlUrl: string;
-// 	degraded?: boolean;
-// }
 //# sourceMappingURL=CodeReviewChat.js.map
