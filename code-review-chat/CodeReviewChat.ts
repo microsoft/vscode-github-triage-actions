@@ -63,7 +63,9 @@ export class BuildChat {
 			safeLog('Issue author not team member, ignoring');
 			return;
 		}
-		await this.issue.addAssignee(author.name);
+		if (!data.assignee) {
+			await this.issue.addAssignee(author.name);
+		}
 		const currentMilestone = await this.issue.getCurrentRepoMilestone();
 		if (!data.milestone && currentMilestone) {
 			await this.issue.setMilestone(currentMilestone);
@@ -76,7 +78,7 @@ export class BuildChat {
 		});
 		const hasRequests = existing?.data?.users?.length;
 		if (hasRequests) {
-			safeLog('exiting, had existing review requests:', JSON.stringify(existing.data));
+			safeLog('had existing review requests:', JSON.stringify(existing.data));
 			return;
 		}
 		const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
