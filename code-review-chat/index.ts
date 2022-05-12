@@ -42,6 +42,7 @@ class CodeReviewChatAction extends Action {
 					url: payload.pull_request.html_url || '',
 					owner: payload.pull_request.user.login,
 					draft: payload.pull_request.draft || false,
+					title: payload.pull_request.title,
 				},
 			},
 		}).run();
