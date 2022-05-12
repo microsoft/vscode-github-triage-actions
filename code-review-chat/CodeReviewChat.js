@@ -26,6 +26,7 @@ class BuildChat {
             text: message,
             link_names: true,
             channel: codereviewChannel.id,
+            as_user: true,
         });
     }
     async run() {
@@ -58,7 +59,7 @@ class BuildChat {
             return;
         }
         const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
-        const message = `${this.pr.owner}
+        const message = `${this.pr.owner}: ${this.pr.title}
 +${this.pr.additions.toLocaleString()} | -${this.pr.deletions.toLocaleString()} | ${changedFilesMessage}
 ${this.pr.url}`;
         (0, utils_1.safeLog)(message);
