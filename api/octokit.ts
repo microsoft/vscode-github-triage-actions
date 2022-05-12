@@ -213,10 +213,14 @@ export class OctoKit implements GitHub {
 			})
 		).data;
 		const currentDate = new Date();
-		const possibleMilestones = allMilestones.filter(
-			(milestone) =>
-				new Date(milestone.due_on) > currentDate && currentDate > new Date(milestone.created_at),
-		);
+		const possibleMilestones = allMilestones
+			.filter(
+				(milestone) =>
+					new Date(milestone.due_on) > currentDate &&
+					currentDate > new Date(milestone.created_at) &&
+					!milestone.title.includes('Recovery'),
+			)
+			.sort((a, b) => +new Date(a.due_on) - +new Date(b.due_on));
 		if (possibleMilestones.length === 0) {
 			return undefined;
 		}
