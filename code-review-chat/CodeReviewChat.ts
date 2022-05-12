@@ -51,6 +51,7 @@ export class BuildChat {
 			text: message,
 			link_names: true,
 			channel: codereviewChannel.id,
+			as_user: true,
 		});
 	}
 
