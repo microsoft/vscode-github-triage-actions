@@ -65,7 +65,6 @@ export abstract class Action {
 					context.eventName === 'pull_request' ||
 					context.eventName === 'pull_request_target'
 				) {
-					console.log(context.payload);
 					switch (context.payload.action) {
 						case 'opened':
 						case 'ready_for_review':
