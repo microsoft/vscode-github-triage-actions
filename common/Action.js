@@ -49,7 +49,10 @@ class Action {
                 if (github_1.context.eventName === 'issue_comment') {
                     await this.onCommented(octokit, github_1.context.payload.comment.body, github_1.context.actor);
                 }
-                else if (github_1.context.eventName === 'issues' || github_1.context.eventName === 'pull_request') {
+                else if (github_1.context.eventName === 'issues' ||
+                    github_1.context.eventName === 'pull_request' ||
+                    github_1.context.eventName === 'pull_request_target') {
+                    console.log(github_1.context.payload);
                     switch (github_1.context.payload.action) {
                         case 'opened':
                         case 'ready_for_review':

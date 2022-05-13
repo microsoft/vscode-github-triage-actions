@@ -60,7 +60,12 @@ export abstract class Action {
 				const octokit = new OctoKitIssue(token, context.repo, { number: issue }, { readonly });
 				if (context.eventName === 'issue_comment') {
 					await this.onCommented(octokit, context.payload.comment.body, context.actor);
-				} else if (context.eventName === 'issues' || context.eventName === 'pull_request') {
+				} else if (
+					context.eventName === 'issues' ||
+					context.eventName === 'pull_request' ||
+					context.eventName === 'pull_request_target'
+				) {
+					console.log(context.payload);
 					switch (context.payload.action) {
 						case 'opened':
 						case 'ready_for_review':
