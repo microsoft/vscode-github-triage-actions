@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OctoKitIssue } from '../api/octokit';
-import { getRequiredInput } from '../common/utils';
+import { getInput, getRequiredInput } from '../common/utils';
 import { NewRelease } from './NewRelease';
 import { Action } from '../common/Action';
 
@@ -18,6 +18,7 @@ class NewReleaseAction extends Action {
 			getRequiredInput('labelColor'),
 			getRequiredInput('labelDescription'),
 			+getRequiredInput('days'),
+			getInput('oldVersionMessage'),
 		).run();
 	}
 }
