@@ -16,6 +16,8 @@ inputs:
   labelDescription:
     description: description of label to apply
     required: true
+  oldVersionMessage:
+    description: comment to post when an issue version is not the latest version. The token "{currentVersion}" will be replaced with the latest release version
 runs:
   using: 'node16'
   main: 'index.js'
