@@ -60,7 +60,7 @@ const createDataDirectories = async (areas, assignees) => {
             const isDuplicate = issue.labels.includes('*duplicate');
             const isHumanLabeled = !!issue.labelEvents.find((event) => event.type === 'added' &&
                 event.label === category &&
-                !['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor));
+                !['vscodebot', 'github-actions', 'vscode-triage-bot', 'VSCodeTriageBot'].includes(event.actor));
             if (category &&
                 !ignoredLabels.includes(category) &&
                 (name === 'assignee' || (!isDuplicate && (isHumanLabeled || category === '__OTHER__')))) {
