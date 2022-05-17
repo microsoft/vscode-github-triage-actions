@@ -30,7 +30,6 @@ class BuildChat {
         });
     }
     async run() {
-        var _a, _b;
         if (this.pr.draft) {
             (0, utils_1.safeLog)('PR is draft, ignoring');
             return;
@@ -41,29 +40,42 @@ class BuildChat {
             (0, utils_1.safeLog)('Issue author not team member, ignoring');
             return;
         }
+        const tasks = [];
         if (!data.assignee) {
-            await this.issue.addAssignee(author.name);
+            tasks.push(this.issue.addAssignee(author.name));
         }
-        const currentMilestone = await this.issue.getCurrentRepoMilestone();
-        if (!data.milestone && currentMilestone) {
-            await this.issue.setMilestone(currentMilestone);
-        }
-        const existing = await this.octokit.pulls.listReviewRequests({
-            owner: this.options.payload.owner,
-            repo: this.options.payload.repo,
-            pull_number: this.options.payload.pr.number,
-        });
-        const hasRequests = (_b = (_a = existing === null || existing === void 0 ? void 0 : existing.data) === null || _a === void 0 ? void 0 : _a.users) === null || _b === void 0 ? void 0 : _b.length;
-        if (hasRequests) {
-            (0, utils_1.safeLog)('had existing review requests, exiting');
-            return;
-        }
-        const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
-        const message = `${this.pr.owner}: ${this.pr.title}
-+${this.pr.additions.toLocaleString()} | -${this.pr.deletions.toLocaleString()} | ${changedFilesMessage}
-${this.pr.url}`;
-        (0, utils_1.safeLog)(message);
-        await this.postMessage(message);
+        tasks.push((async () => {
+            const currentMilestone = await this.issue.getCurrentRepoMilestone();
+            if (!data.milestone && currentMilestone) {
+                await this.issue.setMilestone(currentMilestone);
+            }
+        })());
+        tasks.push((async () => {
+            var _a, _b, _c, _d;
+            const [existingReviews, existingRequests] = await Promise.all([
+                this.octokit.pulls.listReviews({
+                    owner: this.options.payload.owner,
+                    repo: this.options.payload.repo,
+                    pull_number: this.options.payload.pr.number,
+                }),
+                this.octokit.pulls.listReviewRequests({
+                    owner: this.options.payload.owner,
+                    repo: this.options.payload.repo,
+                    pull_number: this.options.payload.pr.number,
+                }),
+            ]);
+            const hasExisting = (_b = (_a = existingReviews === null || existingReviews === void 0 ? void 0 : existingReviews.data) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : (_d = (_c = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _c === void 0 ? void 0 : _c.users) === null || _d === void 0 ? void 0 : _d.length;
+            if (hasExisting) {
+                (0, utils_1.safeLog)('had existing review requests, exiting');
+                return;
+            }
+            const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
+            const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
+            const message = `${this.pr.owner}: \`${diffMessage}\` [${this.pr.title}](${this.pr.url})`;
+            (0, utils_1.safeLog)(message);
+            await this.postMessage(message);
+        })());
+        await Promise.all(tasks);
     }
 }
 exports.BuildChat = BuildChat;

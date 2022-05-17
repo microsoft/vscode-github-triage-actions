@@ -68,30 +68,52 @@ export class BuildChat {
 			safeLog('Issue author not team member, ignoring');
 			return;
 		}
+		const tasks = [];
+
 		if (!data.assignee) {
-			await this.issue.addAssignee(author.name);
-		}
-		const currentMilestone = await this.issue.getCurrentRepoMilestone();
-		if (!data.milestone && currentMilestone) {
-			await this.issue.setMilestone(currentMilestone);
+			tasks.push(this.issue.addAssignee(author.name));
 		}
 
-		const existing = await this.octokit.pulls.listReviewRequests({
-			owner: this.options.payload.owner,
-			repo: this.options.payload.repo,
-			pull_number: this.options.payload.pr.number,
-		});
-		const hasRequests = existing?.data?.users?.length;
-		if (hasRequests) {
-			safeLog('had existing review requests, exiting');
-			return;
-		}
-		const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
-		const message = `${this.pr.owner}: ${this.pr.title}
-+${this.pr.additions.toLocaleString()} | -${this.pr.deletions.toLocaleString()} | ${changedFilesMessage}
-${this.pr.url}`;
-		safeLog(message);
-		await this.postMessage(message);
+		tasks.push(
+			(async () => {
+				const currentMilestone = await this.issue.getCurrentRepoMilestone();
+				if (!data.milestone && currentMilestone) {
+					await this.issue.setMilestone(currentMilestone);
+				}
+			})(),
+		);
+
+		tasks.push(
+			(async () => {
+				const [existingReviews, existingRequests] = await Promise.all([
+					this.octokit.pulls.listReviews({
+						owner: this.options.payload.owner,
+						repo: this.options.payload.repo,
+						pull_number: this.options.payload.pr.number,
+					}),
+					this.octokit.pulls.listReviewRequests({
+						owner: this.options.payload.owner,
+						repo: this.options.payload.repo,
+						pull_number: this.options.payload.pr.number,
+					}),
+				]);
+
+				const hasExisting = existingReviews?.data?.length ?? existingRequests?.data?.users?.length;
+				if (hasExisting) {
+					safeLog('had existing review requests, exiting');
+					return;
+				}
+
+				const changedFilesMessage =
+					`${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
+				const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
+				const message = `${this.pr.owner}: \`${diffMessage}\` [${this.pr.title}](${this.pr.url})`;
+				safeLog(message);
+				await this.postMessage(message);
+			})(),
+		);
+
+		await Promise.all(tasks);
 	}
 }
 
