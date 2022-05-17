@@ -59,22 +59,25 @@ export class CodeReviewChatDeleter extends Chatter {
 
 	async run() {
 		const { client, channel } = await this.getChat();
-		const response = await client.search.messages({
-			query: `from:@${this.botName} in:#${this.notificationChannel} ${this.prUrl}`,
-			sort: 'timestamp',
-			sort_dir: 'desc',
-		});
-		if (!response.ok || !response.messages || !(response.messages as any).matches) {
-			throw Error('Error searching for existing message');
-		}
-		const matches: { ts: string }[] = (response.messages as any).matches;
-		if (!matches.length) {
-			safeLog('no match, exiting');
-		}
-		await client.chat.delete({
+		const response = await client.conversations.history({
 			channel,
-			ts: matches[0].ts,
 		});
+		if (!response.ok || !response.messages) {
+			throw Error('Error getting channel history');
+		}
+		const messages: { ts: string; text?: string }[] = response.messages as any;
+		const message = messages?.filter((message) => message.text?.includes(this.prUrl))[0];
+		if (!message) {
+			safeLog('no message found, exiting');
+		}
+		try {
+			await client.chat.delete({
+				channel,
+				ts: message.ts,
+			});
+		} catch (e) {
+			safeLog('error deleting message, probably posted by some human');
+		}
 	}
 }
 

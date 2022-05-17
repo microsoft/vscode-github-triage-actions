@@ -30,22 +30,26 @@ class CodeReviewChatDeleter extends Chatter {
     }
     async run() {
         const { client, channel } = await this.getChat();
-        const response = await client.search.messages({
-            query: `from:@${this.botName} in:#${this.notificationChannel} ${this.prUrl}`,
-            sort: 'timestamp',
-            sort_dir: 'desc',
-        });
-        if (!response.ok || !response.messages || !response.messages.matches) {
-            throw Error('Error searching for existing message');
-        }
-        const matches = response.messages.matches;
-        if (!matches.length) {
-            (0, utils_1.safeLog)('no match, exiting');
-        }
-        await client.chat.delete({
+        const response = await client.conversations.history({
             channel,
-            ts: matches[0].ts,
         });
+        if (!response.ok || !response.messages) {
+            throw Error('Error getting channel history');
+        }
+        const messages = response.messages;
+        const message = messages === null || messages === void 0 ? void 0 : messages.filter((message) => { var _a; return (_a = message.text) === null || _a === void 0 ? void 0 : _a.includes(this.prUrl); })[0];
+        if (!message) {
+            (0, utils_1.safeLog)('no message found, exiting');
+        }
+        try {
+            await client.chat.delete({
+                channel,
+                ts: message.ts,
+            });
+        }
+        catch (e) {
+            (0, utils_1.safeLog)('error deleting message, probably posted by some human');
+        }
     }
 }
 exports.CodeReviewChatDeleter = CodeReviewChatDeleter;
