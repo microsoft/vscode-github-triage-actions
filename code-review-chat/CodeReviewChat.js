@@ -4,28 +4,65 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BuildChat = void 0;
+exports.CodeReviewChat = exports.CodeReviewChatDeleter = void 0;
 const web_api_1 = require("@slack/web-api");
 const utils_1 = require("../common/utils");
-class BuildChat {
+class Chatter {
+    constructor(slackToken, notificationChannel) {
+        this.slackToken = slackToken;
+        this.notificationChannel = notificationChannel;
+    }
+    async getChat() {
+        const web = new web_api_1.WebClient(this.slackToken);
+        const memberships = await listAllMemberships(web);
+        const codereviewChannel = this.notificationChannel && memberships.find((m) => m.name === this.notificationChannel);
+        if (!codereviewChannel) {
+            throw Error(`Slack channel not found: ${this.notificationChannel}`);
+        }
+        return { client: web, channel: codereviewChannel.id };
+    }
+}
+class CodeReviewChatDeleter extends Chatter {
+    constructor(slackToken, notificationChannel, prUrl, botName) {
+        super(slackToken, notificationChannel);
+        this.prUrl = prUrl;
+        this.botName = botName;
+    }
+    async run() {
+        const { client, channel } = await this.getChat();
+        const response = await client.search.messages({
+            query: `from:@${this.botName} in:#${this.notificationChannel} ${this.prUrl}`,
+            sort: 'timestamp',
+            sort_dir: 'desc',
+        });
+        if (!response.ok || !response.messages || !response.messages.matches) {
+            throw Error('Error searching for existing message');
+        }
+        const matches = response.messages.matches;
+        if (!matches.length) {
+            (0, utils_1.safeLog)('no match, exiting');
+        }
+        await client.chat.delete({
+            channel,
+            ts: matches[0].ts,
+        });
+    }
+}
+exports.CodeReviewChatDeleter = CodeReviewChatDeleter;
+class CodeReviewChat extends Chatter {
     constructor(octokit, issue, options) {
+        super(options.slackToken, options.codereviewChannel);
         this.octokit = octokit;
         this.issue = issue;
         this.options = options;
         this.pr = options.payload.pr;
     }
     async postMessage(message) {
-        const web = new web_api_1.WebClient(this.options.slackToken);
-        const memberships = await listAllMemberships(web);
-        const codereviewChannel = this.options.codereviewChannel &&
-            memberships.find((m) => m.name === this.options.codereviewChannel);
-        if (!codereviewChannel) {
-            throw Error(`Slack channel not found: ${this.options.codereviewChannel}`);
-        }
-        await web.chat.postMessage({
+        const { client, channel } = await this.getChat();
+        await client.chat.postMessage({
             text: message,
+            channel,
             link_names: true,
-            channel: codereviewChannel.id,
             as_user: true,
         });
     }
@@ -51,7 +88,7 @@ class BuildChat {
             }
         })());
         tasks.push((async () => {
-            var _a, _b, _c, _d;
+            var _a, _b, _c;
             const [existingReviews, existingRequests] = await Promise.all([
                 this.octokit.pulls.listReviews({
                     owner: this.options.payload.owner,
@@ -64,21 +101,21 @@ class BuildChat {
                     pull_number: this.options.payload.pr.number,
                 }),
             ]);
-            const hasExisting = (_b = (_a = existingReviews === null || existingReviews === void 0 ? void 0 : existingReviews.data) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : (_d = (_c = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _c === void 0 ? void 0 : _c.users) === null || _d === void 0 ? void 0 : _d.length;
+            const hasExisting = ((_a = existingReviews === null || existingReviews === void 0 ? void 0 : existingReviews.data) === null || _a === void 0 ? void 0 : _a.length) || ((_c = (_b = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _b === void 0 ? void 0 : _b.users) === null || _c === void 0 ? void 0 : _c.length);
             if (hasExisting) {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
                 return;
             }
             const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
             const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
-            const message = `${this.pr.owner}: \`${diffMessage}\` [${this.pr.title}](${this.pr.url})`;
+            const message = `${this.pr.owner}: \`${diffMessage}\` <${this.pr.url}|${this.pr.title}>`;
             (0, utils_1.safeLog)(message);
             await this.postMessage(message);
         })());
         await Promise.all(tasks);
     }
 }
-exports.BuildChat = BuildChat;
+exports.CodeReviewChat = CodeReviewChat;
 async function listAllMemberships(web) {
     var _a, _b;
     let groups;

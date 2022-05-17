@@ -4,32 +4,40 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Octokit } from '@octokit/rest';
-import { getInput, getRequiredInput } from '../common/utils';
-import { BuildChat } from './CodeReviewChat';
+import { getRequiredInput } from '../common/utils';
+import { CodeReviewChat, CodeReviewChatDeleter } from './CodeReviewChat';
 import { Action } from '../common/Action';
 import { OctoKitIssue } from '../api/octokit';
+
+const slackToken = getRequiredInput('slack_token');
+const auth = getRequiredInput('token');
+const channel = getRequiredInput('notification_channel');
+
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 
 class CodeReviewChatAction extends Action {
 	id = 'CodeReviewChat';
+
+	protected override async onClosed(_issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
+		const botName = getRequiredInput('slack_bot_name');
+		if (!payload.pull_request || !payload.repository || !payload.pull_request.html_url) {
+			throw Error('expected payload to contain pull request url');
+		}
+		await new CodeReviewChatDeleter(slackToken, channel, payload.pull_request.html_url, botName).run();
+	}
 
 	protected override async onOpened(issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
 		if (!payload.pull_request || !payload.repository) {
 			throw Error('expected payload to contain pull request and repository');
 		}
 
-		const slackToken = getInput('slack_token');
-		if (!slackToken) {
-			return;
-		}
-		const auth = getRequiredInput('token');
 		const github = new Octokit({ auth });
 
 		await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
 
-		await new BuildChat(github, issue, {
+		await new CodeReviewChat(github, issue, {
 			slackToken,
-			codereviewChannel: getRequiredInput('notification_channel'),
+			codereviewChannel: channel,
 			payload: {
 				owner: payload.repository.owner.login,
 				repo: payload.repository.name,

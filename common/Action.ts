@@ -74,7 +74,7 @@ export abstract class Action {
 							await this.onReopened(octokit);
 							break;
 						case 'closed':
-							await this.onClosed(octokit);
+							await this.onClosed(octokit, context.payload);
 							break;
 						case 'labeled':
 							await this.onLabeled(octokit, context.payload.label.name);
@@ -170,7 +170,7 @@ ID: ${details.id}
 	protected async onReopened(_issue: OctoKitIssue): Promise<void> {
 		throw Error('not implemented');
 	}
-	protected async onClosed(_issue: OctoKitIssue): Promise<void> {
+	protected async onClosed(_issue: OctoKitIssue, _payload: WebhookPayload): Promise<void> {
 		throw Error('not implemented');
 	}
 	protected async onMilestoned(_issue: OctoKitIssue): Promise<void> {

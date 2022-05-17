@@ -12,6 +12,9 @@ inputs:
   notification_channel:
     description: 'Which channel to send notifications to. Defaults to none.'
     required: true
+  slack_bot_name:
+    description: 'Required when doing using in queue mode (deletions enabled on close)'
+    required: true
 runs:
   using: 'node16'
   main: 'index.js'

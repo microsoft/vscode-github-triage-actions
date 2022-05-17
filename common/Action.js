@@ -61,7 +61,7 @@ class Action {
                             await this.onReopened(octokit);
                             break;
                         case 'closed':
-                            await this.onClosed(octokit);
+                            await this.onClosed(octokit, github_1.context.payload);
                             break;
                         case 'labeled':
                             await this.onLabeled(octokit, github_1.context.payload.label.name);
@@ -151,7 +151,7 @@ ID: ${details.id}
     async onReopened(_issue) {
         throw Error('not implemented');
     }
-    async onClosed(_issue) {
+    async onClosed(_issue, _payload) {
         throw Error('not implemented');
     }
     async onMilestoned(_issue) {
