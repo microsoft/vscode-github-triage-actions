@@ -9,8 +9,8 @@ steps:
   - name: Checkout Actions
     uses: actions/checkout@v2
     with:
-      repository: 'JacksonKearl/vscode-triage-github-actions'
-      ref: master # not recommeneded, use the lastest released tag to ensure stability
+      repository: 'microsoft/vscode-triage-github-actions'
+      ref: stable # not recommeneded, use the lastest released tag to ensure stability
   - name: Install Actions
     run: npm install --production
   - name: Run Commands
