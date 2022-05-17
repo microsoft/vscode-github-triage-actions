@@ -86,7 +86,9 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 				(event) =>
 					event.type === 'added' &&
 					event.label === category &&
-					!['vscodebot', 'github-actions', 'vscode-triage-bot'].includes(event.actor),
+					!['vscodebot', 'github-actions', 'vscode-triage-bot', 'VSCodeTriageBot'].includes(
+						event.actor,
+					),
 			);
 
 			if (
