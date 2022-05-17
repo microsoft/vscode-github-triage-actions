@@ -30,28 +30,68 @@ export interface Options {
 	};
 }
 
-export class BuildChat {
+class Chatter {
+	constructor(protected slackToken: string, protected notificationChannel: string) {}
+
+	async getChat(): Promise<{ client: WebClient; channel: string }> {
+		const web = new WebClient(this.slackToken);
+		const memberships = await listAllMemberships(web);
+
+		const codereviewChannel =
+			this.notificationChannel && memberships.find((m) => m.name === this.notificationChannel);
+
+		if (!codereviewChannel) {
+			throw Error(`Slack channel not found: ${this.notificationChannel}`);
+		}
+		return { client: web, channel: codereviewChannel.id };
+	}
+}
+
+export class CodeReviewChatDeleter extends Chatter {
+	constructor(
+		slackToken: string,
+		notificationChannel: string,
+		private prUrl: string,
+		private botName: string,
+	) {
+		super(slackToken, notificationChannel);
+	}
+
+	async run() {
+		const { client, channel } = await this.getChat();
+		const response = await client.search.messages({
+			query: `from:@${this.botName} in:#${this.notificationChannel} ${this.prUrl}`,
+			sort: 'timestamp',
+			sort_dir: 'desc',
+		});
+		if (!response.ok || !response.messages || !(response.messages as any).matches) {
+			throw Error('Error searching for existing message');
+		}
+		const matches: { ts: string }[] = (response.messages as any).matches;
+		if (!matches.length) {
+			safeLog('no match, exiting');
+		}
+		await client.chat.delete({
+			channel,
+			ts: matches[0].ts,
+		});
+	}
+}
+
+export class CodeReviewChat extends Chatter {
 	private pr: PR;
 	constructor(private octokit: Octokit, private issue: GitHubIssue, private options: Options) {
+		super(options.slackToken, options.codereviewChannel);
 		this.pr = options.payload.pr;
 	}
 
 	private async postMessage(message: string) {
-		const web = new WebClient(this.options.slackToken);
-		const memberships = await listAllMemberships(web);
+		const { client, channel } = await this.getChat();
 
-		const codereviewChannel =
-			this.options.codereviewChannel &&
-			memberships.find((m) => m.name === this.options.codereviewChannel);
-
-		if (!codereviewChannel) {
-			throw Error(`Slack channel not found: ${this.options.codereviewChannel}`);
-		}
-
-		await web.chat.postMessage({
+		await client.chat.postMessage({
 			text: message,
+			channel,
 			link_names: true,
-			channel: codereviewChannel.id,
 			as_user: true,
 		});
 	}
@@ -98,7 +138,7 @@ export class BuildChat {
 					}),
 				]);
 
-				const hasExisting = existingReviews?.data?.length ?? existingRequests?.data?.users?.length;
+				const hasExisting = existingReviews?.data?.length || existingRequests?.data?.users?.length;
 				if (hasExisting) {
 					safeLog('had existing review requests, exiting');
 					return;
@@ -107,7 +147,7 @@ export class BuildChat {
 				const changedFilesMessage =
 					`${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
 				const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
-				const message = `${this.pr.owner}: \`${diffMessage}\` [${this.pr.title}](${this.pr.url})`;
+				const message = `${this.pr.owner}: \`${diffMessage}\` <${this.pr.url}|${this.pr.title}>`;
 				safeLog(message);
 				await this.postMessage(message);
 			})(),
