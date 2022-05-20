@@ -25,7 +25,7 @@ class NewRelease {
         if (this.oldVersionMessage &&
             !/VS ?Code Version:.*Insider/i.test(cleansed) &&
             /VS ?Code Version:/i.test(cleansed) &&
-            !new RegExp(`VS ?Code Version:(.*[^\\d])?${release.productVersion.replace('.', '\\.')}([^\\d]|$)`, 'i').test(cleansed)) {
+            !cleansed.includes(release.productVersion)) {
             await this.github.postComment(this.oldVersionMessage.replace('{currentVersion}', release.productVersion));
             return;
         }
