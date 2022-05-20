@@ -147,10 +147,11 @@ export class CodeReviewChat extends Chatter {
 					return;
 				}
 
+				const cleanTitle = this.pr.title.replace(/`/g, '');
 				const changedFilesMessage =
 					`${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
 				const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
-				const message = `${this.pr.owner}: \`${diffMessage}\` <${this.pr.url}|${this.pr.title}>`;
+				const message = `${this.pr.owner}: \`${diffMessage}\` <${this.pr.url}|${cleanTitle}>`;
 				safeLog(message);
 				await this.postMessage(message);
 			})(),
