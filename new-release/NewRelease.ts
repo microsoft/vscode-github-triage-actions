@@ -22,6 +22,8 @@ export class NewRelease {
 		const daysSinceRelease = (Date.now() - release.timestamp) / (24 * 60 * 60 * 1000);
 
 		const issue = await this.github.getIssue();
+		// Issue body if blank returns null we want empty string
+		issue.body = issue.body ?? '';
 		const cleansed = issue.body.replace(/<!-- .* -->/g, '');
 
 		if (
