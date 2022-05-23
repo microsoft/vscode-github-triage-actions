@@ -16,14 +16,11 @@ class NewRelease {
         this.oldVersionMessage = oldVersionMessage;
     }
     async run() {
-        var _a;
         const release = await (0, utils_1.loadLatestRelease)('stable');
         if (!(release && release.timestamp))
             throw Error('Could not load latest release');
         const daysSinceRelease = (Date.now() - release.timestamp) / (24 * 60 * 60 * 1000);
         const issue = await this.github.getIssue();
-        // Issue body if blank returns null we want empty string
-        issue.body = (_a = issue.body) !== null && _a !== void 0 ? _a : '';
         const cleansed = issue.body.replace(/<!-- .* -->/g, '');
         if (this.oldVersionMessage &&
             !/VS ?Code Version:.*Insider/i.test(cleansed) &&
