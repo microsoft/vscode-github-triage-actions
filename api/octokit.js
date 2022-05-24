@@ -63,20 +63,20 @@ class OctoKit {
             await this.octokit.issues.create({ owner, repo, title, body });
     }
     octokitIssueToIssue(issue) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         return {
             author: { name: issue.user.login, isGitHubApp: issue.user.type === 'Bot' },
-            body: issue.body,
+            body: (_a = issue.body) !== null && _a !== void 0 ? _a : '',
             number: issue.number,
             title: issue.title,
-            isPr: !!((_a = issue.pull_request) === null || _a === void 0 ? void 0 : _a.html_url),
+            isPr: !!((_b = issue.pull_request) === null || _b === void 0 ? void 0 : _b.html_url),
             labels: issue.labels.map((label) => label.name),
             open: issue.state === 'open',
             locked: issue.locked,
             numComments: issue.comments,
             reactions: issue.reactions,
-            assignee: (_c = (_b = issue.assignee) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : (_e = (_d = issue.assignees) === null || _d === void 0 ? void 0 : _d[0]) === null || _e === void 0 ? void 0 : _e.login,
-            assignees: (_g = (_f = issue.assignees) === null || _f === void 0 ? void 0 : _f.map((assignee) => assignee.login)) !== null && _g !== void 0 ? _g : [],
+            assignee: (_d = (_c = issue.assignee) === null || _c === void 0 ? void 0 : _c.login) !== null && _d !== void 0 ? _d : (_f = (_e = issue.assignees) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.login,
+            assignees: (_h = (_g = issue.assignees) === null || _g === void 0 ? void 0 : _g.map((assignee) => assignee.login)) !== null && _h !== void 0 ? _h : [],
             milestone: issue.milestone ? this.octokitMilestoneToMilestone(issue.milestone) : null,
             createdAt: +new Date(issue.created_at),
             updatedAt: +new Date(issue.updated_at),

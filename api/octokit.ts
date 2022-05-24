@@ -79,7 +79,7 @@ export class OctoKit implements GitHub {
 	): Issue {
 		return {
 			author: { name: issue.user.login, isGitHubApp: issue.user.type === 'Bot' },
-			body: issue.body,
+			body: issue.body ?? '',
 			number: issue.number,
 			title: issue.title,
 			isPr: !!issue.pull_request?.html_url,
