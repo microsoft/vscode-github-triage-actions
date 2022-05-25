@@ -142,7 +142,7 @@ export class CodeReviewChat extends Chatter {
 				]);
 
 				// Check if has existing reviews made ignoring PR author since comments they leave count as reviews
-				const hasExistingReview = existingReviews.data.some((review) => {
+				const hasExistingReview = existingReviews?.data?.some((review) => {
 					return review.user.login !== author.name;
 				});
 

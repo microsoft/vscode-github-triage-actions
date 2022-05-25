@@ -92,7 +92,7 @@ class CodeReviewChat extends Chatter {
             }
         })());
         tasks.push((async () => {
-            var _a, _b;
+            var _a, _b, _c;
             const [existingReviews, existingRequests] = await Promise.all([
                 this.octokit.pulls.listReviews({
                     owner: this.options.payload.owner,
@@ -106,11 +106,11 @@ class CodeReviewChat extends Chatter {
                 }),
             ]);
             // Check if has existing reviews made ignoring PR author since comments they leave count as reviews
-            const hasExistingReview = existingReviews.data.some((review) => {
+            const hasExistingReview = (_a = existingReviews === null || existingReviews === void 0 ? void 0 : existingReviews.data) === null || _a === void 0 ? void 0 : _a.some((review) => {
                 return review.user.login !== author.name;
             });
             // Check to see if there is an existing review or review request. We don't check if the author is part of the review request as that isn't possible
-            const hasExisting = hasExistingReview || ((_b = (_a = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _a === void 0 ? void 0 : _a.users) === null || _b === void 0 ? void 0 : _b.length);
+            const hasExisting = hasExistingReview || ((_c = (_b = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _b === void 0 ? void 0 : _b.users) === null || _c === void 0 ? void 0 : _c.length);
             if (hasExisting) {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
                 return;
