@@ -141,7 +141,13 @@ export class CodeReviewChat extends Chatter {
 					}),
 				]);
 
-				const hasExisting = existingReviews?.data?.length || existingRequests?.data?.users?.length;
+				// Check if has existing reviews made ignoring PR author since comments they leave count as reviews
+				const hasExistingReview = existingReviews.data.some((review) => {
+					return review.user.login !== author.name;
+				});
+
+				// Check to see if there is an existing review or review request. We don't check if the author is part of the review request as that isn't possible
+				const hasExisting = hasExistingReview || existingRequests?.data?.users?.length;
 				if (hasExisting) {
 					safeLog('had existing review requests, exiting');
 					return;
