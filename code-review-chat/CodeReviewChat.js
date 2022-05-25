@@ -105,7 +105,12 @@ class CodeReviewChat extends Chatter {
                     pull_number: this.options.payload.pr.number,
                 }),
             ]);
-            const hasExisting = ((_a = existingReviews === null || existingReviews === void 0 ? void 0 : existingReviews.data) === null || _a === void 0 ? void 0 : _a.length) || ((_c = (_b = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _b === void 0 ? void 0 : _b.users) === null || _c === void 0 ? void 0 : _c.length);
+            // Check if there is any exisitng review. This excludes the author themselves as they don't count
+            const hasExistingReview = (_a = existingReviews === null || existingReviews === void 0 ? void 0 : existingReviews.data) === null || _a === void 0 ? void 0 : _a.some((review) => {
+                return review.user.login !== author.name;
+            });
+            // Check to see if there is an existing review or review request. We don't check if the author is part of the review request as that isn't possible
+            const hasExisting = hasExistingReview || ((_c = (_b = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _b === void 0 ? void 0 : _b.users) === null || _c === void 0 ? void 0 : _c.length);
             if (hasExisting) {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
                 return;
