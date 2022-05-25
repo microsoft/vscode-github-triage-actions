@@ -141,7 +141,7 @@ export class CodeReviewChat extends Chatter {
 					}),
 				]);
 
-				// Check if has existing reviews made ignoring PR author since comments they leave count as reviews
+				// Check if there is any exisitng review. This excludes the author themselves as they don't count
 				const hasExistingReview = existingReviews?.data?.some((review) => {
 					return review.user.login !== author.name;
 				});
