@@ -23,8 +23,9 @@ class NewRelease {
         const issue = await this.github.getIssue();
         const cleansed = issue.body.replace(/<!-- .* -->/g, '');
         if (this.oldVersionMessage &&
-            !/VS ?Code Version:.*Insider/i.test(cleansed) &&
-            /VS ?Code Version:/i.test(cleansed) &&
+            !/insider/i.test(cleansed) &&
+            !/\.dev/i.test(cleansed) &&
+            /VS ?Code Version:.*\d/i.test(cleansed) &&
             !cleansed.includes(release.productVersion)) {
             await this.github.postComment(this.oldVersionMessage.replace('{currentVersion}', release.productVersion));
             return;
