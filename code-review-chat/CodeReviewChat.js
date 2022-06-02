@@ -131,13 +131,19 @@ async function listAllMemberships(web) {
     let groups;
     const channels = [];
     do {
-        groups = (await web.conversations.list({
-            types: 'public_channel,private_channel',
-            cursor: (_a = groups === null || groups === void 0 ? void 0 : groups.response_metadata) === null || _a === void 0 ? void 0 : _a.next_cursor,
-            limit: 100,
-        }));
-        channels.push(...groups.channels);
-    } while ((_b = groups.response_metadata) === null || _b === void 0 ? void 0 : _b.next_cursor);
+        try {
+            groups = (await web.conversations.list({
+                types: 'public_channel,private_channel',
+                cursor: (_a = groups === null || groups === void 0 ? void 0 : groups.response_metadata) === null || _a === void 0 ? void 0 : _a.next_cursor,
+                limit: 100,
+            }));
+            channels.push(...groups.channels);
+        }
+        catch (err) {
+            (0, utils_1.safeLog)(`Error listing channels: ${err}`);
+            groups = undefined;
+        }
+    } while ((_b = groups === null || groups === void 0 ? void 0 : groups.response_metadata) === null || _b === void 0 ? void 0 : _b.next_cursor);
     return channels.filter((c) => c.is_member);
 }
 //# sourceMappingURL=CodeReviewChat.js.map

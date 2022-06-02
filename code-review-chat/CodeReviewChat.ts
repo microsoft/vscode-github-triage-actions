@@ -184,12 +184,17 @@ async function listAllMemberships(web: WebClient) {
 	let groups: ConversationsList | undefined;
 	const channels: Channel[] = [];
 	do {
-		groups = (await web.conversations.list({
-			types: 'public_channel,private_channel',
-			cursor: groups?.response_metadata?.next_cursor,
-			limit: 100,
-		})) as unknown as ConversationsList;
-		channels.push(...groups.channels);
-	} while (groups.response_metadata?.next_cursor);
+		try {
+			groups = (await web.conversations.list({
+				types: 'public_channel,private_channel',
+				cursor: groups?.response_metadata?.next_cursor,
+				limit: 100,
+			})) as unknown as ConversationsList;
+			channels.push(...groups.channels);
+		} catch (err) {
+			safeLog(`Error listing channels: ${err}`);
+			groups = undefined;
+		}
+	} while (groups?.response_metadata?.next_cursor);
 	return channels.filter((c) => c.is_member);
 }
