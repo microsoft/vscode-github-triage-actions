@@ -39,9 +39,21 @@ class CodeReviewChatDeleter extends Chatter {
             throw Error('Error getting channel history');
         }
         const messages = response.messages;
-        // All the thread replies
+        const messagesToDelete = messages.filter((message) => {
+            const isCodeReviewMessage = message.text.includes(this.prUrl);
+            if (message.subtype === 'tombstone') {
+                return false;
+            }
+            if (this.elevatedClient && message.reactions) {
+                // If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
+                return (isCodeReviewMessage ||
+                    message.reactions.some((reaction) => reaction.name === 'white_check_mark'));
+            }
+            return isCodeReviewMessage;
+        });
+        // Delete all the replies to messages queued for deletion
         const replies = [];
-        for (const message of messages) {
+        for (const message of messagesToDelete) {
             // If reply count is greater than 1 we must fetch the replies
             if (message.reply_count) {
                 const replyThread = await client.conversations.replies({
@@ -57,22 +69,10 @@ class CodeReviewChatDeleter extends Chatter {
                 }
             }
         }
-        // Add replies to the messages
-        messages.push(...replies);
-        const messagesToDelete = messages.filter((message) => {
-            const isCodeReviewMessage = message.text.includes(this.prUrl);
-            if (message.subtype === 'tombstone') {
-                return false;
-            }
-            if (this.elevatedClient && message.reactions) {
-                // If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
-                return (isCodeReviewMessage ||
-                    message.reactions.some((reaction) => reaction.name === 'white_check_mark'));
-            }
-            return isCodeReviewMessage;
-        });
+        messagesToDelete.push(...replies);
         if (messagesToDelete.length === 0) {
             (0, utils_1.safeLog)('no message found, exiting');
+            return;
         }
         try {
             // Attempt to use the correct client to delete the messages
