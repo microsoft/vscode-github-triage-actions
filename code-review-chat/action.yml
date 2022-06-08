@@ -1,6 +1,6 @@
 name: 'Code Review Chat'
 description: 'Notify in chat about build results.'
-author: 'Jackson Kearl'
+author: 'Jackson Kearl / Logan Ramos'
 inputs:
   token:
     description: GitHub token.
@@ -9,6 +9,9 @@ inputs:
   slack_token:
     description: Slack token.
     required: true
+  slack_user_token:
+    description: 'Elevated user token for actions requiring admin'
+    required: false
   notification_channel:
     description: 'Which channel to send notifications to. Defaults to none.'
     required: true
