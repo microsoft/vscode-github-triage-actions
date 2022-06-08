@@ -39,8 +39,31 @@ class CodeReviewChatDeleter extends Chatter {
             throw Error('Error getting channel history');
         }
         const messages = response.messages;
+        // All the thread replies
+        const replies = [];
+        for (const message of messages) {
+            // If reply count is greater than 1 we must fetch the replies
+            if (message.reply_count) {
+                const replyThread = await client.conversations.replies({
+                    channel,
+                    ts: message.ts,
+                });
+                if (!replyThread.ok || !replyThread.messages) {
+                    (0, utils_1.safeLog)('Error getting messages replies');
+                }
+                else {
+                    // Pushback everything but the first reply since the first reply is the original message
+                    replies.push(...replyThread.messages.slice(1));
+                }
+            }
+        }
+        // Add replies to the messages
+        messages.push(...replies);
         const messagesToDelete = messages.filter((message) => {
             const isCodeReviewMessage = message.text.includes(this.prUrl);
+            if (message.subtype === 'tombstone') {
+                return false;
+            }
             if (this.elevatedClient && message.reactions) {
                 // If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
                 return (isCodeReviewMessage ||
