@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Octokit } from '@octokit/rest';
-import { getRequiredInput } from '../common/utils';
+import { getRequiredInput, getInput } from '../common/utils';
 import { CodeReviewChat, CodeReviewChatDeleter } from './CodeReviewChat';
 import { Action } from '../common/Action';
 import { OctoKitIssue } from '../api/octokit';
 
 const slackToken = getRequiredInput('slack_token');
+const elevatedUserToken = getInput('slack_user_token');
 const auth = getRequiredInput('token');
 const channel = getRequiredInput('notification_channel');
 
@@ -19,11 +20,15 @@ class CodeReviewChatAction extends Action {
 	id = 'CodeReviewChat';
 
 	protected override async onClosed(_issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
-		const botName = getRequiredInput('slack_bot_name');
 		if (!payload.pull_request || !payload.repository || !payload.pull_request.html_url) {
 			throw Error('expected payload to contain pull request url');
 		}
-		await new CodeReviewChatDeleter(slackToken, channel, payload.pull_request.html_url, botName).run();
+		await new CodeReviewChatDeleter(
+			slackToken,
+			elevatedUserToken,
+			channel,
+			payload.pull_request.html_url,
+		).run();
 	}
 
 	protected override async onOpened(issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
@@ -41,6 +46,7 @@ class CodeReviewChatAction extends Action {
 			payload: {
 				owner: payload.repository.owner.login,
 				repo: payload.repository.name,
+				// https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
 				pr: {
 					number: payload.pull_request.number,
 					body: payload.pull_request.body || '',

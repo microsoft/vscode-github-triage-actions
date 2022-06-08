@@ -20,6 +20,21 @@ interface PR {
 	title: string;
 }
 
+// Some slack typings since the API isn't the best in terms of typings
+interface SlackReaction {
+	name: string;
+	count: number;
+	users: string[];
+}
+
+interface SlackMessage {
+	type: 'message';
+	text: string;
+	channel: string;
+	ts: string;
+	reactions: SlackReaction[];
+}
+
 export interface Options {
 	slackToken: string;
 	codereviewChannel: string;
@@ -48,33 +63,59 @@ class Chatter {
 }
 
 export class CodeReviewChatDeleter extends Chatter {
+	private elevatedClient: WebClient | undefined;
 	constructor(
 		slackToken: string,
+		slackElevatedUserToken: string | undefined,
 		notificationChannel: string,
 		private prUrl: string,
-		private botName: string,
 	) {
 		super(slackToken, notificationChannel);
+		this.elevatedClient = slackElevatedUserToken ? new WebClient(slackElevatedUserToken) : undefined;
 	}
 
 	async run() {
 		const { client, channel } = await this.getChat();
+		// Get the last 200 messages (don't bother looking further than that)
 		const response = await client.conversations.history({
 			channel,
+			limit: 200,
 		});
 		if (!response.ok || !response.messages) {
 			throw Error('Error getting channel history');
 		}
-		const messages: { ts: string; text?: string }[] = response.messages as any;
-		const message = messages?.filter((message) => message.text?.includes(this.prUrl))[0];
-		if (!message) {
+		const messages = response.messages as SlackMessage[];
+		const messagesToDelete = messages.filter((message) => {
+			const isCodeReviewMessage = message.text.includes(this.prUrl);
+			if (this.elevatedClient) {
+				// If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
+				return (
+					isCodeReviewMessage ||
+					message.reactions.some((reaction) => reaction.name === 'white_check_mark')
+				);
+			}
+			return isCodeReviewMessage;
+		});
+		if (messagesToDelete.length === 0) {
 			safeLog('no message found, exiting');
 		}
 		try {
-			await client.chat.delete({
-				channel,
-				ts: message.ts,
-			});
+			// Attempt to use the correct client to delete the messages
+			for (const message of messagesToDelete) {
+				if (this.elevatedClient) {
+					await this.elevatedClient.chat.delete({
+						channel,
+						ts: message.ts,
+						as_user: true,
+					});
+				} else {
+					await client.chat.delete({
+						channel,
+						ts: message.ts,
+						as_user: false,
+					});
+				}
+			}
 		} catch (e) {
 			safeLog('error deleting message, probably posted by some human');
 		}

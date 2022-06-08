@@ -9,6 +9,7 @@ const utils_1 = require("../common/utils");
 const CodeReviewChat_1 = require("./CodeReviewChat");
 const Action_1 = require("../common/Action");
 const slackToken = (0, utils_1.getRequiredInput)('slack_token');
+const elevatedUserToken = (0, utils_1.getInput)('slack_user_token');
 const auth = (0, utils_1.getRequiredInput)('token');
 const channel = (0, utils_1.getRequiredInput)('notification_channel');
 class CodeReviewChatAction extends Action_1.Action {
@@ -17,11 +18,10 @@ class CodeReviewChatAction extends Action_1.Action {
         this.id = 'CodeReviewChat';
     }
     async onClosed(_issue, payload) {
-        const botName = (0, utils_1.getRequiredInput)('slack_bot_name');
         if (!payload.pull_request || !payload.repository || !payload.pull_request.html_url) {
             throw Error('expected payload to contain pull request url');
         }
-        await new CodeReviewChat_1.CodeReviewChatDeleter(slackToken, channel, payload.pull_request.html_url, botName).run();
+        await new CodeReviewChat_1.CodeReviewChatDeleter(slackToken, elevatedUserToken, channel, payload.pull_request.html_url).run();
     }
     async onOpened(issue, payload) {
         if (!payload.pull_request || !payload.repository) {
@@ -35,6 +35,7 @@ class CodeReviewChatAction extends Action_1.Action {
             payload: {
                 owner: payload.repository.owner.login,
                 repo: payload.repository.name,
+                // https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
                 pr: {
                     number: payload.pull_request.number,
                     body: payload.pull_request.body || '',
