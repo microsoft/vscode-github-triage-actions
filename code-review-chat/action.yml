@@ -1,6 +1,6 @@
 name: 'Code Review Chat'
 description: 'Notify in chat about build results.'
-author: 'Jackson Kearl'
+author: 'Jackson Kearl / Logan Ramos'
 inputs:
   token:
     description: GitHub token.
