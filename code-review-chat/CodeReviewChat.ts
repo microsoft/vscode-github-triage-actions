@@ -32,7 +32,7 @@ interface SlackMessage {
 	text: string;
 	channel: string;
 	ts: string;
-	reactions: SlackReaction[];
+	reactions?: SlackReaction[];
 }
 
 export interface Options {
@@ -87,7 +87,7 @@ export class CodeReviewChatDeleter extends Chatter {
 		const messages = response.messages as SlackMessage[];
 		const messagesToDelete = messages.filter((message) => {
 			const isCodeReviewMessage = message.text.includes(this.prUrl);
-			if (this.elevatedClient) {
+			if (this.elevatedClient && message.reactions) {
 				// If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
 				return (
 					isCodeReviewMessage ||

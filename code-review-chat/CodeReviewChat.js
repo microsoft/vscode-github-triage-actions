@@ -41,7 +41,7 @@ class CodeReviewChatDeleter extends Chatter {
         const messages = response.messages;
         const messagesToDelete = messages.filter((message) => {
             const isCodeReviewMessage = message.text.includes(this.prUrl);
-            if (this.elevatedClient) {
+            if (this.elevatedClient && message.reactions) {
                 // If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
                 return (isCodeReviewMessage ||
                     message.reactions.some((reaction) => reaction.name === 'white_check_mark'));
