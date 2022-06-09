@@ -29,8 +29,8 @@ interface SlackReaction {
 
 interface SlackMessage {
 	type: 'message';
-	// Tombstone if deleted
-	subtype: 'tombstone' | undefined;
+	// Tombstone if deleted, channel_join if it's a join message.
+	subtype: 'tombstone' | 'channel_join' | undefined;
 	text: string;
 	reply_count?: number;
 	ts: string;
@@ -90,8 +90,9 @@ export class CodeReviewChatDeleter extends Chatter {
 
 		const messagesToDelete = messages.filter((message) => {
 			const isCodeReviewMessage = message.text.includes(this.prUrl);
-			if (message.subtype === 'tombstone') {
-				return false;
+			// If it has a subtype it means its a special slack message which we want to delete
+			if (message.subtype) {
+				return true;
 			}
 			if (this.elevatedClient && message.reactions) {
 				// If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
@@ -129,6 +130,11 @@ export class CodeReviewChatDeleter extends Chatter {
 		try {
 			// Attempt to use the correct client to delete the messages
 			for (const message of messagesToDelete) {
+				// Can't delete already deleted messages.
+				// The reason they're in the array is so we can get their replies
+				if (message.subtype === 'tombstone') {
+					continue;
+				}
 				if (this.elevatedClient) {
 					await this.elevatedClient.chat.delete({
 						channel,
