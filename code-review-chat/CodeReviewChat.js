@@ -41,6 +41,9 @@ class CodeReviewChatDeleter extends Chatter {
         const messages = response.messages;
         const messagesToDelete = messages.filter((message) => {
             const isCodeReviewMessage = message.text.includes(this.prUrl);
+            if (message.subtype === 'tombstone') {
+                return false;
+            }
             if (this.elevatedClient && message.reactions) {
                 // If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
                 return (isCodeReviewMessage ||
@@ -48,8 +51,28 @@ class CodeReviewChatDeleter extends Chatter {
             }
             return isCodeReviewMessage;
         });
+        // Delete all the replies to messages queued for deletion
+        const replies = [];
+        for (const message of messagesToDelete) {
+            // If reply count is greater than 1 we must fetch the replies
+            if (message.reply_count) {
+                const replyThread = await client.conversations.replies({
+                    channel,
+                    ts: message.ts,
+                });
+                if (!replyThread.ok || !replyThread.messages) {
+                    (0, utils_1.safeLog)('Error getting messages replies');
+                }
+                else {
+                    // Pushback everything but the first reply since the first reply is the original message
+                    replies.push(...replyThread.messages.slice(1));
+                }
+            }
+        }
+        messagesToDelete.push(...replies);
         if (messagesToDelete.length === 0) {
             (0, utils_1.safeLog)('no message found, exiting');
+            return;
         }
         try {
             // Attempt to use the correct client to delete the messages
