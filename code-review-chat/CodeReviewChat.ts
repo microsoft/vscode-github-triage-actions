@@ -43,6 +43,7 @@ export interface Options {
 	payload: {
 		owner: string;
 		repo: string;
+		repo_full_name: string;
 		pr: PR;
 	};
 }
@@ -169,7 +170,6 @@ export class CodeReviewChat extends Chatter {
 			text: message,
 			channel,
 			link_names: true,
-			as_user: true,
 		});
 	}
 
@@ -231,7 +231,15 @@ export class CodeReviewChat extends Chatter {
 				const changedFilesMessage =
 					`${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
 				const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
-				const message = `${this.pr.owner}: \`${diffMessage}\` <${this.pr.url}|${cleanTitle}>`;
+				let repoMessage = '';
+				// If it doesn't come from the VS Code repo, add the repo to the message
+				if (
+					this.options.payload.repo_full_name !== 'microsoft/vscode' &&
+					this.options.payload.repo_full_name !== 'vscode'
+				) {
+					repoMessage = `Repo: ${this.options.payload.repo_full_name}\n`;
+				}
+				const message = `${repoMessage}${this.pr.owner}: \`${diffMessage}\` <${this.pr.url}|${cleanTitle}>`;
 				safeLog(message);
 				await this.postMessage(message);
 			})(),

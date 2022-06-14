@@ -24,6 +24,7 @@ class CodeReviewChatAction extends Action_1.Action {
         await new CodeReviewChat_1.CodeReviewChatDeleter(slackToken, elevatedUserToken, channel, payload.pull_request.html_url).run();
     }
     async onOpened(issue, payload) {
+        var _a;
         if (!payload.pull_request || !payload.repository) {
             throw Error('expected payload to contain pull request and repository');
         }
@@ -35,6 +36,7 @@ class CodeReviewChatAction extends Action_1.Action {
             payload: {
                 owner: payload.repository.owner.login,
                 repo: payload.repository.name,
+                repo_full_name: (_a = payload.repository.full_name) !== null && _a !== void 0 ? _a : payload.repository.name,
                 // https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
                 pr: {
                     number: payload.pull_request.number,

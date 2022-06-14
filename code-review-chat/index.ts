@@ -46,6 +46,7 @@ class CodeReviewChatAction extends Action {
 			payload: {
 				owner: payload.repository.owner.login,
 				repo: payload.repository.name,
+				repo_full_name: payload.repository.full_name ?? payload.repository.name,
 				// https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
 				pr: {
 					number: payload.pull_request.number,
