@@ -173,9 +173,9 @@ class CodeReviewChat extends Chatter {
             // If it doesn't come from the VS Code repo, add the repo to the message
             if (this.options.payload.repo_full_name !== 'microsoft/vscode' &&
                 this.options.payload.repo_full_name !== 'vscode') {
-                repoMessage = `Repo: ${this.options.payload.repo_full_name}\n`;
+                repoMessage = ` (in ${this.options.payload.repo_url ? `<${this.options.payload.repo_url}|${this.options.payload.repo_full_name}>` : this.options.payload.repo_full_name})`;
             }
-            const message = `${repoMessage}${this.pr.owner}: \`${diffMessage}\` <${this.pr.url}|${cleanTitle}>`;
+            const message = `${this.pr.owner}${repoMessage}: \`${diffMessage}\` <${this.pr.url}|${cleanTitle}>`;
             (0, utils_1.safeLog)(message);
             await this.postMessage(message);
         })());

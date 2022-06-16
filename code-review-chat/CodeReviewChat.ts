@@ -44,6 +44,7 @@ export interface Options {
 		owner: string;
 		repo: string;
 		repo_full_name: string;
+		repo_url: string | undefined;
 		pr: PR;
 	};
 }
@@ -237,9 +238,9 @@ export class CodeReviewChat extends Chatter {
 					this.options.payload.repo_full_name !== 'microsoft/vscode' &&
 					this.options.payload.repo_full_name !== 'vscode'
 				) {
-					repoMessage = `Repo: ${this.options.payload.repo_full_name}\n`;
+					repoMessage = ` (in ${this.options.payload.repo_url ? `<${this.options.payload.repo_url}|${this.options.payload.repo_full_name}>` : this.options.payload.repo_full_name})`;
 				}
-				const message = `${repoMessage}${this.pr.owner}: \`${diffMessage}\` <${this.pr.url}|${cleanTitle}>`;
+				const message = `${this.pr.owner}${repoMessage}: \`${diffMessage}\` <${this.pr.url}|${cleanTitle}>`;
 				safeLog(message);
 				await this.postMessage(message);
 			})(),
