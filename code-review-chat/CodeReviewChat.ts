@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Octokit } from '@octokit/rest';
-import { WebClient } from '@slack/web-api';
+import { KnownBlock, WebClient } from '@slack/web-api';
 import { GitHubIssue } from '../api/api';
 import { safeLog } from '../common/utils';
 
@@ -80,10 +80,10 @@ export class CodeReviewChatDeleter extends Chatter {
 
 	async run() {
 		const { client, channel } = await this.getChat();
-		// Get the last 200 messages (don't bother looking further than that)
+		// Get the last 20 messages (don't bother looking further than that)
 		const response = await client.conversations.history({
 			channel,
-			limit: 200,
+			limit: 20,
 		});
 		if (!response.ok || !response.messages) {
 			throw Error('Error getting channel history');
@@ -164,12 +164,13 @@ export class CodeReviewChat extends Chatter {
 		this.pr = options.payload.pr;
 	}
 
-	private async postMessage(message: string) {
+	private async postMessage(message: string, blocks?: KnownBlock[]) {
 		const { client, channel } = await this.getChat();
 
 		await client.chat.postMessage({
 			text: message,
 			channel,
+			blocks,
 			link_names: true,
 		});
 	}
@@ -232,17 +233,48 @@ export class CodeReviewChat extends Chatter {
 				const changedFilesMessage =
 					`${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
 				const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
-				let repoMessage = '';
-				// If it doesn't come from the VS Code repo, add the repo to the message
-				if (
-					this.options.payload.repo_full_name !== 'microsoft/vscode' &&
-					this.options.payload.repo_full_name !== 'vscode'
-				) {
-					repoMessage = ` (in ${this.options.payload.repo_url ? `<${this.options.payload.repo_url}|${this.options.payload.repo_full_name}>` : this.options.payload.repo_full_name})`;
-				}
-				const message = `${this.pr.owner}${repoMessage}: \`${diffMessage}\` <${this.pr.url}|${cleanTitle}>`;
+				const blocks: KnownBlock[] = [];
+				// The header section with information regarding the PR
+				blocks.push({
+					type: 'section',
+					text: {
+						type: 'mrkdwn',
+						text: `*Title:* ${cleanTitle}\n*Author:* ${this.pr.owner}\n*Changes:* ${diffMessage}\n*Repo:* <${this.options.payload.repo_url}|${this.options.payload.repo_full_name}>`,
+					},
+				});
+
+				const githubUrl = this.pr.url;
+				const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
+				// The link buttons
+				blocks.push({
+					type: 'actions',
+					elements: [
+						{
+							type: 'button',
+							text: {
+								type: 'plain_text',
+								emoji: true,
+								text: 'Open in vscode.dev',
+							},
+							style: 'primary',
+							action_id: 'vscodedev',
+							url: vscodeDevUrl,
+						},
+						{
+							type: 'button',
+							text: {
+								type: 'plain_text',
+								emoji: true,
+								text: 'Open on github.com',
+							},
+							action_id: 'github',
+							url: githubUrl,
+						},
+					],
+				});
+				const message = `New Pull Request from ${this.pr.owner}`;
 				safeLog(message);
-				await this.postMessage(message);
+				await this.postMessage(message, blocks);
 			})(),
 		);
 
