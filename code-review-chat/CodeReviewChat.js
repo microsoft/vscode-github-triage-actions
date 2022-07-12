@@ -170,13 +170,17 @@ class CodeReviewChat extends Chatter {
             const cleanTitle = this.pr.title.replace(/`/g, '');
             const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
             const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
+            // The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
+            const repoMessage = this.options.payload.repo_full_name === 'microsoft/vscode'
+                ? ''
+                : ` in ${this.options.payload.repo_full_name}`;
             const blocks = [];
             // The header section with information regarding the PR
             blocks.push({
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `*Title:* ${cleanTitle}\n*Author:* ${this.pr.owner}\n*Changes:* ${diffMessage}\n*Repo:* <${this.options.payload.repo_url}|${this.options.payload.repo_full_name}>`,
+                    text: `${cleanTitle} by ${this.pr.owner}${repoMessage}: \`${diffMessage}\``,
                 },
             });
             const githubUrl = this.pr.url;
