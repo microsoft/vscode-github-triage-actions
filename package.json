@@ -5,6 +5,7 @@
   "scripts": {
     "test": "mocha -r ts-node/register **/*.test.ts",
     "build": "tsc",
+    "compile": "tsc",
     "lint": "eslint -c .eslintrc --fix --ext .ts .",
     "watch": "tsc --watch"
   },
