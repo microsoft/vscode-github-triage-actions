@@ -180,7 +180,7 @@ class CodeReviewChat extends Chatter {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `**${cleanTitle}** by ${this.pr.owner}${repoMessage}: \`${diffMessage}\``,
+                    text: `*${cleanTitle}* by ${this.pr.owner}${repoMessage}: \`${diffMessage}\``,
                 },
             });
             const githubUrl = this.pr.url;
