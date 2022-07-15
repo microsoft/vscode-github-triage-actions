@@ -174,43 +174,16 @@ class CodeReviewChat extends Chatter {
             const repoMessage = this.options.payload.repo_full_name === 'microsoft/vscode'
                 ? ''
                 : ` in ${this.options.payload.repo_full_name}`;
+            const githubUrl = this.pr.url;
+            const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
             const blocks = [];
-            // The header section with information regarding the PR
+            // The message is a singular markdown blocks
             blocks.push({
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `*${cleanTitle}* by ${this.pr.owner}${repoMessage}: \`${diffMessage}\``,
+                    text: `*${cleanTitle}* by _${this.pr.owner}_(${repoMessage}): \`${diffMessage}\` <${githubUrl}|Review (GH)> <${vscodeDevUrl}|Review (VSCode)>`,
                 },
-            });
-            const githubUrl = this.pr.url;
-            const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
-            // The link buttons
-            blocks.push({
-                type: 'actions',
-                elements: [
-                    {
-                        type: 'button',
-                        text: {
-                            type: 'plain_text',
-                            emoji: true,
-                            text: 'Open in vscode.dev',
-                        },
-                        style: 'primary',
-                        action_id: 'vscodedev',
-                        url: vscodeDevUrl,
-                    },
-                    {
-                        type: 'button',
-                        text: {
-                            type: 'plain_text',
-                            emoji: true,
-                            text: 'Open on github.com',
-                        },
-                        action_id: 'github',
-                        url: githubUrl,
-                    },
-                ],
             });
             const message = `New Pull Request from ${this.pr.owner}`;
             (0, utils_1.safeLog)(message);
