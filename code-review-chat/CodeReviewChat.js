@@ -172,8 +172,8 @@ class CodeReviewChat extends Chatter {
             const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
             // The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
             const repoMessage = this.options.payload.repo_full_name === 'microsoft/vscode'
-                ? ''
-                : ` in ${this.options.payload.repo_full_name}`;
+                ? ':'
+                : ` (in ${this.options.payload.repo_full_name}):`;
             const githubUrl = this.pr.url;
             const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
             const blocks = [];
@@ -182,7 +182,7 @@ class CodeReviewChat extends Chatter {
                 type: 'section',
                 text: {
                     type: 'mrkdwn',
-                    text: `*${cleanTitle}* by _${this.pr.owner}_(${repoMessage}): \`${diffMessage}\` <${githubUrl}|Review (GH)> <${vscodeDevUrl}|Review (VSCode)>`,
+                    text: `*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`,
                 },
             });
             const message = `New Pull Request from ${this.pr.owner}`;
