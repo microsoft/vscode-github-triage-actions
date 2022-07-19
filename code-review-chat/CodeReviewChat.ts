@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Octokit } from '@octokit/rest';
-import { KnownBlock, WebClient } from '@slack/web-api';
+import { WebClient } from '@slack/web-api';
 import { GitHubIssue } from '../api/api';
 import { safeLog } from '../common/utils';
 
@@ -164,13 +164,12 @@ export class CodeReviewChat extends Chatter {
 		this.pr = options.payload.pr;
 	}
 
-	private async postMessage(message: string, blocks?: KnownBlock[]) {
+	private async postMessage(message: string) {
 		const { client, channel } = await this.getChat();
 
 		await client.chat.postMessage({
 			text: message,
 			channel,
-			blocks,
 			link_names: true,
 		});
 	}
@@ -241,19 +240,11 @@ export class CodeReviewChat extends Chatter {
 
 				const githubUrl = this.pr.url;
 				const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
-				const blocks: KnownBlock[] = [];
-				// The message is a singular markdown blocks
-				blocks.push({
-					type: 'section',
-					text: {
-						type: 'mrkdwn',
-						text: `*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`,
-					},
-				});
 
-				const message = `New Pull Request from ${this.pr.owner}`;
+				// Nicely formatted chat message
+				const message = `*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
 				safeLog(message);
-				await this.postMessage(message, blocks);
+				await this.postMessage(message);
 			})(),
 		);
 

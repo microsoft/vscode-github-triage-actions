@@ -113,12 +113,11 @@ class CodeReviewChat extends Chatter {
         this.options = options;
         this.pr = options.payload.pr;
     }
-    async postMessage(message, blocks) {
+    async postMessage(message) {
         const { client, channel } = await this.getChat();
         await client.chat.postMessage({
             text: message,
             channel,
-            blocks,
             link_names: true,
         });
     }
@@ -176,18 +175,10 @@ class CodeReviewChat extends Chatter {
                 : ` (in ${this.options.payload.repo_full_name}):`;
             const githubUrl = this.pr.url;
             const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
-            const blocks = [];
-            // The message is a singular markdown blocks
-            blocks.push({
-                type: 'section',
-                text: {
-                    type: 'mrkdwn',
-                    text: `*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`,
-                },
-            });
-            const message = `New Pull Request from ${this.pr.owner}`;
+            // Nicely formatted chat message
+            const message = `*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
             (0, utils_1.safeLog)(message);
-            await this.postMessage(message, blocks);
+            await this.postMessage(message);
         })());
         await Promise.all(tasks);
     }
