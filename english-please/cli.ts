@@ -44,7 +44,7 @@ const main = async () => {
 		'translation-required-',
 		'c29cff',
 		'*english-please',
-		'needs more info',
+		'info-needed',
 		argv.key,
 	).run();
 };
