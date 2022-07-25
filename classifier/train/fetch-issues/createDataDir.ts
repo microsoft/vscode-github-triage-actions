@@ -72,7 +72,7 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 				categoryPriorityFn(
 					categoriesExtractor(issue).map((label) => labelToCategoryFn(label) || label),
 				) ??
-				(['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) =>
+				(['*caused-by-extension', 'info-needed', '*question'].find((otherLabel) =>
 					issue.labels.includes(otherLabel),
 				)
 					? name === 'area' && Math.random() < 0.2

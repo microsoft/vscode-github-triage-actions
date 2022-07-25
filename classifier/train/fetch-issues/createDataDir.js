@@ -52,7 +52,7 @@ const createDataDirectories = async (areas, assignees) => {
             .filter(([_, count]) => count < 5)
             .map(([label]) => label);
         for (const issue of issues) {
-            const category = (_a = categoryPriorityFn(categoriesExtractor(issue).map((label) => labelToCategoryFn(label) || label))) !== null && _a !== void 0 ? _a : (['*caused-by-extension', 'needs more info', '*question'].find((otherLabel) => issue.labels.includes(otherLabel))
+            const category = (_a = categoryPriorityFn(categoriesExtractor(issue).map((label) => labelToCategoryFn(label) || label))) !== null && _a !== void 0 ? _a : (['*caused-by-extension', 'info-needed', '*question'].find((otherLabel) => issue.labels.includes(otherLabel))
                 ? name === 'area' && Math.random() < 0.2
                     ? '__OTHER__'
                     : undefined

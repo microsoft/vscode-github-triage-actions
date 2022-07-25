@@ -37,37 +37,37 @@ describe('NeedsMoreInfoCloser', () => {
 		});
 
 		const issuesToClose: TestbedIssueConstructorArgs[] = [
-			{ comments: [], labels: ['needs more info'] },
-			{ comments: [botComment()], labels: ['needs more info'] },
-			{ comments: [contributorComment()], labels: ['needs more info'] },
-			{ comments: [teamComment()], labels: ['needs more info'] },
-			{ comments: [otherComment(), botComment()], labels: ['needs more info'] },
-			{ comments: [otherComment(), contributorComment()], labels: ['needs more info'] },
-			{ comments: [otherComment(), teamComment()], labels: ['needs more info'] },
+			{ comments: [], labels: ['info-needed'] },
+			{ comments: [botComment()], labels: ['info-needed'] },
+			{ comments: [contributorComment()], labels: ['info-needed'] },
+			{ comments: [teamComment()], labels: ['info-needed'] },
+			{ comments: [otherComment(), botComment()], labels: ['info-needed'] },
+			{ comments: [otherComment(), contributorComment()], labels: ['info-needed'] },
+			{ comments: [otherComment(), teamComment()], labels: ['info-needed'] },
 		];
 
 		const issuesNotToClose: TestbedIssueConstructorArgs[] = [
-			{ comments: [otherComment()], labels: ['needs more info'] },
-			{ comments: [contributorComment(), otherComment()], labels: ['needs more info'] },
-			{ comments: [teamComment(), otherComment()], labels: ['needs more info'] },
-			{ comments: [botComment(), otherComment()], labels: ['needs more info'] },
+			{ comments: [otherComment()], labels: ['info-needed'] },
+			{ comments: [contributorComment(), otherComment()], labels: ['info-needed'] },
+			{ comments: [teamComment(), otherComment()], labels: ['info-needed'] },
+			{ comments: [botComment(), otherComment()], labels: ['info-needed'] },
 		];
 
 		const issuesToPing: TestbedIssueConstructorArgs[] = [
 			{
 				issue: { updatedAt: daysAgoToTimestamp(3), assignee: 'jax' },
 				comments: [otherComment()],
-				labels: ['needs more info'],
+				labels: ['info-needed'],
 			},
 			{
 				issue: { updatedAt: daysAgoToTimestamp(3), assignee: 'jax' },
 				comments: [contributorComment(), otherComment()],
-				labels: ['needs more info'],
+				labels: ['info-needed'],
 			},
 			{
 				issue: { updatedAt: daysAgoToTimestamp(3), assignee: 'jax' },
 				comments: [botComment(), otherComment()],
-				labels: ['needs more info'],
+				labels: ['info-needed'],
 			},
 		];
 
@@ -80,7 +80,7 @@ describe('NeedsMoreInfoCloser', () => {
 		const testbed = new Testbed({ queryRunner, writers: ['JacksonKearl'] });
 		await new NeedsMoreInfoCloser(
 			testbed,
-			'needs more info',
+			'info-needed',
 			1,
 			2,
 			'closed this because it needs more info thx :)',
