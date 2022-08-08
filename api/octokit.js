@@ -19,7 +19,7 @@ class OctoKit {
         // when in readonly mode, record labels just-created so at to not throw unneccesary errors
         this.mockLabels = new Set();
         this.writeAccessCache = {};
-        this._octokit = new github_1.GitHub(token);
+        this._octokit = (0, github_1.getOctokit)(token);
     }
     get octokit() {
         numRequests++;
@@ -31,12 +31,12 @@ class OctoKit {
     // TODO: just iterate over the issues in a page here instead of making caller do it
     async *query(query) {
         const q = query.q + ` repo:${this.params.owner}/${this.params.repo}`;
-        const options = this.octokit.search.issuesAndPullRequests.endpoint.merge({
+        const options = {
             ...query,
             q,
             per_page: 100,
             headers: { Accept: 'application/vnd.github.squirrel-girl-preview+json' },
-        });
+        };
         let pageNum = 0;
         const timeout = async () => {
             if (pageNum < 2) {
@@ -49,7 +49,7 @@ class OctoKit {
                 await new Promise((resolve) => setTimeout(resolve, 30000));
             }
         };
-        for await (const pageResponse of this.octokit.paginate.iterator(options)) {
+        for await (const pageResponse of this.octokit.paginate.iterator(this.octokit.rest.search.issuesAndPullRequests, options)) {
             await timeout();
             numRequests++;
             const page = pageResponse.data;
@@ -60,23 +60,23 @@ class OctoKit {
     async createIssue(owner, repo, title, body) {
         (0, utils_1.safeLog)(`Creating issue \`${title}\` on ${owner}/${repo}`);
         if (!this.options.readonly)
-            await this.octokit.issues.create({ owner, repo, title, body });
+            await this.octokit.rest.issues.create({ owner, repo, title, body });
     }
     octokitIssueToIssue(issue) {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
         return {
-            author: { name: issue.user.login, isGitHubApp: issue.user.type === 'Bot' },
-            body: (_a = issue.body) !== null && _a !== void 0 ? _a : '',
+            author: { name: (_b = (_a = issue.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'unkown', isGitHubApp: ((_c = issue.user) === null || _c === void 0 ? void 0 : _c.type) === 'Bot' },
+            body: (_d = issue.body) !== null && _d !== void 0 ? _d : '',
             number: issue.number,
             title: issue.title,
-            isPr: !!((_b = issue.pull_request) === null || _b === void 0 ? void 0 : _b.html_url),
-            labels: issue.labels.map((label) => label.name),
+            isPr: !!((_e = issue.pull_request) === null || _e === void 0 ? void 0 : _e.html_url),
+            labels: issue.labels.map((label) => { var _a; return (typeof label === 'string' ? label : (_a = label.name) !== null && _a !== void 0 ? _a : ''); }),
             open: issue.state === 'open',
             locked: issue.locked,
             numComments: issue.comments,
             reactions: issue.reactions,
-            assignee: (_d = (_c = issue.assignee) === null || _c === void 0 ? void 0 : _c.login) !== null && _d !== void 0 ? _d : (_f = (_e = issue.assignees) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.login,
-            assignees: (_h = (_g = issue.assignees) === null || _g === void 0 ? void 0 : _g.map((assignee) => assignee.login)) !== null && _h !== void 0 ? _h : [],
+            assignee: (_g = (_f = issue.assignee) === null || _f === void 0 ? void 0 : _f.login) !== null && _g !== void 0 ? _g : (_j = (_h = issue.assignees) === null || _h === void 0 ? void 0 : _h[0]) === null || _j === void 0 ? void 0 : _j.login,
+            assignees: (_l = (_k = issue.assignees) === null || _k === void 0 ? void 0 : _k.map((assignee) => assignee.login)) !== null && _l !== void 0 ? _l : [],
             milestone: issue.milestone ? this.octokitMilestoneToMilestone(issue.milestone) : null,
             createdAt: +new Date(issue.created_at),
             updatedAt: +new Date(issue.updated_at),
@@ -84,6 +84,10 @@ class OctoKit {
         };
     }
     octokitMilestoneToMilestone(milestone) {
+        var _a;
+        if ((milestone === null || milestone === void 0 ? void 0 : milestone.number) === undefined) {
+            return null;
+        }
         return {
             title: milestone.title,
             milestoneId: milestone.number,
@@ -91,7 +95,7 @@ class OctoKit {
             createdAt: milestone.created_at !== null ? new Date(milestone.created_at.split('T')[0]) : null,
             dueOn: milestone.due_on !== null ? new Date(milestone.due_on.split('T')[0]) : null,
             closedAt: milestone.closed_at !== null ? new Date(milestone.closed_at.split('T')[0]) : null,
-            description: milestone.description,
+            description: (_a = milestone.description) !== null && _a !== void 0 ? _a : '',
             numClosedIssues: milestone.closed_issues,
             numOpenIssues: milestone.open_issues,
             state: milestone.state === 'open' ? 'open' : 'closed',
@@ -103,7 +107,7 @@ class OctoKit {
             return this.writeAccessCache[user.name];
         }
         (0, utils_1.safeLog)('Fetching permissions for ' + user.name);
-        const permissions = (await this.octokit.repos.getCollaboratorPermissionLevel({
+        const permissions = (await this.octokit.rest.repos.getCollaboratorPermissionLevel({
             ...this.params,
             username: user.name,
         })).data.permission;
@@ -111,7 +115,7 @@ class OctoKit {
     }
     async repoHasLabel(name) {
         try {
-            await this.octokit.issues.getLabel({ ...this.params, name });
+            await this.octokit.rest.issues.getLabel({ ...this.params, name });
             return true;
         }
         catch (err) {
@@ -125,7 +129,7 @@ class OctoKit {
     async createLabel(name, color, description) {
         (0, utils_1.safeLog)('Creating label ' + name);
         if (!this.options.readonly)
-            await this.octokit.issues.createLabel({ ...this.params, color, description, name });
+            await this.octokit.rest.issues.createLabel({ ...this.params, color, description, name });
         else
             this.mockLabels.add(name);
     }
@@ -133,7 +137,7 @@ class OctoKit {
         (0, utils_1.safeLog)('Deleting label ' + name);
         try {
             if (!this.options.readonly)
-                await this.octokit.issues.deleteLabel({ ...this.params, name });
+                await this.octokit.rest.issues.deleteLabel({ ...this.params, name });
         }
         catch (err) {
             const statusErorr = err;
@@ -147,8 +151,8 @@ class OctoKit {
         (0, utils_1.safeLog)('Reading config at ' + path);
         const repoPath = `.github/${path}.json`;
         try {
-            const data = (await this.octokit.repos.getContents({ ...this.params, path: repoPath })).data;
-            if ('type' in data && data.type === 'file') {
+            const data = (await this.octokit.rest.repos.getContent({ ...this.params, path: repoPath })).data;
+            if ('type' in data && data.type === 'file' && 'content' in data) {
                 if (data.encoding === 'base64' && data.content) {
                     return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
                 }
@@ -184,7 +188,7 @@ class OctoKit {
     async getCurrentRepoMilestone() {
         (0, utils_1.safeLog)(`Getting repo milestone for ${this.params.owner}/${this.params.repo}`);
         // Fetch all milestones open for this repo
-        const allMilestones = (await this.octokit.issues.listMilestonesForRepo({
+        const allMilestones = (await this.octokit.rest.issues.listMilestones({
             owner: this.params.owner,
             repo: this.params.repo,
             state: 'open',
@@ -193,10 +197,10 @@ class OctoKit {
         })).data;
         const currentDate = new Date();
         const possibleMilestones = allMilestones
-            .filter((milestone) => new Date(milestone.due_on) > currentDate &&
+            .filter((milestone) => new Date(milestone.due_on === null ? currentDate : milestone.due_on) > currentDate &&
             currentDate > new Date(milestone.created_at) &&
             !milestone.title.includes('Recovery'))
-            .sort((a, b) => +new Date(a.due_on) - +new Date(b.due_on));
+            .sort((a, b) => { var _a, _b; return +new Date((_a = a.due_on) !== null && _a !== void 0 ? _a : currentDate) - +new Date((_b = b.due_on) !== null && _b !== void 0 ? _b : currentDate); });
         if (possibleMilestones.length === 0) {
             return undefined;
         }
@@ -205,7 +209,7 @@ class OctoKit {
     async dispatch(title) {
         (0, utils_1.safeLog)('Dispatching ' + title);
         if (!this.options.readonly)
-            await this.octokit.repos.createDispatchEvent({ ...this.params, event_type: title });
+            await this.octokit.rest.repos.createDispatchEvent({ ...this.params, event_type: title });
     }
 }
 exports.OctoKit = OctoKit;
@@ -219,7 +223,7 @@ class OctoKitIssue extends OctoKit {
     async addAssignee(assignee) {
         (0, utils_1.safeLog)('Adding assignee ' + assignee + ' to ' + this.issueData.number);
         if (!this.options.readonly) {
-            await this.octokit.issues.addAssignees({
+            await this.octokit.rest.issues.addAssignees({
                 ...this.params,
                 issue_number: this.issueData.number,
                 assignees: [assignee],
@@ -229,7 +233,7 @@ class OctoKitIssue extends OctoKit {
     async removeAssignee(assignee) {
         (0, utils_1.safeLog)('Removing assignee ' + assignee + ' to ' + this.issueData.number);
         if (!this.options.readonly) {
-            await this.octokit.issues.removeAssignees({
+            await this.octokit.rest.issues.removeAssignees({
                 ...this.params,
                 issue_number: this.issueData.number,
                 assignees: [assignee],
@@ -239,7 +243,7 @@ class OctoKitIssue extends OctoKit {
     async closeIssue() {
         (0, utils_1.safeLog)('Closing issue ' + this.issueData.number);
         if (!this.options.readonly)
-            await this.octokit.issues
+            await this.octokit.rest.issues
                 .update({
                 ...this.params,
                 issue_number: this.issueData.number,
@@ -252,12 +256,12 @@ class OctoKitIssue extends OctoKit {
     async lockIssue() {
         (0, utils_1.safeLog)('Locking issue ' + this.issueData.number);
         if (!this.options.readonly)
-            await this.octokit.issues.lock({ ...this.params, issue_number: this.issueData.number });
+            await this.octokit.rest.issues.lock({ ...this.params, issue_number: this.issueData.number });
     }
     async unlockIssue() {
         (0, utils_1.safeLog)('Unlocking issue ' + this.issueData.number);
         if (!this.options.readonly)
-            await this.octokit.issues.unlock({ ...this.params, issue_number: this.issueData.number });
+            await this.octokit.rest.issues.unlock({ ...this.params, issue_number: this.issueData.number });
     }
     async getIssue() {
         if (isIssue(this.issueData)) {
@@ -265,7 +269,7 @@ class OctoKitIssue extends OctoKit {
             return this.issueData;
         }
         (0, utils_1.safeLog)('Fetching issue ' + this.issueData.number);
-        const issue = (await this.octokit.issues.get({
+        const issue = (await this.octokit.rest.issues.get({
             ...this.params,
             issue_number: this.issueData.number,
             mediaType: { previews: ['squirrel-girl'] },
@@ -275,7 +279,7 @@ class OctoKitIssue extends OctoKit {
     async postComment(body) {
         (0, utils_1.safeLog)(`Posting comment on ${this.issueData.number}`);
         if (!this.options.readonly)
-            await this.octokit.issues.createComment({
+            await this.octokit.rest.issues.createComment({
                 ...this.params,
                 issue_number: this.issueData.number,
                 body,
@@ -284,7 +288,7 @@ class OctoKitIssue extends OctoKit {
     async deleteComment(id) {
         (0, utils_1.safeLog)(`Deleting comment ${id} on ${this.issueData.number}`);
         if (!this.options.readonly)
-            await this.octokit.issues.deleteComment({
+            await this.octokit.rest.issues.deleteComment({
                 owner: this.params.owner,
                 repo: this.params.repo,
                 comment_id: id,
@@ -293,7 +297,7 @@ class OctoKitIssue extends OctoKit {
     async setMilestone(milestoneId) {
         (0, utils_1.safeLog)(`Setting milestone for ${this.issueData.number} to ${milestoneId}`);
         if (!this.options.readonly)
-            await this.octokit.issues.update({
+            await this.octokit.rest.issues.update({
                 ...this.params,
                 issue_number: this.issueData.number,
                 milestone: milestoneId,
@@ -301,20 +305,23 @@ class OctoKitIssue extends OctoKit {
     }
     async *getComments(last) {
         (0, utils_1.safeLog)('Fetching comments for ' + this.issueData.number);
-        const response = this.octokit.paginate.iterator(this.octokit.issues.listComments.endpoint.merge({
+        const response = this.octokit.paginate.iterator(this.octokit.rest.issues.listComments, {
             ...this.params,
             issue_number: this.issueData.number,
             per_page: 100,
             ...(last ? { per_page: 1, page: (await this.getIssue()).numComments } : {}),
-        }));
+        });
         for await (const page of response) {
             numRequests++;
-            yield page.data.map((comment) => ({
-                author: { name: comment.user.login, isGitHubApp: comment.user.type === 'Bot' },
-                body: comment.body,
-                id: comment.id,
-                timestamp: +new Date(comment.created_at),
-            }));
+            yield page.data.map((comment) => {
+                var _a, _b, _c, _d;
+                return ({
+                    author: { name: (_b = (_a = comment.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : '', isGitHubApp: ((_c = comment.user) === null || _c === void 0 ? void 0 : _c.type) === 'Bot' },
+                    body: (_d = comment.body) !== null && _d !== void 0 ? _d : '',
+                    id: comment.id,
+                    timestamp: +new Date(comment.created_at),
+                });
+            });
         }
     }
     async addLabel(name) {
@@ -323,25 +330,25 @@ class OctoKitIssue extends OctoKit {
             throw Error(`Action could not execute becuase label ${name} is not defined.`);
         }
         if (!this.options.readonly)
-            await this.octokit.issues.addLabels({
+            await this.octokit.rest.issues.addLabels({
                 ...this.params,
                 issue_number: this.issueData.number,
                 labels: [name],
             });
     }
     async getAssigner(assignee) {
-        const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
+        var _a, _b;
+        const options = {
             ...this.params,
             issue_number: this.issueData.number,
-        });
+        };
         let assigner;
-        for await (const event of this.octokit.paginate.iterator(options)) {
+        for await (const event of this.octokit.paginate.iterator(this.octokit.rest.issues.listEventsForTimeline, options)) {
             numRequests++;
             const timelineEvents = event.data;
             for (const timelineEvent of timelineEvents) {
-                if (timelineEvent.event === 'assigned' &&
-                    timelineEvent.assignee.login === assignee) {
-                    assigner = timelineEvent.actor.login;
+                if (timelineEvent.event === 'assigned' && ((_a = timelineEvent.assignee) === null || _a === void 0 ? void 0 : _a.login) === assignee) {
+                    assigner = (_b = timelineEvent.actor) === null || _b === void 0 ? void 0 : _b.login;
                 }
             }
             if (assigner) {
@@ -357,7 +364,7 @@ class OctoKitIssue extends OctoKit {
         (0, utils_1.safeLog)(`Removing label ${name} from ${this.issueData.number}`);
         try {
             if (!this.options.readonly)
-                await this.octokit.issues.removeLabel({
+                await this.octokit.rest.issues.removeLabel({
                     ...this.params,
                     issue_number: this.issueData.number,
                     name,
@@ -373,7 +380,7 @@ class OctoKitIssue extends OctoKit {
         }
     }
     async getClosingInfo(alreadyChecked = []) {
-        var _a, _b, _c, _d, _e, _f, _g;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         if (alreadyChecked.includes(this.issueData.number)) {
             return undefined;
         }
@@ -382,21 +389,20 @@ class OctoKitIssue extends OctoKit {
             return;
         }
         const closingHashComment = /(?:\\|\/)closedWith (?:https:\/\/github\.com\/microsoft\/vscode\/commit\/)?([a-fA-F0-9]{7,40})/;
-        const options = this.octokit.issues.listEventsForTimeline.endpoint.merge({
+        const options = {
             ...this.params,
             issue_number: this.issueData.number,
-        });
+        };
         let closingCommit;
         const crossReferencing = [];
-        for await (const event of this.octokit.paginate.iterator(options)) {
+        for await (const event of this.octokit.paginate.iterator(this.octokit.rest.issues.listEventsForTimeline, options)) {
             numRequests++;
             const timelineEvents = event.data;
             for (const timelineEvent of timelineEvents) {
                 if ((timelineEvent.event === 'closed' || timelineEvent.event === 'merged') &&
+                    timelineEvent.created_at &&
                     timelineEvent.commit_id &&
-                    timelineEvent.commit_url
-                        .toLowerCase()
-                        .includes(`/${this.params.owner}/${this.params.repo}/`.toLowerCase())) {
+                    ((_a = timelineEvent.commit_url) === null || _a === void 0 ? void 0 : _a.toLowerCase().includes(`/${this.params.owner}/${this.params.repo}/`.toLowerCase()))) {
                     closingCommit = {
                         hash: timelineEvent.commit_id,
                         timestamp: +new Date(timelineEvent.created_at),
@@ -405,8 +411,9 @@ class OctoKitIssue extends OctoKit {
                 if (timelineEvent.event === 'reopened') {
                     closingCommit = undefined;
                 }
-                if (timelineEvent.event === 'commented' &&
-                    !((_a = timelineEvent.body) === null || _a === void 0 ? void 0 : _a.includes('UNABLE_TO_LOCATE_COMMIT_MESSAGE')) &&
+                if (timelineEvent.created_at &&
+                    timelineEvent.event === 'commented' &&
+                    !((_b = timelineEvent.body) === null || _b === void 0 ? void 0 : _b.includes('UNABLE_TO_LOCATE_COMMIT_MESSAGE')) &&
                     closingHashComment.test(timelineEvent.body)) {
                     closingCommit = {
                         hash: closingHashComment.exec(timelineEvent.body)[1],
@@ -414,8 +421,8 @@ class OctoKitIssue extends OctoKit {
                     };
                 }
                 if (timelineEvent.event === 'cross-referenced' &&
-                    ((_c = (_b = timelineEvent.source) === null || _b === void 0 ? void 0 : _b.issue) === null || _c === void 0 ? void 0 : _c.number) &&
-                    ((_f = (_e = (_d = timelineEvent.source) === null || _d === void 0 ? void 0 : _d.issue) === null || _e === void 0 ? void 0 : _e.pull_request) === null || _f === void 0 ? void 0 : _f.url.includes(`/${this.params.owner}/${this.params.repo}/`.toLowerCase()))) {
+                    ((_d = (_c = timelineEvent.source) === null || _c === void 0 ? void 0 : _c.issue) === null || _d === void 0 ? void 0 : _d.number) &&
+                    ((_g = (_f = (_e = timelineEvent.source) === null || _e === void 0 ? void 0 : _e.issue) === null || _f === void 0 ? void 0 : _f.pull_request) === null || _g === void 0 ? void 0 : _g.url.includes(`/${this.params.owner}/${this.params.repo}/`.toLowerCase()))) {
                     crossReferencing.push(timelineEvent.source.issue.number);
                 }
             }
@@ -428,7 +435,7 @@ class OctoKitIssue extends OctoKit {
                     number: id,
                 }).getClosingInfo(alreadyChecked);
                 if (closed) {
-                    if (Math.abs(closed.timestamp - ((_g = (await this.getIssue()).closedAt) !== null && _g !== void 0 ? _g : 0)) < 5000) {
+                    if (Math.abs(closed.timestamp - ((_h = (await this.getIssue()).closedAt) !== null && _h !== void 0 ? _h : 0)) < 5000) {
                         closingCommit = closed;
                         break;
                     }

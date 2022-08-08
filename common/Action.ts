@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OctoKit, OctoKitIssue, getNumRequests } from '../api/octokit';
-import { context, GitHub } from '@actions/github';
+import { context, getOctokit } from '@actions/github';
 import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue, safeLog } from './utils';
 import { getInput, setFailed } from '@actions/core';
 import { aiHandle } from './telemetry';
@@ -19,10 +19,12 @@ export abstract class Action {
 
 	constructor() {
 		console.log('::stop-commands::' + uuid());
-		this.username = new GitHub(this.token).users.getAuthenticated().then(
-			(v) => v.data.name,
-			() => 'unknown',
-		);
+		this.username = getOctokit(this.token)
+			.rest.users.getAuthenticated()
+			.then(
+				(v) => v.data.name ?? 'unknown',
+				() => 'unknown',
+			);
 	}
 
 	public async trackMetric(telemetry: { name: string; value: number }) {
@@ -59,7 +61,7 @@ export abstract class Action {
 			if (issue) {
 				const octokit = new OctoKitIssue(token, context.repo, { number: issue }, { readonly });
 				if (context.eventName === 'issue_comment') {
-					await this.onCommented(octokit, context.payload.comment.body, context.actor);
+					await this.onCommented(octokit, context.payload.comment?.body, context.actor);
 				} else if (
 					context.eventName === 'issues' ||
 					context.eventName === 'pull_request' ||

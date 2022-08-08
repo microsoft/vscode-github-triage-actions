@@ -15,7 +15,9 @@ class Action {
     constructor() {
         this.token = (0, utils_1.getRequiredInput)('token');
         console.log('::stop-commands::' + (0, uuid_1.v4)());
-        this.username = new github_1.GitHub(this.token).users.getAuthenticated().then((v) => v.data.name, () => 'unknown');
+        this.username = (0, github_1.getOctokit)(this.token)
+            .rest.users.getAuthenticated()
+            .then((v) => { var _a; return (_a = v.data.name) !== null && _a !== void 0 ? _a : 'unknown'; }, () => 'unknown');
     }
     async trackMetric(telemetry) {
         if (telemetry_1.aiHandle) {
@@ -31,7 +33,7 @@ class Action {
         }
     }
     async run() {
-        var _a, _b, _c, _d, _e;
+        var _a, _b, _c, _d, _e, _f;
         if (utils_1.errorLoggingIssue) {
             const { repo, issue, owner } = utils_1.errorLoggingIssue;
             if (github_1.context.repo.repo === repo &&
@@ -47,7 +49,7 @@ class Action {
             if (issue) {
                 const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: issue }, { readonly });
                 if (github_1.context.eventName === 'issue_comment') {
-                    await this.onCommented(octokit, github_1.context.payload.comment.body, github_1.context.actor);
+                    await this.onCommented(octokit, (_c = github_1.context.payload.comment) === null || _c === void 0 ? void 0 : _c.body, github_1.context.actor);
                 }
                 else if (github_1.context.eventName === 'issues' ||
                     github_1.context.eventName === 'pull_request' ||
@@ -84,7 +86,7 @@ class Action {
                 }
             }
             else if (github_1.context.eventName === 'create') {
-                await this.onCreated(new octokit_1.OctoKit(token, github_1.context.repo, { readonly }), (_c = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _c === void 0 ? void 0 : _c.ref, (_e = (_d = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _d === void 0 ? void 0 : _d.sender) === null || _e === void 0 ? void 0 : _e.login);
+                await this.onCreated(new octokit_1.OctoKit(token, github_1.context.repo, { readonly }), (_d = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _d === void 0 ? void 0 : _d.ref, (_f = (_e = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _e === void 0 ? void 0 : _e.sender) === null || _f === void 0 ? void 0 : _f.login);
             }
             else {
                 await this.onTriggered(new octokit_1.OctoKit(token, github_1.context.repo, { readonly }));

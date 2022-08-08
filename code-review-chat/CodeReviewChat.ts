@@ -209,7 +209,7 @@ export class CodeReviewChat extends Chatter {
 						repo: this.options.payload.repo,
 						pull_number: this.options.payload.pr.number,
 					}),
-					this.octokit.pulls.listReviewRequests({
+					this.octokit.pulls.listRequestedReviewers({
 						owner: this.options.payload.owner,
 						repo: this.options.payload.repo,
 						pull_number: this.options.payload.pr.number,
@@ -218,7 +218,7 @@ export class CodeReviewChat extends Chatter {
 
 				// Check if there is any exisitng review. This excludes the author themselves as they don't count
 				const hasExistingReview = existingReviews?.data?.some((review) => {
-					return review.user.login !== author.name;
+					return review.user?.login !== author.name;
 				});
 
 				// Check to see if there is an existing review or review request. We don't check if the author is part of the review request as that isn't possible

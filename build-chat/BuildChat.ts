@@ -6,6 +6,7 @@
 import { Octokit } from '@octokit/rest';
 import { WebClient } from '@slack/web-api';
 import { BlobServiceClient } from '@azure/storage-blob';
+import { ActionsListWorkflowRunsResponseWorkflowRunsItem } from '../common/OctokitTypings';
 
 let safeLog: (message: string, ...args: any[]) => void; // utils.ts needs GITHUB_REPOSITORY set below.
 
@@ -325,7 +326,7 @@ async function listAllMemberships(web: WebClient) {
 }
 
 interface Build {
-	data: Octokit.ActionsListWorkflowRunsResponseWorkflowRunsItem;
+	data: ActionsListWorkflowRunsResponseWorkflowRunsItem;
 	previousSourceVersion: string | undefined;
 	authors: string[];
 	buildHtmlUrl: string;
