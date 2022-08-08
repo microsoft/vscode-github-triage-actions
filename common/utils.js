@@ -53,10 +53,13 @@ exports.daysAgoToTimestamp = daysAgoToTimestamp;
 const daysAgoToHumanReadbleDate = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}\w$/, '');
 exports.daysAgoToHumanReadbleDate = daysAgoToHumanReadbleDate;
 const getRateLimit = async (token) => {
-    const usageData = (await new github_1.GitHub(token).rateLimit.get()).data.resources;
+    const usageData = (await (0, github_1.getOctokit)(token).rest.rateLimit.get()).data.resources;
     const usage = {};
     ['core', 'graphql', 'search'].forEach(async (category) => {
-        usage[category] = 1 - usageData[category].remaining / usageData[category].limit;
+        var _a, _b, _c, _d;
+        if (usageData[category]) {
+            usage[category] = 1 - ((_b = (_a = usageData[category]) === null || _a === void 0 ? void 0 : _a.remaining) !== null && _b !== void 0 ? _b : 0) / ((_d = (_c = usageData[category]) === null || _c === void 0 ? void 0 : _c.limit) !== null && _d !== void 0 ? _d : 1);
+        }
     });
     return usage;
 };

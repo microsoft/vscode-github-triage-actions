@@ -36,9 +36,11 @@ const argv = yargs
 })
     .help()
     .alias('help', 'h').argv;
-const [, owner, repo] = /(.*)\/(.*)/.exec(argv.repo);
 const main = async () => {
-    await new EnglishPlease_1.LanguageSpecificLabeler(new octokit_1.OctoKitIssue(argv.token, { repo, owner }, { number: argv.number }, { readonly: !argv.write }), 'translation-required-', 'c29cff', '*english-please', 'info-needed', argv.key).run();
+    // Check if it's a promise
+    const args = await argv;
+    const [, owner, repo] = /(.*)\/(.*)/.exec(args.repo);
+    await new EnglishPlease_1.LanguageSpecificLabeler(new octokit_1.OctoKitIssue(args.token, { repo, owner }, { number: args.number }, { readonly: !args.write }), 'translation-required-', 'c29cff', '*english-please', 'info-needed', args.key).run();
 };
 main().catch(console.error);
 //# sourceMappingURL=cli.js.map

@@ -36,16 +36,18 @@ const argv = yargs
 	.help()
 	.alias('help', 'h').argv;
 
-const [, owner, repo] = /(.*)\/(.*)/.exec(argv.repo)!;
-
 const main = async () => {
+	// Check if it's a promise
+
+	const args = await argv;
+	const [, owner, repo] = /(.*)\/(.*)/.exec(args.repo)!;
 	await new LanguageSpecificLabeler(
-		new OctoKitIssue(argv.token, { repo, owner }, { number: argv.number }, { readonly: !argv.write }),
+		new OctoKitIssue(args.token, { repo, owner }, { number: args.number }, { readonly: !args.write }),
 		'translation-required-',
 		'c29cff',
 		'*english-please',
 		'info-needed',
-		argv.key,
+		args.key,
 	).run();
 };
 
