@@ -272,7 +272,15 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 
 	async closeIssue(reason: 'completed' | 'not_planned'): Promise<void> {
 		safeLog('Closing issue ' + this.issueData.number);
-		if (!this.options.readonly)
+		if (!this.options.readonly) {
+			const issue = await this.octokit.rest.issues.get({
+				...this.params,
+				issue_number: this.issueData.number,
+			});
+			// Don't close already closed issues even if it means changing the state
+			if (issue.data.state === 'closed') {
+				return;
+			}
 			await this.octokit.rest.issues
 				.update({
 					...this.params,
@@ -283,6 +291,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 				.catch((e) => {
 					safeLog('error closing issue:', e);
 				});
+		}
 	}
 
 	async lockIssue(): Promise<void> {
