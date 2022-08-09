@@ -12,7 +12,7 @@ import { safeLog } from '../common/utils';
 export type Command =
 	& { name: string }
 	& ({ type: 'comment'; allowUsers?: string[] } | { type: 'label', regex?: string })
-	& { action?: 'close', reason?: 'not_planned' | 'complete' }
+	& { action?: 'close', reason?: 'not_planned' | 'completed' }
 	& Partial<{ comment: string; addLabel: string; removeLabel: string, assign: string[] }>
 	& Partial<{ requireLabel: string; disallowLabel: string }>
 /* eslint-enable */
@@ -111,7 +111,7 @@ export class Commands {
 		}
 
 		if (command.action === 'close') {
-			tasks.push(this.github.closeIssue(command.reason ?? 'complete'));
+			tasks.push(this.github.closeIssue(command.reason ?? 'completed'));
 		}
 
 		if (command.comment && (command.action !== 'close' || issue.open)) {
