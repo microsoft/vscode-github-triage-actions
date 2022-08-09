@@ -97,7 +97,7 @@ export class FeatureRequestQueryer {
 				safeLog(`Issue #${issueData.number} rejected`);
 				await trackEvent(issue, 'feature-request:rejected');
 				await issue.postComment(REJECT_MARKER + '\n' + this.config.comments.reject);
-				await issue.closeIssue();
+				await issue.closeIssue('not_planned');
 
 				if (this.config.comments.rejectLabel) {
 					await issue.addLabel(this.config.comments.rejectLabel);

@@ -270,7 +270,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		}
 	}
 
-	async closeIssue(): Promise<void> {
+	async closeIssue(reason: 'complete' | 'not_planned'): Promise<void> {
 		safeLog('Closing issue ' + this.issueData.number);
 		if (!this.options.readonly)
 			await this.octokit.rest.issues
@@ -278,6 +278,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 					...this.params,
 					issue_number: this.issueData.number,
 					state: 'closed',
+					state_reason: reason,
 				})
 				.catch((e) => {
 					safeLog('error closing issue:', e);

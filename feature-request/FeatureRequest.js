@@ -77,7 +77,7 @@ class FeatureRequestQueryer {
                 (0, utils_1.safeLog)(`Issue #${issueData.number} rejected`);
                 await (0, telemetry_1.trackEvent)(issue, 'feature-request:rejected');
                 await issue.postComment(exports.REJECT_MARKER + '\n' + this.config.comments.reject);
-                await issue.closeIssue();
+                await issue.closeIssue('not_planned');
                 if (this.config.comments.rejectLabel) {
                     await issue.addLabel(this.config.comments.rejectLabel);
                 }

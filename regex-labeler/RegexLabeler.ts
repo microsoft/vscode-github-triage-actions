@@ -29,7 +29,7 @@ export class RegexFlagger {
 			if (this.comment) {
 				await this.github.postComment(this.comment);
 			}
-			await this.github.closeIssue();
+			await this.github.closeIssue('not_planned');
 		}
 	}
 }

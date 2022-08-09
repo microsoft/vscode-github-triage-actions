@@ -40,7 +40,7 @@ class Commands {
         }
     }
     async perform(command, issue) {
-        var _a, _b;
+        var _a, _b, _c;
         if (!(await this.matches(command, issue)))
             return;
         (0, utils_1.safeLog)(`Running command ${command.name}:`);
@@ -84,7 +84,7 @@ class Commands {
             }
         }
         if (command.action === 'close') {
-            tasks.push(this.github.closeIssue());
+            tasks.push(this.github.closeIssue((_c = command.reason) !== null && _c !== void 0 ? _c : 'complete'));
         }
         if (command.comment && (command.action !== 'close' || issue.open)) {
             tasks.push(this.github.postComment(this.hydrate(command.comment, issue)));

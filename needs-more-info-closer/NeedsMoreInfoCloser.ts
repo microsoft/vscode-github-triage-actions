@@ -52,7 +52,7 @@ export class NeedsMoreInfoCloser {
 						if (this.closeComment) {
 							await issue.postComment(this.closeComment);
 						}
-						await issue.closeIssue();
+						await issue.closeIssue('not_planned');
 					} else {
 						if (hydrated.updatedAt < pingTimestamp && hydrated.assignee) {
 							safeLog(
