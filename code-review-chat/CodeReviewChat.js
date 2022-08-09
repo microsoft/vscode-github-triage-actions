@@ -128,12 +128,13 @@ class CodeReviewChat extends Chatter {
         }
         const data = await this.issue.getIssue();
         const author = data.author;
-        if (!(await this.issue.hasWriteAccess(author))) {
+        // Author must have write access to the repo or be a bot
+        if (!(await this.issue.hasWriteAccess(author)) && !author.isGitHubApp) {
             (0, utils_1.safeLog)('Issue author not team member, ignoring');
             return;
         }
         const tasks = [];
-        if (!data.assignee) {
+        if (!data.assignee && !author.isGitHubApp) {
             tasks.push(this.issue.addAssignee(author.name));
         }
         tasks.push((async () => {
