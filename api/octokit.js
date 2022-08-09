@@ -240,7 +240,7 @@ class OctoKitIssue extends OctoKit {
             });
         }
     }
-    async closeIssue() {
+    async closeIssue(reason) {
         (0, utils_1.safeLog)('Closing issue ' + this.issueData.number);
         if (!this.options.readonly)
             await this.octokit.rest.issues
@@ -248,6 +248,7 @@ class OctoKitIssue extends OctoKit {
                 ...this.params,
                 issue_number: this.issueData.number,
                 state: 'closed',
+                state_reason: reason,
             })
                 .catch((e) => {
                 (0, utils_1.safeLog)('error closing issue:', e);
