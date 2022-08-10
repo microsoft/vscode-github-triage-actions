@@ -19,6 +19,9 @@ export type TestbedConstructorArgs = Partial<TestbedConfig>;
 export class Testbed implements GitHub {
 	public config: TestbedConfig;
 
+	public readonly repoName: string = 'test-repo';
+	public readonly repoOwner: string = 'test-owner';
+
 	constructor(config?: TestbedConstructorArgs) {
 		this.config = {
 			globalLabels: config?.globalLabels ?? [],

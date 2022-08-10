@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { Octokit } from '@octokit/rest';
 import { Comment, GitHubIssue, Issue } from '../api/api';
 import { safeLog } from '../common/utils';
 import { parseTestPlanItem } from './validator';
@@ -12,6 +13,8 @@ const commentTag = '<!-- INVALID TEST PLAN ITEM -->';
 export class TestPlanItemValidator {
 	constructor(
 		private github: GitHubIssue,
+		private token: string,
+		private refLabel: string,
 		private label: string,
 		private invalidLabel: string,
 		private comment: string,
@@ -40,7 +43,7 @@ export class TestPlanItemValidator {
 			break;
 		}
 
-		const errors = this.getErrors(issue);
+		const errors = await this.getErrors(issue);
 		if (errors) {
 			tasks.push(this.github.postComment(`${commentTag}\n${this.comment}\n\n**Error:** ${errors}`));
 			tasks.push(this.github.addLabel(this.invalidLabel));
@@ -54,9 +57,20 @@ export class TestPlanItemValidator {
 		await Promise.all(tasks);
 	}
 
-	private getErrors(issue: Issue): string | undefined {
+	private async getErrors(issue: Issue): Promise<string | undefined> {
 		try {
-			parseTestPlanItem(issue.body, issue.author.name);
+			const testPlan = parseTestPlanItem(issue.body, issue.author.name);
+			if (testPlan.issueRefs.length) {
+				const octokit = new Octokit({ auth: this.token });
+				for (const referencedIssueNum of testPlan.issueRefs) {
+					await octokit.issues.addLabels({
+						owner: this.github.repoOwner,
+						repo: this.github.repoName,
+						issue_number: referencedIssueNum,
+						labels: [this.refLabel],
+					});
+				}
+			}
 			return;
 		} catch (error) {
 			const err = error as Error;

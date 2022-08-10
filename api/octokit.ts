@@ -23,12 +23,17 @@ export class OctoKit implements GitHub {
 	// when in readonly mode, record labels just-created so at to not throw unneccesary errors
 	protected mockLabels: Set<string> = new Set();
 
+	public readonly repoName: string;
+	public readonly repoOwner: string;
+
 	constructor(
 		protected token: string,
 		protected params: { repo: string; owner: string },
 		protected options: { readonly: boolean } = { readonly: false },
 	) {
 		this._octokit = getOctokit(token);
+		this.repoName = params.repo;
+		this.repoOwner = params.owner;
 	}
 
 	getIssueByNumber(number: number) {

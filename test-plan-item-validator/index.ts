@@ -14,6 +14,8 @@ class TestPlanItemValidatorAction extends Action {
 	async runValidation(issue: OctoKitIssue) {
 		await new TestPlanItemValidator(
 			issue,
+			getRequiredInput('token'),
+			getRequiredInput('refLabel'),
 			getRequiredInput('label'),
 			getRequiredInput('invalidLabel'),
 			getRequiredInput('comment'),
