@@ -20,6 +20,8 @@ class OctoKit {
         this.mockLabels = new Set();
         this.writeAccessCache = {};
         this._octokit = (0, github_1.getOctokit)(token);
+        this.repoName = params.repo;
+        this.repoOwner = params.owner;
     }
     get octokit() {
         numRequests++;

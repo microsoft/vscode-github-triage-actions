@@ -9,6 +9,8 @@ const utils_1 = require("../common/utils");
 class Testbed {
     constructor(config) {
         var _a, _b, _c, _d, _e;
+        this.repoName = 'test-repo';
+        this.repoOwner = 'test-owner';
         this.config = {
             globalLabels: (_a = config === null || config === void 0 ? void 0 : config.globalLabels) !== null && _a !== void 0 ? _a : [],
             configs: (_b = config === null || config === void 0 ? void 0 : config.configs) !== null && _b !== void 0 ? _b : {},

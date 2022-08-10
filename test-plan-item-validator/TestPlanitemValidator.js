@@ -5,12 +5,15 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestPlanItemValidator = void 0;
+const rest_1 = require("@octokit/rest");
 const utils_1 = require("../common/utils");
 const validator_1 = require("./validator");
 const commentTag = '<!-- INVALID TEST PLAN ITEM -->';
 class TestPlanItemValidator {
-    constructor(github, label, invalidLabel, comment) {
+    constructor(github, token, refLabel, label, invalidLabel, comment) {
         this.github = github;
+        this.token = token;
+        this.refLabel = refLabel;
         this.label = label;
         this.invalidLabel = invalidLabel;
         this.comment = comment;
@@ -31,7 +34,7 @@ class TestPlanItemValidator {
             }
             break;
         }
-        const errors = this.getErrors(issue);
+        const errors = await this.getErrors(issue);
         if (errors) {
             tasks.push(this.github.postComment(`${commentTag}\n${this.comment}\n\n**Error:** ${errors}`));
             tasks.push(this.github.addLabel(this.invalidLabel));
@@ -44,9 +47,20 @@ class TestPlanItemValidator {
         }
         await Promise.all(tasks);
     }
-    getErrors(issue) {
+    async getErrors(issue) {
         try {
-            (0, validator_1.parseTestPlanItem)(issue.body, issue.author.name);
+            const testPlan = (0, validator_1.parseTestPlanItem)(issue.body, issue.author.name);
+            if (testPlan.issueRefs.length) {
+                const octokit = new rest_1.Octokit({ auth: this.token });
+                for (const referencedIssueNum of testPlan.issueRefs) {
+                    await octokit.issues.addLabels({
+                        owner: this.github.repoOwner,
+                        repo: this.github.repoName,
+                        issue_number: referencedIssueNum,
+                        labels: [this.refLabel],
+                    });
+                }
+            }
             return;
         }
         catch (error) {

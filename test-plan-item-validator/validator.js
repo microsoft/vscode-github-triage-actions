@@ -36,8 +36,9 @@ const AnyPlatformAssignment = new RegExp(`\\[([\\sx])\\]\\s+${AnyPlatformTerm}\\
 const InvalidAssignment = new RegExp(`\\[[\\sx]\\]\\s+(?!(${MacPlatformTerm}|${WindowsPlatformTerm}|${LinuxPlatformTerm}|${IPadPlatformTerm}|${AnyPlatformTerm}))\\s*:?\\s*`, 'i');
 function parseTestPlanItem(body, author) {
     const headerRange = parseHeaderRange(body);
-    const testPlanItem = { complexity: 3, assignments: [], roles: undefined, authors: [], headerRange };
+    const testPlanItem = { complexity: 3, assignments: [], issueRefs: [], roles: undefined, authors: [], headerRange };
     const header = body.substring(testPlanItem.headerRange[0], testPlanItem.headerRange[1]);
+    testPlanItem.issueRefs = parseRefs(header);
     testPlanItem.complexity = parseComplexity(header);
     testPlanItem.roles = parseRoles(header);
     testPlanItem.authors = distinct([author, ...parseAuthors(header)]);
@@ -68,6 +69,33 @@ function parseHeaderRange(body) {
     throw new Error('Test plan item should have header');
 }
 exports.parseHeaderRange = parseHeaderRange;
+function parseRefs(body) {
+    const refsRegex = /(ref(s)?)\s*[:-]?\s*(.*)/i;
+    const refsMatches = refsRegex.exec(body);
+    if (!refsMatches || !refsMatches[3]) {
+        return [];
+    }
+    const referencedIssues = refsMatches[3].split(',');
+    const issueNumbers = [];
+    for (let ref of referencedIssues) {
+        ref = ref.trim();
+        // Issues can be of two types #123 or https://www.github.com/owner/repo/issues/number
+        if (ref.startsWith('#')) {
+            issueNumbers.push(parseInt(ref.substring(1)));
+        }
+        else {
+            // Check if the issue is a valid github issue by checking if it has a valid url 
+            const issueUrlRegex = /https:\/\/github.com\/.*\/.*\/issues\/(\d+)/i;
+            const issueUrlMatches = issueUrlRegex.exec(ref);
+            // Extract the issue number from the URL
+            const issueNumber = issueUrlMatches && issueUrlMatches.length ? parseInt(issueUrlMatches[1]) : undefined;
+            if (issueNumber) {
+                issueNumbers.push(issueNumber);
+            }
+        }
+    }
+    return issueNumbers;
+}
 function parseComplexity(body) {
     const complexityMatches = /\**(complexity|size)\s*[:-]?\s*\**\s*(\d)/i.exec(body);
     return complexityMatches && complexityMatches[2] ? parseInt(complexityMatches[2]) : 3;
