@@ -61,6 +61,10 @@ export class TestPlanItemValidator {
 		try {
 			const testPlan = parseTestPlanItem(issue.body, issue.author.name);
 			if (testPlan.issueRefs.length) {
+				// In the case of testing we don't test this due to the complexity of the API.
+				if (!this.token) {
+					return;
+				}
 				const octokit = new Octokit({ auth: this.token });
 				for (const referencedIssueNum of testPlan.issueRefs) {
 					await octokit.issues.addLabels({

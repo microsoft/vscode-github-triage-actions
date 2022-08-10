@@ -36,7 +36,7 @@ This new API allows extensions to contribute to an environment variable collecti
 describe('TestPlanItemValidator', () => {
 	it('does nothing for valid test plan items', async () => {
 		const testbed = new TestbedIssue({}, { issue: { body: validTestPlanItem }, labels: ['tpi'] });
-		await new TestPlanItemValidator(testbed, 'tpi', 'invalid-tpi', 'plz fix').run();
+		await new TestPlanItemValidator(testbed, '', '', 'tpi', 'invalid-tpi', 'plz fix').run();
 
 		const comments: Comment[] = [];
 		for await (const page of testbed.getComments()) {
@@ -48,7 +48,7 @@ describe('TestPlanItemValidator', () => {
 
 	it('does nothing for non test plan items', async () => {
 		const testbed = new TestbedIssue({}, { issue: { body: invalidTestPlanItem } });
-		await new TestPlanItemValidator(testbed, 'tpi', 'invalid-tpi', 'plz fix').run();
+		await new TestPlanItemValidator(testbed, '', '', 'tpi', 'invalid-tpi', 'plz fix').run();
 
 		const comments: Comment[] = [];
 		for await (const page of testbed.getComments()) {
@@ -59,7 +59,7 @@ describe('TestPlanItemValidator', () => {
 
 	it('adds comment for invalid test plan items', async () => {
 		const testbed = new TestbedIssue({}, { issue: { body: invalidTestPlanItem }, labels: ['tpi'] });
-		await new TestPlanItemValidator(testbed, 'tpi', 'invalid-tpi', 'plz fix').run();
+		await new TestPlanItemValidator(testbed, '', '', 'tpi', 'invalid-tpi', 'plz fix').run();
 
 		const comments: Comment[] = [];
 		for await (const page of testbed.getComments()) {
@@ -74,9 +74,9 @@ describe('TestPlanItemValidator', () => {
 	it('only adds one comment even on multiple runs', async () => {
 		const testbed = new TestbedIssue({}, { issue: { body: invalidTestPlanItem }, labels: ['tpi'] });
 
-		await new TestPlanItemValidator(testbed, 'tpi', 'invalid-tpi', 'plz fix').run();
-		await new TestPlanItemValidator(testbed, 'tpi', 'invalid-tpi', 'plz fix').run();
-		await new TestPlanItemValidator(testbed, 'tpi', 'invalid-tpi', 'plz fix').run();
+		await new TestPlanItemValidator(testbed, '', '', 'tpi', 'invalid-tpi', 'plz fix').run();
+		await new TestPlanItemValidator(testbed, '', '', 'tpi', 'invalid-tpi', 'plz fix').run();
+		await new TestPlanItemValidator(testbed, '', '', 'tpi', 'invalid-tpi', 'plz fix').run();
 
 		const comments: Comment[] = [];
 		for await (const page of testbed.getComments()) {
@@ -88,7 +88,7 @@ describe('TestPlanItemValidator', () => {
 
 	it('cleans up after itself once issue has been fixed', async () => {
 		const testbed = new TestbedIssue({}, { issue: { body: invalidTestPlanItem }, labels: ['tpi'] });
-		await new TestPlanItemValidator(testbed, 'tpi', 'invalid-tpi', 'plz fix').run();
+		await new TestPlanItemValidator(testbed, '', '', 'tpi', 'invalid-tpi', 'plz fix').run();
 
 		const comments: Comment[] = [];
 		for await (const page of testbed.getComments()) {
@@ -99,7 +99,7 @@ describe('TestPlanItemValidator', () => {
 		expect(testbed.issueConfig.labels.includes('tpi')).false;
 
 		testbed.issueConfig.issue.body = validTestPlanItem;
-		await new TestPlanItemValidator(testbed, 'tpi', 'invalid-tpi', 'plz fix').run();
+		await new TestPlanItemValidator(testbed, '', '', 'tpi', 'invalid-tpi', 'plz fix').run();
 		const newComments: Comment[] = [];
 		for await (const page of testbed.getComments()) {
 			newComments.push(...page);
