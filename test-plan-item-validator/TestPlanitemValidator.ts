@@ -22,12 +22,11 @@ export class TestPlanItemValidator {
 
 	async run() {
 		const issue = await this.github.getIssue();
-		if (!(issue.labels.includes(this.label) || issue.labels.includes(this.invalidLabel))) {
-			safeLog(
-				`Labels ${this.label}/${this.invalidLabel} not in issue labels ${issue.labels.join(
-					',',
-				)}. Aborting.`,
-			);
+		const shouldAddErrors = issue.labels.includes(this.label) || issue.labels.includes(this.invalidLabel);
+		const madeByTeamMember = await this.github.hasWriteAccess(issue.author);
+
+		if (!madeByTeamMember) {
+			safeLog('Issue not made by team member, skipping validation');
 			return;
 		}
 
@@ -44,12 +43,12 @@ export class TestPlanItemValidator {
 		}
 
 		const errors = await this.getErrors(issue);
-		if (errors) {
+		if (errors && shouldAddErrors) {
 			tasks.push(this.github.postComment(`${commentTag}\n${this.comment}\n\n**Error:** ${errors}`));
 			tasks.push(this.github.addLabel(this.invalidLabel));
 			tasks.push(this.github.removeLabel(this.label));
 		} else {
-			safeLog('All good!');
+			safeLog('Valid testplan item found!');
 			tasks.push(this.github.removeLabel(this.invalidLabel));
 			tasks.push(this.github.addLabel(this.label));
 		}

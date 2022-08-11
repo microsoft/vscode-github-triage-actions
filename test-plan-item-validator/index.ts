@@ -22,11 +22,15 @@ class TestPlanItemValidatorAction extends Action {
 		).run();
 	}
 
-	async onLabeled(issue: OctoKitIssue) {
+	protected override async onOpened(issue: OctoKitIssue): Promise<void> {
 		await this.runValidation(issue);
 	}
 
-	async onEdited(issue: OctoKitIssue) {
+	protected override async onLabeled(issue: OctoKitIssue) {
+		await this.runValidation(issue);
+	}
+
+	protected override async onEdited(issue: OctoKitIssue) {
 		await this.runValidation(issue);
 	}
 }
