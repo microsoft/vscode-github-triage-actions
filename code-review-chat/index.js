@@ -24,7 +24,7 @@ class CodeReviewChatAction extends Action_1.Action {
         await new CodeReviewChat_1.CodeReviewChatDeleter(slackToken, elevatedUserToken, channel, payload.pull_request.html_url).run();
     }
     async onOpened(issue, payload) {
-        var _a;
+        var _a, _b, _c;
         if (!payload.pull_request || !payload.repository) {
             throw Error('expected payload to contain pull request and repository');
         }
@@ -48,6 +48,8 @@ class CodeReviewChatAction extends Action_1.Action {
                     url: payload.pull_request.html_url || '',
                     owner: payload.pull_request.user.login,
                     draft: payload.pull_request.draft || false,
+                    baseBranchName: (_b = payload.pull_request.base.ref) !== null && _b !== void 0 ? _b : '',
+                    headBranchName: (_c = payload.pull_request.head.ref) !== null && _c !== void 0 ? _c : '',
                     title: payload.pull_request.title,
                 },
             },

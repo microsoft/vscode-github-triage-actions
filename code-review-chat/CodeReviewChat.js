@@ -126,6 +126,11 @@ class CodeReviewChat extends Chatter {
             (0, utils_1.safeLog)('PR is draft, ignoring');
             return;
         }
+        // TODO @lramos15 possibly make this configurable
+        if (this.pr.baseBranchName.startsWith('release')) {
+            (0, utils_1.safeLog)('PR is on a release branch, ignoring');
+            return;
+        }
         const data = await this.issue.getIssue();
         const author = data.author;
         // Author must have write access to the repo or be a bot
