@@ -4,6 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 export interface GitHub {
+	repoOwner: string;
+	repoName: string;
+
 	query(query: Query): AsyncIterableIterator<GitHubIssue[]>;
 
 	hasWriteAccess(user: User): Promise<boolean>;

@@ -7,6 +7,10 @@ inputs:
   label:
     description: The label that signifies an item is a testplan item and should be checked
     required: true
+  refLabel:
+    description: The label to apply to referenced issues
+    default: 'on-testplan'
+    required: true
   invalidLabel:
     description: The label to add when a test plan item is invalid
     required: true
