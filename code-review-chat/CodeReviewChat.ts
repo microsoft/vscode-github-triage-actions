@@ -17,6 +17,14 @@ interface PR {
 	url: string;
 	owner: string;
 	draft: boolean;
+	/**
+	 * The branch you're merging into i.e main
+	 */
+	baseBranchName: string;
+	/**
+	 * The branch the PR is created from i.e. feature/foo
+	 */
+	headBranchName: string;
 	title: string;
 }
 
@@ -177,6 +185,12 @@ export class CodeReviewChat extends Chatter {
 	async run() {
 		if (this.pr.draft) {
 			safeLog('PR is draft, ignoring');
+			return;
+		}
+
+		// TODO @lramos15 possibly make this configurable
+		if (this.pr.baseBranchName.startsWith('release')) {
+			safeLog('PR is on a release branch, ignoring');
 			return;
 		}
 
