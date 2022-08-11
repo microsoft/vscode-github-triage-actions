@@ -15,6 +15,9 @@ class TestPlanItemValidatorAction extends Action_1.Action {
     async runValidation(issue) {
         await new TestPlanitemValidator_1.TestPlanItemValidator(issue, (0, utils_1.getRequiredInput)('token'), (0, utils_1.getRequiredInput)('refLabel'), (0, utils_1.getRequiredInput)('label'), (0, utils_1.getRequiredInput)('invalidLabel'), (0, utils_1.getRequiredInput)('comment')).run();
     }
+    async onOpened(issue) {
+        await this.runValidation(issue);
+    }
     async onLabeled(issue) {
         await this.runValidation(issue);
     }
