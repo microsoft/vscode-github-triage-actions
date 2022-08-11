@@ -43,10 +43,12 @@ export class TestPlanItemValidator {
 		}
 
 		const errors = await this.getErrors(issue);
-		if (errors && shouldAddErrors) {
-			tasks.push(this.github.postComment(`${commentTag}\n${this.comment}\n\n**Error:** ${errors}`));
-			tasks.push(this.github.addLabel(this.invalidLabel));
-			tasks.push(this.github.removeLabel(this.label));
+		if (errors) {
+			if (shouldAddErrors) {
+				tasks.push(this.github.postComment(`${commentTag}\n${this.comment}\n\n**Error:** ${errors}`));
+				tasks.push(this.github.addLabel(this.invalidLabel));
+				tasks.push(this.github.removeLabel(this.label));
+			}
 		} else {
 			safeLog('Valid testplan item found!');
 			tasks.push(this.github.removeLabel(this.invalidLabel));
