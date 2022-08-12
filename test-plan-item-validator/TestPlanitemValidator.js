@@ -69,6 +69,13 @@ class TestPlanItemValidator {
                     });
                 }
             }
+            const currentMilestone = issue.milestone;
+            if (currentMilestone === null) {
+                const currentRepoMilestone = await this.github.getCurrentRepoMilestone();
+                if (currentRepoMilestone) {
+                    await this.github.setMilestone(currentRepoMilestone);
+                }
+            }
             return;
         }
         catch (error) {
