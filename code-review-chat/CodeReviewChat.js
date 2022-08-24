@@ -134,7 +134,8 @@ class CodeReviewChat extends Chatter {
         const data = await this.issue.getIssue();
         const author = data.author;
         // Author must have write access to the repo or be a bot
-        if (!(await this.issue.hasWriteAccess(author)) && !author.isGitHubApp) {
+        if ((!(await this.issue.hasWriteAccess(author)) && !author.isGitHubApp) ||
+            author.name.includes('dependabot')) {
             (0, utils_1.safeLog)('Issue author not team member, ignoring');
             return;
         }
