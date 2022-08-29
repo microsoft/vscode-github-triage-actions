@@ -282,13 +282,13 @@ def run_category(category):
             raw_test.target, initial_prediction, average=None, zero_division=0
         ),
         "fbeta0.5": metrics.fbeta_score(
-            raw_test.target, initial_prediction, 0.5, average=None, zero_division=0
+            raw_test.target, initial_prediction, beta=0.5, average=None, zero_division=0
         ),
         "f1": metrics.f1_score(
             raw_test.target, initial_prediction, average=None, zero_division=0
         ),
         "fbeta2": metrics.fbeta_score(
-            raw_test.target, initial_prediction, 2, average=None, zero_division=0
+            raw_test.target, initial_prediction, beta=2, average=None, zero_division=0
         ),
         "recall": metrics.recall_score(
             raw_test.target, initial_prediction, average=None, zero_division=0
