@@ -145,7 +145,11 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 				},
 			},
 		)
-		.then((r) => r.data);
+		.then((r) => r.data)
+		.catch((err) => {
+			console.error(err);
+			process.exit(1);
+		});
 
 	const response = data.data as Response;
 

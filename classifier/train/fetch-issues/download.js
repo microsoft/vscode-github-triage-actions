@@ -76,7 +76,11 @@ const download = async (token, repo, endCursor) => {
             Authorization: 'bearer ' + token,
         },
     })
-        .then((r) => r.data);
+        .then((r) => r.data)
+        .catch((err) => {
+        console.error(err);
+        process.exit(1);
+    });
     const response = data.data;
     const issues = response.repository.issues.nodes.map((issue) => ({
         number: issue.number,
