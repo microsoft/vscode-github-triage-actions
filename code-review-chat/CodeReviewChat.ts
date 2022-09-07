@@ -155,12 +155,11 @@ export class CodeReviewChatDeleter extends Chatter {
 					await client.chat.delete({
 						channel,
 						ts: message.ts,
-						as_user: false,
 					});
 				}
 			}
-		} catch (e) {
-			safeLog('error deleting message, probably posted by some human');
+		} catch (e: any) {
+			safeLog(`Error deleting message: ${e.message}`);
 		}
 	}
 }
