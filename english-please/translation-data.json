@@ -4,6 +4,7 @@
 	"knownTranslations": {
 		"__comment__": "The below is a bit less formal version of the above comment sent in for translation",
 		"en": "Thanks for creating this issue!\n\nUnfortunately, as the description is not in English, it's hard for us to work on. If possible, please edit the original issue to be in English.\n\nIn our experience, automatic translation services are not able to handle the technical language needed to effectively communicate about software issues, so we recommend finding a human translator who is familiar with our technology to help.\n\nOtherwise, we have marked this as needing translation and a community member may be able to help out.",
+		"tr": "Yeni issue için teşekkür ederiz!\n\nMaalesef açıklaması İngilizce olmayan issue'larda çalışmakta zorlanıyoruz. Mümkünse issue'yu İngilizce'ye çevirin.\n\nDeneyimlerimize göre otomatik çeviri servisleri bu gibi teknik metinleri çevirmede pek başarılı değil, bu sebeple çeviri için bir çevirmen bulmanızı öneriyoruz.\n\nEğer bulamazsanız, bu issue'yu çeviri gerekli olarak işaretleyeceğiz ve bir topluluk üyesinin yardımcı olmasını bekleyeceğiz.",
 		"zh-hans": "感谢您创建此问题！\n\n然而，由于您没有使用英语，我们很难进行处理。如果可能，请您将此问题描述修改为英文。请您直接编辑此问题，不要提交回复或新问题。\n\n请注意，机器翻译服务通常无法处理用于讨论软件问题所需的技术性语言，所以我们推荐您寻找一位熟悉相关技术的人来协助翻译。\n\n如果您无法做到，没有关系。此问题已经被标记为需要翻译，等待社区成员志愿进行翻译。"
 	},
 	"commonNames": {
