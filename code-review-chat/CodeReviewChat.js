@@ -121,7 +121,13 @@ class CodeReviewChat extends Chatter {
         });
     }
     async run() {
-        if (this.pr.draft) {
+        // Must request the PR again from the octokit api as it may have changed since creation
+        const prFromApi = (await this.octokit.pulls.get({
+            pull_number: this.pr.number,
+            owner: this.options.payload.owner,
+            repo: this.options.payload.repo,
+        })).data;
+        if (prFromApi.draft) {
             (0, utils_1.safeLog)('PR is draft, ignoring');
             return;
         }
