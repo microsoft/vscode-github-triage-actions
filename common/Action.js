@@ -80,6 +80,9 @@ class Action {
                         case 'milestoned':
                             await this.onMilestoned(octokit);
                             break;
+                        case 'converted_to_draft':
+                            await this.onConvertedToDraft(octokit, github_1.context.payload);
+                            break;
                         default:
                             throw Error('Unexpected action: ' + github_1.context.payload.action);
                     }
@@ -154,6 +157,9 @@ ID: ${details.id}
         throw Error('not implemented');
     }
     async onClosed(_issue, _payload) {
+        throw Error('not implemented');
+    }
+    async onConvertedToDraft(_issue, _payload) {
         throw Error('not implemented');
     }
     async onMilestoned(_issue) {

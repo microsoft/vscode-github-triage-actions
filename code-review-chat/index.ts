@@ -19,7 +19,7 @@ import { WebhookPayload } from '@actions/github/lib/interfaces';
 class CodeReviewChatAction extends Action {
 	id = 'CodeReviewChat';
 
-	protected override async onClosed(_issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
+	private async closedOrDraftHandler(_issue: OctoKitIssue, payload: WebhookPayload) {
 		if (!payload.pull_request || !payload.repository || !payload.pull_request.html_url) {
 			throw Error('expected payload to contain pull request url');
 		}
@@ -29,6 +29,17 @@ class CodeReviewChatAction extends Action {
 			channel,
 			payload.pull_request.html_url,
 		).run();
+	}
+
+	protected override async onClosed(_issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
+		await this.closedOrDraftHandler(_issue, payload);
+	}
+
+	protected override async onConvertedToDraft(
+		_issue: OctoKitIssue,
+		payload: WebhookPayload,
+	): Promise<void> {
+		await this.closedOrDraftHandler(_issue, payload);
 	}
 
 	protected override async onOpened(issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {

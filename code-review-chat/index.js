@@ -17,11 +17,17 @@ class CodeReviewChatAction extends Action_1.Action {
         super(...arguments);
         this.id = 'CodeReviewChat';
     }
-    async onClosed(_issue, payload) {
+    async closedOrDraftHandler(_issue, payload) {
         if (!payload.pull_request || !payload.repository || !payload.pull_request.html_url) {
             throw Error('expected payload to contain pull request url');
         }
         await new CodeReviewChat_1.CodeReviewChatDeleter(slackToken, elevatedUserToken, channel, payload.pull_request.html_url).run();
+    }
+    async onClosed(_issue, payload) {
+        await this.closedOrDraftHandler(_issue, payload);
+    }
+    async onConvertedToDraft(_issue, payload) {
+        await this.closedOrDraftHandler(_issue, payload);
     }
     async onOpened(issue, payload) {
         var _a, _b, _c;
