@@ -93,6 +93,9 @@ export abstract class Action {
 						case 'milestoned':
 							await this.onMilestoned(octokit);
 							break;
+						case 'converted_to_draft':
+							await this.onConvertedToDraft(octokit, context.payload);
+							break;
 						default:
 							throw Error('Unexpected action: ' + context.payload.action);
 					}
@@ -173,6 +176,9 @@ ID: ${details.id}
 		throw Error('not implemented');
 	}
 	protected async onClosed(_issue: OctoKitIssue, _payload: WebhookPayload): Promise<void> {
+		throw Error('not implemented');
+	}
+	protected async onConvertedToDraft(_issue: OctoKitIssue, _payload: WebhookPayload): Promise<void> {
 		throw Error('not implemented');
 	}
 	protected async onMilestoned(_issue: OctoKitIssue): Promise<void> {
