@@ -5,6 +5,7 @@
 
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
+import { BlobServiceClient } from '@azure/storage-blob';
 import axios from 'axios';
 import { OctoKitIssue } from '../api/octokit';
 
@@ -93,7 +94,7 @@ export const errorLoggingIssue = (() => {
 			return undefined;
 		}
 	} catch (e) {
-		console.error(e);
+		//console.error(e);
 		return undefined;
 	}
 })();
@@ -127,3 +128,26 @@ export const safeLog = (message: string, ...args: (string | number | string[])[]
 	const clean = (val: any) => ('' + val).replace(/:|#/g, '');
 	console.log(clean(message), ...args.map(clean));
 };
+
+export interface Accounts {
+	github: string;
+	slack: string;
+	vsts: string;
+}
+
+/**
+ * Reads from blob storage the JSON file including the mapping of GitHub usernames to VSTS and Slack usernames.
+ * @param connectionString The connection string for the blob storage
+ * @returns An array of accounts
+ */
+export async function readAccountsFromBlobStorage(connectionString: string | undefined) {
+	if (!connectionString) {
+		safeLog('Connection string missing.');
+		return [];
+	}
+	const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+	const containerClient = blobServiceClient.getContainerClient('config');
+	const createContainerResponse = containerClient.getBlockBlobClient('accounts.json');
+	const buf = await createContainerResponse.downloadToBuffer();
+	return JSON.parse(buf.toString()) as Accounts[];
+}

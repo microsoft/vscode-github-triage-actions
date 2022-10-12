@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildChat = void 0;
 const rest_1 = require("@octokit/rest");
 const web_api_1 = require("@slack/web-api");
-const storage_blob_1 = require("@azure/storage-blob");
+const utils_1 = require("../common/utils");
 let safeLog; // utils.ts needs GITHUB_REPOSITORY set below.
 if (require.main === module) {
     process.env.GITHUB_REPOSITORY = 'microsoft/vscode-remote-containers';
@@ -166,7 +166,7 @@ async function buildComplete(octokit, owner, repo, runId, options) {
     const vscode = repo === 'vscode';
     const name = vscode ? `VS Code ${build.name} Build` : build.name;
     // TBD: `Requester: ${vstsToSlackUser(build.requester, build.degraded)}${pingBenForSmokeTests && releaseBuild && build.result === 'partiallySucceeded' ? ' | Ping: @bpasero' : ''}`
-    const accounts = await readAccounts(options.storageConnectionString);
+    const accounts = await (0, utils_1.readAccountsFromBlobStorage)(options.storageConnectionString);
     const githubAccountMap = githubToAccounts(accounts);
     const messages = transitionedBuilds.map((build) => {
         const issueBody = encodeURIComponent(`Build: ${build.buildHtmlUrl}\nChanges: ${build.changesHtmlUrl}`);
@@ -205,17 +205,6 @@ function githubToAccounts(accounts) {
         m[e.github] = e;
         return m;
     }, {});
-}
-async function readAccounts(connectionString) {
-    if (!connectionString) {
-        safeLog('Connection string missing.');
-        return [];
-    }
-    const blobServiceClient = storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
-    const containerClient = blobServiceClient.getContainerClient('config');
-    const createContainerResponse = containerClient.getBlockBlobClient('accounts.json');
-    const buf = await createContainerResponse.downloadToBuffer();
-    return JSON.parse(buf.toString());
 }
 async function listAllMemberships(web) {
     var _a, _b;

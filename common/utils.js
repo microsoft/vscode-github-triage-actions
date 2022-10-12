@@ -4,9 +4,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.safeLog = exports.logErrorToIssue = exports.errorLoggingIssue = exports.getRateLimit = exports.daysAgoToHumanReadbleDate = exports.daysAgoToTimestamp = exports.loadLatestRelease = exports.normalizeIssue = exports.getRequiredInput = exports.getInput = void 0;
+exports.readAccountsFromBlobStorage = exports.safeLog = exports.logErrorToIssue = exports.errorLoggingIssue = exports.getRateLimit = exports.daysAgoToHumanReadbleDate = exports.daysAgoToTimestamp = exports.loadLatestRelease = exports.normalizeIssue = exports.getRequiredInput = exports.getInput = void 0;
 const core = require("@actions/core");
 const github_1 = require("@actions/github");
+const storage_blob_1 = require("@azure/storage-blob");
 const axios_1 = require("axios");
 const octokit_1 = require("../api/octokit");
 const getInput = (name) => core.getInput(name) || undefined;
@@ -81,7 +82,7 @@ exports.errorLoggingIssue = (() => {
         }
     }
     catch (e) {
-        console.error(e);
+        //console.error(e);
         return undefined;
     }
 })();
@@ -116,4 +117,21 @@ const safeLog = (message, ...args) => {
     console.log(clean(message), ...args.map(clean));
 };
 exports.safeLog = safeLog;
+/**
+ * Reads from blob storage the JSON file including the mapping of GitHub usernames to VSTS and Slack usernames.
+ * @param connectionString The connection string for the blob storage
+ * @returns An array of accounts
+ */
+async function readAccountsFromBlobStorage(connectionString) {
+    if (!connectionString) {
+        (0, exports.safeLog)('Connection string missing.');
+        return [];
+    }
+    const blobServiceClient = storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
+    const containerClient = blobServiceClient.getContainerClient('config');
+    const createContainerResponse = containerClient.getBlockBlobClient('accounts.json');
+    const buf = await createContainerResponse.downloadToBuffer();
+    return JSON.parse(buf.toString());
+}
+exports.readAccountsFromBlobStorage = readAccountsFromBlobStorage;
 //# sourceMappingURL=utils.js.map

@@ -5,8 +5,8 @@
 
 import { Octokit } from '@octokit/rest';
 import { WebClient } from '@slack/web-api';
-import { BlobServiceClient } from '@azure/storage-blob';
 import { ActionsListWorkflowRunsResponseWorkflowRunsItem } from '../common/OctokitTypings';
+import { Accounts, readAccountsFromBlobStorage } from '../common/utils';
 
 let safeLog: (message: string, ...args: any[]) => void; // utils.ts needs GITHUB_REPOSITORY set below.
 
@@ -226,7 +226,7 @@ async function buildComplete(octokit: Octokit, owner: string, repo: string, runI
 	const vscode = repo === 'vscode';
 	const name = vscode ? `VS Code ${build.name} Build` : build.name;
 	// TBD: `Requester: ${vstsToSlackUser(build.requester, build.degraded)}${pingBenForSmokeTests && releaseBuild && build.result === 'partiallySucceeded' ? ' | Ping: @bpasero' : ''}`
-	const accounts = await readAccounts(options.storageConnectionString);
+	const accounts = await readAccountsFromBlobStorage(options.storageConnectionString);
 	const githubAccountMap = githubToAccounts(accounts);
 	const messages = transitionedBuilds.map((build) => {
 		const issueBody = encodeURIComponent(
@@ -271,29 +271,11 @@ function githubToSlackUsers(githubToAccounts: Record<string, Accounts>, githubUs
 	return githubUsers.map((g) => (githubToAccounts[g] ? `${at ? '@' : ''}${githubToAccounts[g].slack}` : g));
 }
 
-interface Accounts {
-	github: string;
-	slack: string;
-	vsts: string;
-}
-
 function githubToAccounts(accounts: Accounts[]) {
 	return accounts.reduce((m, e) => {
 		m[e.github] = e;
 		return m;
 	}, <Record<string, Accounts>>{});
-}
-
-async function readAccounts(connectionString: string | undefined) {
-	if (!connectionString) {
-		safeLog('Connection string missing.');
-		return [];
-	}
-	const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
-	const containerClient = blobServiceClient.getContainerClient('config');
-	const createContainerResponse = containerClient.getBlockBlobClient('accounts.json');
-	const buf = await createContainerResponse.downloadToBuffer();
-	return JSON.parse(buf.toString()) as Accounts[];
 }
 
 interface Channel {

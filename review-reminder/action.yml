@@ -1,0 +1,17 @@
+name: 'Review Reminder'
+description: 'Notify in chat about build results.'
+author: 'Logan Ramos'
+inputs:
+  token:
+    description: GitHub token.
+    default: ${{ github.token }}
+    required: true
+  slack_token:
+    description: Slack token.
+    required: true
+  connection_string:
+    description: Connection string to the azure blob storage. Uses same as the build bot.
+    required: true
+runs:
+  using: 'node16'
+  main: 'index.js'
