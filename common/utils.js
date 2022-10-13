@@ -82,7 +82,7 @@ exports.errorLoggingIssue = (() => {
         }
     }
     catch (e) {
-        //console.error(e);
+        console.error(e);
         return undefined;
     }
 })();

@@ -94,7 +94,7 @@ export const errorLoggingIssue = (() => {
 			return undefined;
 		}
 	} catch (e) {
-		//console.error(e);
+		console.error(e);
 		return undefined;
 	}
 })();
