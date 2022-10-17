@@ -59,17 +59,12 @@ class ReviewReminder {
         // Inject a few extra repos that aren't in the VS Code org
         yield { owner: { login: 'microsoft' }, name: 'vscode-jupyter' };
         yield { owner: { login: 'microsoft' }, name: 'vscode-python' };
-        const it = octokit.paginate.iterator(octokit.rest.teams.listReposInOrg, {
-            org: 'microsoft',
-            team_slug: 'vscode',
+        const it = octokit.paginate.iterator(octokit.rest.repos.listForAuthenticatedUser, {
             per_page: 100,
         });
         for await (const { data: repositories } of it) {
             for (const repository of repositories) {
                 if (repository.archived) {
-                    continue;
-                }
-                if (repository.role_name !== 'admin' && repository.role_name !== 'Security Maintainer') {
                     continue;
                 }
                 yield repository;
