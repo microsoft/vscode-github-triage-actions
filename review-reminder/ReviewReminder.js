@@ -14,7 +14,7 @@ class ReviewReminder {
         this.slackClient = new web_api_1.WebClient(slackToken);
         this.octokit = new rest_1.Octokit({ auth: gitHubToken });
     }
-    static reviewWarningMessage(numberOfReviewsFromTop) {
+    static reviewWarningMessage(numberOfReviews, topReviewer) {
         const headerBlock = {
             type: 'header',
             text: {
@@ -27,7 +27,7 @@ class ReviewReminder {
             type: 'section',
             text: {
                 type: 'mrkdwn',
-                text: `We know you're busy making VS Code awesome, but just wanted to remind you to not forget to help your teammates make VS Code awesome too! This is just a friendly reminder to please take a look at the #codereview channel! You are currently in the bottom 20% of reviewers this week, with *${numberOfReviewsFromTop}* less reviews than the number one reviewer.`,
+                text: `You've completed *${numberOfReviews}* code reviews in the past 7 days. Thank you! If you were wondering, the top reviewer has completed ${topReviewer} reviews in the past 7 days. Just a friendly reminder to keep an eye on the #codereview channel!`,
             },
         };
         return [headerBlock, { type: 'divider' }, messageBlock];
@@ -359,7 +359,7 @@ class ReviewReminder {
             }
             // Generate a random unix timestamp in the next 4 hours
             const timestampToSend = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 14400);
-            await this.sendSlackDM(account.vsts, 'Review Reminder!', ReviewReminder.reviewWarningMessage(stats.topReviewers[0].weeklyCount - reviewer.weeklyCount), timestampToSend);
+            await this.sendSlackDM(account.vsts, 'Review Reminder!', ReviewReminder.reviewWarningMessage(reviewer.weeklyCount, stats.topReviewers[0].weeklyCount), timestampToSend);
         }
         console.timeEnd('Review Reminder Action');
     }

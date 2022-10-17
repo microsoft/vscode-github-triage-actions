@@ -38,7 +38,7 @@ export class ReviewReminder {
 		this.octokit = new Octokit({ auth: gitHubToken });
 	}
 
-	public static reviewWarningMessage(numberOfReviewsFromTop: number): KnownBlock[] {
+	public static reviewWarningMessage(numberOfReviews: number, topReviewer: number): KnownBlock[] {
 		const headerBlock: HeaderBlock = {
 			type: 'header',
 			text: {
@@ -51,7 +51,7 @@ export class ReviewReminder {
 			type: 'section',
 			text: {
 				type: 'mrkdwn',
-				text: `We know you're busy making VS Code awesome, but just wanted to remind you to not forget to help your teammates make VS Code awesome too! This is just a friendly reminder to please take a look at the #codereview channel! You are currently in the bottom 20% of reviewers this week, with *${numberOfReviewsFromTop}* less reviews than the number one reviewer.`,
+				text: `You've completed *${numberOfReviews}* code reviews in the past 7 days. Thank you! If you were wondering, the top reviewer has completed ${topReviewer} reviews in the past 7 days. Just a friendly reminder to keep an eye on the #codereview channel!`,
 			},
 		};
 		return [headerBlock, { type: 'divider' }, messageBlock];
@@ -459,7 +459,7 @@ export class ReviewReminder {
 			await this.sendSlackDM(
 				account.vsts,
 				'Review Reminder!',
-				ReviewReminder.reviewWarningMessage(stats.topReviewers[0].weeklyCount - reviewer.weeklyCount),
+				ReviewReminder.reviewWarningMessage(reviewer.weeklyCount, stats.topReviewers[0].weeklyCount),
 				timestampToSend,
 			);
 		}
