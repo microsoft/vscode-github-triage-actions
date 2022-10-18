@@ -115,6 +115,8 @@ export abstract class Action {
 				await this.error(err);
 			} catch {
 				safeLog(err?.stack || err?.message || String(e));
+				// Always fail the action even if we don't properly log it to the issue
+				setFailed(err.message);
 			}
 		}
 

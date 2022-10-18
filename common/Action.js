@@ -102,6 +102,8 @@ class Action {
             }
             catch {
                 (0, utils_1.safeLog)((err === null || err === void 0 ? void 0 : err.stack) || (err === null || err === void 0 ? void 0 : err.message) || String(e));
+                // Always fail the action even if we don't properly log it to the issue
+                (0, core_1.setFailed)(err.message);
             }
         }
         await this.trackMetric({ name: 'octokit_request_count', value: (0, octokit_1.getNumRequests)() });
