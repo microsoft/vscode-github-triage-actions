@@ -275,10 +275,17 @@ class ReviewReminder {
     async sendSlackDM(userEmail, preview, blocks, timestampToSend) {
         var _a, _b;
         // Given an email find the user id
-        const user = await this.slackClient.users.lookupByEmail({ email: userEmail });
-        const userId = (_a = user.user) === null || _a === void 0 ? void 0 : _a.id;
+        let userId = undefined;
+        try {
+            const user = await this.slackClient.users.lookupByEmail({ email: userEmail });
+            userId = (_a = user.user) === null || _a === void 0 ? void 0 : _a.id;
+        }
+        catch (e) {
+            console.error(`Failed to find slack user for email ${userEmail}`);
+            return;
+        }
+        // If user isn't populated and we didn't return early in the error handler, return now
         if (!userId) {
-            console.log(`Could not find user with email: ${userEmail}`);
             return;
         }
         // Get id of conversation with user
