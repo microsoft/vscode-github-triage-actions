@@ -355,10 +355,17 @@ export class ReviewReminder {
 		timestampToSend?: number,
 	) {
 		// Given an email find the user id
-		const user = await this.slackClient.users.lookupByEmail({ email: userEmail });
-		const userId = user.user?.id;
+		let userId: string | undefined = undefined;
+		try {
+			const user = await this.slackClient.users.lookupByEmail({ email: userEmail });
+			userId = user.user?.id;
+		} catch (e) {
+			console.error(`Failed to find slack user for email ${userEmail}`);
+			return;
+		}
+
+		// If user isn't populated and we didn't return early in the error handler, return now
 		if (!userId) {
-			console.log(`Could not find user with email: ${userEmail}`);
 			return;
 		}
 
