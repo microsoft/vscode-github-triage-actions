@@ -242,7 +242,7 @@ Result: ${build.data.conclusion} | Repository: ${owner}/${repo} | Branch: ${
 				githubToSlackUsers(githubAccountMap, build.authors, build.degraded).sort().join(', ') ||
 				`None (rebuild)`
 			}
-<${build.buildHtmlUrl}|Build> | <Create Issue|${createIssueLink}> | <${build.changesHtmlUrl}|Changes>`,
+<${build.buildHtmlUrl}|Build> | <${createIssueLink}|Create Issue> | <${build.changesHtmlUrl}|Changes>`,
 			slackAuthors: build.authors.map((a) => githubAccountMap[a]?.slack).filter((a) => !!a),
 		};
 	});
