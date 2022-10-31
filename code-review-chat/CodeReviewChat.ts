@@ -250,7 +250,7 @@ export class CodeReviewChat extends Chatter {
 				const hasExisting = hasExistingReview || existingRequests?.data?.users?.length;
 				if (hasExisting) {
 					safeLog('had existing review requests, exiting');
-					return;
+					process.exit(0);
 				}
 
 				const cleanTitle = this.pr.title.replace(/`/g, '');

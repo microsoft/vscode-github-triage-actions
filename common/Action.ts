@@ -111,10 +111,10 @@ export abstract class Action {
 			}
 		} catch (e) {
 			const err = e as Error;
+			safeLog(err?.stack || err?.message || String(e));
 			try {
 				await this.error(err);
 			} catch {
-				safeLog(err?.stack || err?.message || String(e));
 				// Always fail the action even if we don't properly log it to the issue
 				setFailed(err.message);
 			}

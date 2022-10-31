@@ -177,7 +177,7 @@ class CodeReviewChat extends Chatter {
             const hasExisting = hasExistingReview || ((_c = (_b = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _b === void 0 ? void 0 : _b.users) === null || _c === void 0 ? void 0 : _c.length);
             if (hasExisting) {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
-                return;
+                process.exit(0);
             }
             const cleanTitle = this.pr.title.replace(/`/g, '');
             const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
