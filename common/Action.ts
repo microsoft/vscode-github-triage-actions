@@ -56,6 +56,8 @@ export abstract class Action {
 		try {
 			const token = getRequiredInput('token');
 			const readonly = !!getInput('readonly');
+			console.log('Context');
+			console.log(JSON.stringify(context, null, 2));
 
 			const issue = context?.issue?.number;
 			if (issue) {

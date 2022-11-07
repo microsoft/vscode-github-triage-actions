@@ -176,7 +176,7 @@ async function buildComplete(octokit, owner, repo, runId, options) {
             text: `${name}
 Result: ${build.data.conclusion} | Repository: ${owner}/${repo} | Branch: ${build.data.head_branch} | Authors: ${githubToSlackUsers(githubAccountMap, build.authors, build.degraded).sort().join(', ') ||
                 `None (rebuild)`}
-<${build.buildHtmlUrl}|Build> | <Create Issue|${createIssueLink}> | <${build.changesHtmlUrl}|Changes>`,
+<${build.buildHtmlUrl}|Build> | <${createIssueLink}|Create Issue> | <${build.changesHtmlUrl}|Changes>`,
             slackAuthors: build.authors.map((a) => { var _a; return (_a = githubAccountMap[a]) === null || _a === void 0 ? void 0 : _a.slack; }).filter((a) => !!a),
         };
     });
