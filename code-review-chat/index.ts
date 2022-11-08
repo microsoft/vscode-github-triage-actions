@@ -82,17 +82,30 @@ class CodeReviewChatAction extends Action {
 		const action = getRequiredInput('action');
 		const pull_request = JSON.parse(getRequiredInput('pull_request'));
 		const repository: PayloadRepository = JSON.parse(getRequiredInput('repository'));
-		const repo_name = getRequiredInput('repo_name');
 		const pr_number: number = parseInt(getRequiredInput('pr_number'));
-		// Just testing on engineering right now
-		if (repo_name !== 'microsoft/vscode-engineering') {
-			return;
-		}
+
 		const octokitIssue = new OctoKitIssue(
 			auth,
 			{ owner: repository.owner.login, repo: repository.name },
 			{ number: pr_number },
 		);
+
+		// Query repo to see if it has a .github/workflows/pr-chat.yml file
+		const ghAPI = new Octokit({ auth });
+		try {
+			const fileContent = await ghAPI.repos.getContent({
+				owner: repository.owner.login,
+				repo: repository.name,
+				path: '.github/workflows/pr-chat.yml',
+			});
+			// 200 Response means it exists, so we exit as webhook implementation is only if pr-chat.yml isn't present
+			if (fileContent.status === 200) {
+				return;
+			}
+		} catch {
+			// No-op, file doesn't exist
+		}
+
 		const payload: WebhookPayload = { repository, pull_request };
 		switch (action) {
 			case 'opened':
