@@ -8,13 +8,12 @@ import { getRequiredInput, getInput } from '../common/utils';
 import { CodeReviewChat, CodeReviewChatDeleter } from './CodeReviewChat';
 import { Action } from '../common/Action';
 import { OctoKitIssue } from '../api/octokit';
+import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
 
 const slackToken = getRequiredInput('slack_token');
 const elevatedUserToken = getInput('slack_user_token');
 const auth = getRequiredInput('token');
 const channel = getRequiredInput('notification_channel');
-
-import { WebhookPayload } from '@actions/github/lib/interfaces';
 
 class CodeReviewChatAction extends Action {
 	id = 'CodeReviewChat';
@@ -75,6 +74,41 @@ class CodeReviewChatAction extends Action {
 				},
 			},
 		}).run();
+	}
+
+	protected override async onTriggered() {
+		// This function is only called during a manual workspace dispatch event
+		// caused by a webhook, so we know to expect some inputs.
+		const action = getRequiredInput('action');
+		const pull_request = JSON.parse(getRequiredInput('pull_request'));
+		const repository: PayloadRepository = JSON.parse(getRequiredInput('repository'));
+		const repo_name = getRequiredInput('repo_name');
+		const pr_number: number = parseInt(getRequiredInput('pr_number'));
+		// Just testing on engineering right now
+		if (repo_name !== 'microsoft/vscode-engineering') {
+			return;
+		}
+		const octokitIssue = new OctoKitIssue(
+			auth,
+			{ owner: repository.owner.login, repo: repository.name },
+			{ number: pr_number },
+		);
+		const payload: WebhookPayload = { repository, pull_request };
+		switch (action) {
+			case 'opened':
+			case 'ready_for_review':
+				await this.onOpened(octokitIssue, payload);
+				break;
+			case 'closed':
+				await this.onClosed(octokitIssue, payload);
+				break;
+			case 'converted_to_draft':
+				await this.onConvertedToDraft(octokitIssue, payload);
+				break;
+			default:
+				throw Error(`Unknown action: ${action}`);
+		}
+		return;
 	}
 }
 
