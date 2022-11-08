@@ -45,8 +45,6 @@ class Action {
         try {
             const token = (0, utils_1.getRequiredInput)('token');
             const readonly = !!(0, core_1.getInput)('readonly');
-            console.log('Context');
-            console.log(JSON.stringify(github_1.context, null, 2));
             const issue = (_b = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _b === void 0 ? void 0 : _b.number;
             if (issue) {
                 const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: issue }, { readonly });
