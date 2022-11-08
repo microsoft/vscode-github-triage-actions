@@ -18,6 +18,21 @@ inputs:
   slack_bot_name:
     description: 'Required when doing using in queue mode (deletions enabled on close)'
     required: true
+  pull_request:
+    description: 'Pull request object - used in webhooks'
+    required: false
+  repository:
+    description: 'Repository object - used in webhooks'
+    required: false
+  pr_number:
+    description: 'Pull request number - used in webhooks'
+    required: false
+  action:
+    description: 'Action being taken - used in webhooks'
+    required: false
+  repo_name:
+    description: 'Repository name - used in webhooks'
+    required: false
 runs:
   using: 'node16'
   main: 'index.js'

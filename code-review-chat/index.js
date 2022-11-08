@@ -8,6 +8,7 @@ const rest_1 = require("@octokit/rest");
 const utils_1 = require("../common/utils");
 const CodeReviewChat_1 = require("./CodeReviewChat");
 const Action_1 = require("../common/Action");
+const octokit_1 = require("../api/octokit");
 const slackToken = (0, utils_1.getRequiredInput)('slack_token');
 const elevatedUserToken = (0, utils_1.getInput)('slack_user_token');
 const auth = (0, utils_1.getRequiredInput)('token');
@@ -60,6 +61,47 @@ class CodeReviewChatAction extends Action_1.Action {
                 },
             },
         }).run();
+    }
+    async onTriggered() {
+        // This function is only called during a manual workspace dispatch event
+        // caused by a webhook, so we know to expect some inputs.
+        const action = (0, utils_1.getRequiredInput)('action');
+        const pull_request = JSON.parse((0, utils_1.getRequiredInput)('pull_request'));
+        const repository = JSON.parse((0, utils_1.getRequiredInput)('repository'));
+        const pr_number = parseInt((0, utils_1.getRequiredInput)('pr_number'));
+        const octokitIssue = new octokit_1.OctoKitIssue(auth, { owner: repository.owner.login, repo: repository.name }, { number: pr_number });
+        // Query repo to see if it has a .github/workflows/pr-chat.yml file
+        const ghAPI = new rest_1.Octokit({ auth });
+        try {
+            const fileContent = await ghAPI.repos.getContent({
+                owner: repository.owner.login,
+                repo: repository.name,
+                path: '.github/workflows/pr-chat.yml',
+            });
+            // 200 Response means it exists, so we exit as webhook implementation is only if pr-chat.yml isn't present
+            if (fileContent.status === 200) {
+                return;
+            }
+        }
+        catch {
+            // No-op, file doesn't exist
+        }
+        const payload = { repository, pull_request };
+        switch (action) {
+            case 'opened':
+            case 'ready_for_review':
+                await this.onOpened(octokitIssue, payload);
+                break;
+            case 'closed':
+                await this.onClosed(octokitIssue, payload);
+                break;
+            case 'converted_to_draft':
+                await this.onConvertedToDraft(octokitIssue, payload);
+                break;
+            default:
+                throw Error(`Unknown action: ${action}`);
+        }
+        return;
     }
 }
 new CodeReviewChatAction().run(); // eslint-disable-line

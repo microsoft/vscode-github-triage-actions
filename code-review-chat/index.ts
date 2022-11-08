@@ -8,13 +8,12 @@ import { getRequiredInput, getInput } from '../common/utils';
 import { CodeReviewChat, CodeReviewChatDeleter } from './CodeReviewChat';
 import { Action } from '../common/Action';
 import { OctoKitIssue } from '../api/octokit';
+import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
 
 const slackToken = getRequiredInput('slack_token');
 const elevatedUserToken = getInput('slack_user_token');
 const auth = getRequiredInput('token');
 const channel = getRequiredInput('notification_channel');
-
-import { WebhookPayload } from '@actions/github/lib/interfaces';
 
 class CodeReviewChatAction extends Action {
 	id = 'CodeReviewChat';
@@ -75,6 +74,54 @@ class CodeReviewChatAction extends Action {
 				},
 			},
 		}).run();
+	}
+
+	protected override async onTriggered() {
+		// This function is only called during a manual workspace dispatch event
+		// caused by a webhook, so we know to expect some inputs.
+		const action = getRequiredInput('action');
+		const pull_request = JSON.parse(getRequiredInput('pull_request'));
+		const repository: PayloadRepository = JSON.parse(getRequiredInput('repository'));
+		const pr_number: number = parseInt(getRequiredInput('pr_number'));
+
+		const octokitIssue = new OctoKitIssue(
+			auth,
+			{ owner: repository.owner.login, repo: repository.name },
+			{ number: pr_number },
+		);
+
+		// Query repo to see if it has a .github/workflows/pr-chat.yml file
+		const ghAPI = new Octokit({ auth });
+		try {
+			const fileContent = await ghAPI.repos.getContent({
+				owner: repository.owner.login,
+				repo: repository.name,
+				path: '.github/workflows/pr-chat.yml',
+			});
+			// 200 Response means it exists, so we exit as webhook implementation is only if pr-chat.yml isn't present
+			if (fileContent.status === 200) {
+				return;
+			}
+		} catch {
+			// No-op, file doesn't exist
+		}
+
+		const payload: WebhookPayload = { repository, pull_request };
+		switch (action) {
+			case 'opened':
+			case 'ready_for_review':
+				await this.onOpened(octokitIssue, payload);
+				break;
+			case 'closed':
+				await this.onClosed(octokitIssue, payload);
+				break;
+			case 'converted_to_draft':
+				await this.onConvertedToDraft(octokitIssue, payload);
+				break;
+			default:
+				throw Error(`Unknown action: ${action}`);
+		}
+		return;
 	}
 }
 
