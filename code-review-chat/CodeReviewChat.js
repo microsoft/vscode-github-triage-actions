@@ -131,6 +131,13 @@ class CodeReviewChat extends Chatter {
             (0, utils_1.safeLog)('PR is draft, ignoring');
             return;
         }
+        // A small set of repos which we don't want to be posted
+        const ignoredRepos = ['vscode-extension-loc', 'vscode-loc-drop'];
+        // Ignore PRs from ignored repos
+        if (ignoredRepos.includes(this.options.payload.repo)) {
+            (0, utils_1.safeLog)('PR is from ignored repo, ignoring');
+            return;
+        }
         // TODO @lramos15 possibly make this configurable
         if (this.pr.baseBranchName.startsWith('release')) {
             (0, utils_1.safeLog)('PR is on a release branch, ignoring');
