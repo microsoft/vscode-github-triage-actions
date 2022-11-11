@@ -196,7 +196,7 @@ export class CodeReviewChat extends Chatter {
 		}
 
 		// A small set of repos which we don't want to be posted
-		const ignoredRepos = ['vscode-extension-loc', 'vscode-loc-drop'];
+		const ignoredRepos = ['vscode-extensions-loc', 'vscode-loc-drop'];
 		// Ignore PRs from ignored repos
 		if (ignoredRepos.includes(this.options.payload.repo)) {
 			safeLog('PR is from ignored repo, ignoring');
