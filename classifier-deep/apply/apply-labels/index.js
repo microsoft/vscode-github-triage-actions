@@ -104,6 +104,10 @@ class ApplyLabels extends Action_1.Action {
                 }
                 if (confident) {
                     (0, utils_1.safeLog)(`adding label ${category} to issue ${issueData.number}`);
+                    // Actually assign the label
+                    await issue.addLabel(category);
+                    // Assign the issue to the proper person based on the label that was assigned
+                    // This is configurable in the per repo config
                     const labelConfig = (_a = config.labels) === null || _a === void 0 ? void 0 : _a[category];
                     await Promise.all([
                         ...((labelConfig === null || labelConfig === void 0 ? void 0 : labelConfig.assign)

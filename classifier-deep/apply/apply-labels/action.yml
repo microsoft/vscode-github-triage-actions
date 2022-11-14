@@ -1,5 +1,5 @@
 name: "Classifier: Apply Labels"
-description: Applies labels generated from the python script back to thier respective issues
+description: Applies labels generated from the python script back to their respective issues
 inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
