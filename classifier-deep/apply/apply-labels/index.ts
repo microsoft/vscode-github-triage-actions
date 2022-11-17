@@ -137,9 +137,7 @@ class ApplyLabels extends Action {
 				}
 
 				if (confident) {
-					safeLog(`adding label ${category} to issue ${issueData.number}`);
-					// Actually assign the label
-					await issue.addLabel(category);
+					safeLog(`assigning person based on label ${category} for issue ${issueData.number}`);
 
 					// Assign the issue to the proper person based on the label that was assigned
 					// This is configurable in the per repo config
