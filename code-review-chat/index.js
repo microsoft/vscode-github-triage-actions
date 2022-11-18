@@ -80,6 +80,7 @@ class CodeReviewChatAction extends Action_1.Action {
             });
             // 200 Response means it exists, so we exit as webhook implementation is only if pr-chat.yml isn't present
             if (fileContent.status === 200) {
+                (0, utils_1.safeLog)('Skipping webhook implementation since pr-chat.yml is present');
                 return;
             }
         }
