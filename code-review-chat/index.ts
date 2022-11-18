@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Octokit } from '@octokit/rest';
-import { getRequiredInput, getInput } from '../common/utils';
+import { getRequiredInput, getInput, safeLog } from '../common/utils';
 import { CodeReviewChat, CodeReviewChatDeleter } from './CodeReviewChat';
 import { Action } from '../common/Action';
 import { OctoKitIssue } from '../api/octokit';
@@ -100,6 +100,7 @@ class CodeReviewChatAction extends Action {
 			});
 			// 200 Response means it exists, so we exit as webhook implementation is only if pr-chat.yml isn't present
 			if (fileContent.status === 200) {
+				safeLog('Skipping webhook implementation since pr-chat.yml is present');
 				return;
 			}
 		} catch {
