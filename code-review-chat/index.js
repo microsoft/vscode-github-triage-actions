@@ -94,6 +94,7 @@ class CodeReviewChatAction extends Action_1.Action {
                 await this.onOpened(octokitIssue, payload);
                 break;
             case 'closed':
+            case 'submitted':
                 await this.onClosed(octokitIssue, payload);
                 break;
             case 'converted_to_draft':
