@@ -40,7 +40,7 @@ class FetchIssues extends Action {
 				let performedPRAssignment = false;
 				let additionalInfo = '';
 				if (issueData.isPr) {
-					if (await github.hasWriteAccess(issueData.author)) {
+					if (await github.hasWriteAccess(issueData.author.name)) {
 						await issue.addAssignee(issueData.author.name);
 						performedPRAssignment = true;
 					} else {

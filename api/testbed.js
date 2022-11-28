@@ -32,8 +32,8 @@ class Testbed {
     async readConfig(path) {
         return JSON.parse(JSON.stringify(this.config.configs[path]));
     }
-    async hasWriteAccess(user) {
-        return this.config.writers.includes(user.name);
+    async hasWriteAccess(username) {
+        return this.config.writers.includes(username);
     }
     async repoHasLabel(label) {
         return this.config.globalLabels.includes(label);

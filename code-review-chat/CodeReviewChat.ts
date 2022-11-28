@@ -213,7 +213,7 @@ export class CodeReviewChat extends Chatter {
 		const author = data.author;
 		// Author must have write access to the repo or be a bot
 		if (
-			(!(await this.issue.hasWriteAccess(author)) && !author.isGitHubApp) ||
+			(!(await this.issue.hasWriteAccess(author.name)) && !author.isGitHubApp) ||
 			author.name.includes('dependabot')
 		) {
 			safeLog('Issue author not team member, ignoring');
@@ -236,23 +236,20 @@ export class CodeReviewChat extends Chatter {
 
 		tasks.push(
 			(async () => {
-				const [existingReviews, existingRequests] = await Promise.all([
-					this.octokit.pulls.listReviews({
-						owner: this.options.payload.owner,
-						repo: this.options.payload.repo,
-						pull_number: this.options.payload.pr.number,
-					}),
+				const [hasExistingReview, existingRequests] = await Promise.all([
+					meetsReviewThreshold(
+						this.octokit,
+						this.options.payload.pr.number,
+						this.options.payload.repo,
+						this.options.payload.owner,
+						this.issue,
+					),
 					this.octokit.pulls.listRequestedReviewers({
 						owner: this.options.payload.owner,
 						repo: this.options.payload.repo,
 						pull_number: this.options.payload.pr.number,
 					}),
 				]);
-
-				// Check if there is any exisitng review. This excludes the author themselves as they don't count
-				const hasExistingReview = existingReviews?.data?.some((review) => {
-					return review.user?.login !== author.name;
-				});
 
 				// Check to see if there is an existing review or review request. We don't check if the author is part of the review request as that isn't possible
 				const hasExisting = hasExistingReview || existingRequests?.data?.users?.length;
@@ -296,6 +293,38 @@ interface ConversationsList {
 	response_metadata?: {
 		next_cursor?: string;
 	};
+}
+
+export async function meetsReviewThreshold(
+	octokit: Octokit,
+	prNumber: number,
+	repo: string,
+	owner: string,
+	ghIssue: GitHubIssue,
+) {
+	const reviews = await octokit.pulls.listReviews({
+		pull_number: prNumber,
+		owner,
+		repo,
+	});
+	// Get author of PR
+	const author = (await ghIssue.getIssue()).author.name;
+	// Get all reviews that are from team members, excluding the author
+	const teamMemberReviews = reviews.data.filter(async (review) => {
+		if (!review.user || !review.user.name) {
+			return false;
+		}
+		if (review.user.login === author) {
+			return false;
+		}
+		return await ghIssue.hasWriteAccess(review.user.name);
+	});
+	// Team members require 1 review, external requires two
+	if (await ghIssue.hasWriteAccess(author)) {
+		return teamMemberReviews.length >= 1;
+	} else {
+		return teamMemberReviews.length >= 2;
+	}
 }
 
 async function listAllMemberships(web: WebClient) {

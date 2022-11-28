@@ -9,7 +9,7 @@ export interface GitHub {
 
 	query(query: Query): AsyncIterableIterator<GitHubIssue[]>;
 
-	hasWriteAccess(user: User): Promise<boolean>;
+	hasWriteAccess(username: string): Promise<boolean>;
 
 	repoHasLabel(label: string): Promise<boolean>;
 	createLabel(label: string, color: string, description: string): Promise<void>;

@@ -8,7 +8,7 @@ import type { RequestError } from '@octokit/request-error';
 import { exec } from 'child_process';
 import { IssueGetResponse, IssuesGetResponseMilestone } from '../common/OctokitTypings';
 import { safeLog } from '../common/utils';
-import { Comment, GitHub, GitHubIssue, Issue, Milestone, Query, User } from './api';
+import { Comment, GitHub, GitHubIssue, Issue, Milestone, Query } from './api';
 
 let numRequests = 0;
 export const getNumRequests = () => numRequests;
@@ -123,19 +123,19 @@ export class OctoKit implements GitHub {
 	}
 
 	private writeAccessCache: Record<string, boolean> = {};
-	async hasWriteAccess(user: User): Promise<boolean> {
-		if (user.name in this.writeAccessCache) {
-			safeLog('Got permissions from cache for ' + user);
-			return this.writeAccessCache[user.name];
+	async hasWriteAccess(username: string): Promise<boolean> {
+		if (username in this.writeAccessCache) {
+			safeLog('Got permissions from cache for ' + username);
+			return this.writeAccessCache[username];
 		}
-		safeLog('Fetching permissions for ' + user.name);
+		safeLog('Fetching permissions for ' + username);
 		const permissions = (
 			await this.octokit.rest.repos.getCollaboratorPermissionLevel({
 				...this.params,
-				username: user.name,
+				username: username,
 			})
 		).data.permission;
-		return (this.writeAccessCache[user.name] = permissions === 'admin' || permissions === 'write');
+		return (this.writeAccessCache[username] = permissions === 'admin' || permissions === 'write');
 	}
 
 	async repoHasLabel(name: string): Promise<boolean> {

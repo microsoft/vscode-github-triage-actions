@@ -62,6 +62,20 @@ class CodeReviewChatAction extends Action_1.Action {
             },
         }).run();
     }
+    /**
+     * TODO @lramos15 Extend support possibly to the base action
+     */
+    async onSubmitReview(issue, payload) {
+        if (!payload.pull_request || !payload.repository) {
+            throw Error('expected payload to contain pull request url');
+        }
+        const github = new rest_1.Octokit({ auth });
+        const meetsThreshold = await (0, CodeReviewChat_1.meetsReviewThreshold)(github, payload.pull_request.number, payload.repository.name, payload.repository.owner.login, issue);
+        // Only delete this message if the review threshold has been met
+        if (meetsThreshold) {
+            await this.closedOrDraftHandler(issue, payload);
+        }
+    }
     async onTriggered() {
         // This function is only called during a manual workspace dispatch event
         // caused by a webhook, so we know to expect some inputs.
@@ -70,31 +84,16 @@ class CodeReviewChatAction extends Action_1.Action {
         const repository = JSON.parse((0, utils_1.getRequiredInput)('repository'));
         const pr_number = parseInt((0, utils_1.getRequiredInput)('pr_number'));
         const octokitIssue = new octokit_1.OctoKitIssue(auth, { owner: repository.owner.login, repo: repository.name }, { number: pr_number });
-        // Query repo to see if it has a .github/workflows/pr-chat.yml file
-        const ghAPI = new rest_1.Octokit({ auth });
-        try {
-            const fileContent = await ghAPI.repos.getContent({
-                owner: repository.owner.login,
-                repo: repository.name,
-                path: '.github/workflows/pr-chat.yml',
-            });
-            // 200 Response means it exists, so we exit as webhook implementation is only if pr-chat.yml isn't present
-            if (fileContent.status === 200) {
-                (0, utils_1.safeLog)('Skipping webhook implementation since pr-chat.yml is present');
-                return;
-            }
-        }
-        catch {
-            // No-op, file doesn't exist
-        }
         const payload = { repository, pull_request };
         switch (action) {
             case 'opened':
             case 'ready_for_review':
                 await this.onOpened(octokitIssue, payload);
                 break;
-            case 'closed':
             case 'submitted':
+                await this.onSubmitReview(octokitIssue, payload);
+                break;
+            case 'closed':
                 await this.onClosed(octokitIssue, payload);
                 break;
             case 'converted_to_draft':
