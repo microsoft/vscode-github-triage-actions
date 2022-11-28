@@ -103,17 +103,17 @@ class OctoKit {
             state: milestone.state === 'open' ? 'open' : 'closed',
         };
     }
-    async hasWriteAccess(user) {
-        if (user.name in this.writeAccessCache) {
-            (0, utils_1.safeLog)('Got permissions from cache for ' + user);
-            return this.writeAccessCache[user.name];
+    async hasWriteAccess(username) {
+        if (username in this.writeAccessCache) {
+            (0, utils_1.safeLog)('Got permissions from cache for ' + username);
+            return this.writeAccessCache[username];
         }
-        (0, utils_1.safeLog)('Fetching permissions for ' + user.name);
+        (0, utils_1.safeLog)('Fetching permissions for ' + username);
         const permissions = (await this.octokit.rest.repos.getCollaboratorPermissionLevel({
             ...this.params,
-            username: user.name,
+            username: username,
         })).data.permission;
-        return (this.writeAccessCache[user.name] = permissions === 'admin' || permissions === 'write');
+        return (this.writeAccessCache[username] = permissions === 'admin' || permissions === 'write');
     }
     async repoHasLabel(name) {
         try {

@@ -130,7 +130,7 @@ export class FeatureRequestOnLabel {
 			!issue.open ||
 			issue.milestone?.milestoneId ||
 			!issue.labels.includes(this.label) ||
-			(await this.github.hasWriteAccess(issue.author))
+			(await this.github.hasWriteAccess(issue.author.name))
 		) {
 			return;
 		}

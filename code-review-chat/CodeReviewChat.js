@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CodeReviewChat = exports.CodeReviewChatDeleter = void 0;
+exports.meetsReviewThreshold = exports.CodeReviewChat = exports.CodeReviewChatDeleter = void 0;
 const web_api_1 = require("@slack/web-api");
 const utils_1 = require("../common/utils");
 class Chatter {
@@ -146,7 +146,7 @@ class CodeReviewChat extends Chatter {
         const data = await this.issue.getIssue();
         const author = data.author;
         // Author must have write access to the repo or be a bot
-        if ((!(await this.issue.hasWriteAccess(author)) && !author.isGitHubApp) ||
+        if ((!(await this.issue.hasWriteAccess(author.name)) && !author.isGitHubApp) ||
             author.name.includes('dependabot')) {
             (0, utils_1.safeLog)('Issue author not team member, ignoring');
             return;
@@ -162,26 +162,17 @@ class CodeReviewChat extends Chatter {
             }
         })());
         tasks.push((async () => {
-            var _a, _b, _c;
-            const [existingReviews, existingRequests] = await Promise.all([
-                this.octokit.pulls.listReviews({
-                    owner: this.options.payload.owner,
-                    repo: this.options.payload.repo,
-                    pull_number: this.options.payload.pr.number,
-                }),
+            var _a, _b;
+            const [hasExistingReview, existingRequests] = await Promise.all([
+                meetsReviewThreshold(this.octokit, this.options.payload.pr.number, this.options.payload.repo, this.options.payload.owner, this.issue),
                 this.octokit.pulls.listRequestedReviewers({
                     owner: this.options.payload.owner,
                     repo: this.options.payload.repo,
                     pull_number: this.options.payload.pr.number,
                 }),
             ]);
-            // Check if there is any exisitng review. This excludes the author themselves as they don't count
-            const hasExistingReview = (_a = existingReviews === null || existingReviews === void 0 ? void 0 : existingReviews.data) === null || _a === void 0 ? void 0 : _a.some((review) => {
-                var _a;
-                return ((_a = review.user) === null || _a === void 0 ? void 0 : _a.login) !== author.name;
-            });
             // Check to see if there is an existing review or review request. We don't check if the author is part of the review request as that isn't possible
-            const hasExisting = hasExistingReview || ((_c = (_b = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _b === void 0 ? void 0 : _b.users) === null || _c === void 0 ? void 0 : _c.length);
+            const hasExisting = hasExistingReview || ((_b = (_a = existingRequests === null || existingRequests === void 0 ? void 0 : existingRequests.data) === null || _a === void 0 ? void 0 : _a.users) === null || _b === void 0 ? void 0 : _b.length);
             if (hasExisting) {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
                 process.exit(0);
@@ -204,6 +195,33 @@ class CodeReviewChat extends Chatter {
     }
 }
 exports.CodeReviewChat = CodeReviewChat;
+async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
+    const reviews = await octokit.pulls.listReviews({
+        pull_number: prNumber,
+        owner,
+        repo,
+    });
+    // Get author of PR
+    const author = (await ghIssue.getIssue()).author.name;
+    // Get all reviews that are from team members, excluding the author
+    const teamMemberReviews = reviews.data.filter(async (review) => {
+        if (!review.user || !review.user.name) {
+            return false;
+        }
+        if (review.user.login === author) {
+            return false;
+        }
+        return await ghIssue.hasWriteAccess(review.user.name);
+    });
+    // Team members require 1 review, external requires two
+    if (await ghIssue.hasWriteAccess(author)) {
+        return teamMemberReviews.length >= 1;
+    }
+    else {
+        return teamMemberReviews.length >= 2;
+    }
+}
+exports.meetsReviewThreshold = meetsReviewThreshold;
 async function listAllMemberships(web) {
     var _a, _b;
     let groups;

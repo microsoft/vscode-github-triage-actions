@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { safeLog } from '../common/utils';
-import { Comment, GitHub, GitHubIssue, Issue, Query, User } from './api';
+import { Comment, GitHub, GitHubIssue, Issue, Query } from './api';
 
 type TestbedConfig = {
 	globalLabels: string[];
@@ -52,8 +52,8 @@ export class Testbed implements GitHub {
 		return JSON.parse(JSON.stringify(this.config.configs[path]));
 	}
 
-	async hasWriteAccess(user: User): Promise<boolean> {
-		return this.config.writers.includes(user.name);
+	async hasWriteAccess(username: string): Promise<boolean> {
+		return this.config.writers.includes(username);
 	}
 
 	async repoHasLabel(label: string): Promise<boolean> {

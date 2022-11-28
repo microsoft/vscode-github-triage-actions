@@ -37,7 +37,7 @@ class NeedsMoreInfoCloser {
                         lastComment.author.isGitHubApp ||
                         // TODO: List the collaborators once per go rather than checking a single user each issue
                         this.additionalTeam.includes(lastComment.author.name) ||
-                        (await issue.hasWriteAccess(lastComment.author))) {
+                        (await issue.hasWriteAccess(lastComment.author.name))) {
                         if (lastComment) {
                             (0, utils_1.safeLog)(`Last comment on ${hydrated.number} by team. Closing.`);
                         }

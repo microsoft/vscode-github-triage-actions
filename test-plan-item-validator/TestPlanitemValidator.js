@@ -21,7 +21,7 @@ class TestPlanItemValidator {
     async run() {
         const issue = await this.github.getIssue();
         const shouldAddErrors = issue.labels.includes(this.label) || issue.labels.includes(this.invalidLabel);
-        const madeByTeamMember = await this.github.hasWriteAccess(issue.author);
+        const madeByTeamMember = await this.github.hasWriteAccess(issue.author.name);
         if (!madeByTeamMember) {
             (0, utils_1.safeLog)('Issue not made by team member, skipping validation');
             return;

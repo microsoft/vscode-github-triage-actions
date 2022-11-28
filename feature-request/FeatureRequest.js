@@ -106,7 +106,7 @@ class FeatureRequestOnLabel {
         if (!issue.open ||
             ((_a = issue.milestone) === null || _a === void 0 ? void 0 : _a.milestoneId) ||
             !issue.labels.includes(this.label) ||
-            (await this.github.hasWriteAccess(issue.author))) {
+            (await this.github.hasWriteAccess(issue.author.name))) {
             return;
         }
         return this.github.setMilestone(this.milestone);
