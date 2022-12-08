@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Octokit } from '@octokit/rest';
-import { getRequiredInput, getInput } from '../common/utils';
+import { getRequiredInput, getInput, safeLog } from '../common/utils';
 import { CodeReviewChat, CodeReviewChatDeleter, meetsReviewThreshold } from './CodeReviewChat';
 import { Action } from '../common/Action';
 import { OctoKitIssue } from '../api/octokit';
@@ -93,6 +93,7 @@ class CodeReviewChatAction extends Action {
 		);
 		// Only delete this message if the review threshold has been met
 		if (meetsThreshold) {
+			safeLog(`Review threshold met, deleting ${payload.pull_request.html_url}}`);
 			await this.closedOrDraftHandler(issue, payload);
 		}
 	}
