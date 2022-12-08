@@ -73,6 +73,7 @@ class CodeReviewChatAction extends Action_1.Action {
         const meetsThreshold = await (0, CodeReviewChat_1.meetsReviewThreshold)(github, payload.pull_request.number, payload.repository.name, payload.repository.owner.login, issue);
         // Only delete this message if the review threshold has been met
         if (meetsThreshold) {
+            (0, utils_1.safeLog)(`Review threshold met, deleting ${payload.pull_request.html_url}}`);
             await this.closedOrDraftHandler(issue, payload);
         }
     }

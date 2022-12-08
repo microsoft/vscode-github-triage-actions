@@ -40,15 +40,24 @@ class CodeReviewChatDeleter extends Chatter {
         }
         const messages = response.messages;
         const messagesToDelete = messages.filter((message) => {
+            var _a, _b, _c;
             const isCodeReviewMessage = message.text.includes(this.prUrl);
             // If it has a subtype it means its a special slack message which we want to delete
             if (message.subtype) {
                 return true;
             }
+            const hasWhiteCheckMark = (_a = message.reactions) === null || _a === void 0 ? void 0 : _a.some((reaction) => reaction.name === 'white_check_mark');
+            // Extract PR URL from the chat message. It is in the form https://https://github.com/{repo}/pull/{number}
+            const prUrl = (_c = (_b = message.text.match(/https:\/\/github.com\/.*\/pull\/\d+/)) === null || _b === void 0 ? void 0 : _b[0]) !== null && _c !== void 0 ? _c : '';
+            if (isCodeReviewMessage) {
+                (0, utils_1.safeLog)(`${prUrl} was closed or met review threshold. Deleting the message.`);
+            }
             if (this.elevatedClient && message.reactions) {
+                if (hasWhiteCheckMark) {
+                    (0, utils_1.safeLog)(`Message ${prUrl} has a check mark reaction, deleting it.`);
+                }
                 // If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
-                return (isCodeReviewMessage ||
-                    message.reactions.some((reaction) => reaction.name === 'white_check_mark'));
+                return isCodeReviewMessage || hasWhiteCheckMark;
             }
             return isCodeReviewMessage;
         });

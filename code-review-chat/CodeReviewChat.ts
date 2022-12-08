@@ -104,12 +104,20 @@ export class CodeReviewChatDeleter extends Chatter {
 			if (message.subtype) {
 				return true;
 			}
+			const hasWhiteCheckMark = message.reactions?.some(
+				(reaction) => reaction.name === 'white_check_mark',
+			);
+			// Extract PR URL from the chat message. It is in the form https://https://github.com/{repo}/pull/{number}
+			const prUrl = message.text.match(/https:\/\/github.com\/.*\/pull\/\d+/)?.[0] ?? '';
+			if (isCodeReviewMessage) {
+				safeLog(`${prUrl} was closed or met review threshold. Deleting the message.`);
+			}
 			if (this.elevatedClient && message.reactions) {
+				if (hasWhiteCheckMark) {
+					safeLog(`Message ${prUrl} has a check mark reaction, deleting it.`);
+				}
 				// If we have an elevated client we can delete the message as long it has a "white_check_mark" reaction
-				return (
-					isCodeReviewMessage ||
-					message.reactions.some((reaction) => reaction.name === 'white_check_mark')
-				);
+				return isCodeReviewMessage || hasWhiteCheckMark;
 			}
 			return isCodeReviewMessage;
 		});
