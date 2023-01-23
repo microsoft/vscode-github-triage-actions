@@ -100,6 +100,11 @@ class CodeReviewChatAction extends Action_1.Action {
             case 'converted_to_draft':
                 await this.onConvertedToDraft(octokitIssue, payload);
                 break;
+            // These are part of the webhook chain, let's no-op but allow the CI to pass
+            case 'dismissed':
+            case 'synchronize':
+            case 'reopened':
+                break;
             default:
                 throw Error(`Unknown action: ${action}`);
         }
