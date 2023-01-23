@@ -217,18 +217,26 @@ async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
         if (!review.user || !review.user.name) {
             return false;
         }
-        if (review.user.login === author) {
+        if (review.user.name === author || review.user.login === author) {
             return false;
         }
-        return await ghIssue.hasWriteAccess(review.user.name);
+        const isTeamMember = await ghIssue.hasWriteAccess(review.user.login);
+        return isTeamMember;
     });
+    const reviewerNames = teamMemberReviews.map((r) => { var _a, _b; return (_b = (_a = r.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'Unknown'; });
+    let meetsReviewThreshold = false;
     // Team members require 1 review, external requires two
     if (await ghIssue.hasWriteAccess(author)) {
-        return teamMemberReviews.length >= 1;
+        meetsReviewThreshold = reviewerNames.length >= 1;
     }
     else {
-        return teamMemberReviews.length >= 2;
+        meetsReviewThreshold = reviewerNames.length >= 2;
     }
+    // Some more logging to help diagnose issues
+    if (meetsReviewThreshold) {
+        (0, utils_1.safeLog)(`Met review threshold: ${reviewerNames.join(', ')}`);
+    }
+    return meetsReviewThreshold;
 }
 exports.meetsReviewThreshold = meetsReviewThreshold;
 async function listAllMemberships(web) {

@@ -6,6 +6,7 @@
 import { Octokit } from '@octokit/rest';
 import { WebClient } from '@slack/web-api';
 import { GitHubIssue } from '../api/api';
+import { OctoKitIssue } from '../api/octokit';
 import { safeLog } from '../common/utils';
 
 interface PR {
@@ -308,7 +309,7 @@ export async function meetsReviewThreshold(
 	prNumber: number,
 	repo: string,
 	owner: string,
-	ghIssue: GitHubIssue,
+	ghIssue: GitHubIssue | OctoKitIssue,
 ) {
 	const reviews = await octokit.pulls.listReviews({
 		pull_number: prNumber,
@@ -322,17 +323,25 @@ export async function meetsReviewThreshold(
 		if (!review.user || !review.user.name) {
 			return false;
 		}
-		if (review.user.login === author) {
+		if (review.user.name === author || review.user.login === author) {
 			return false;
 		}
-		return await ghIssue.hasWriteAccess(review.user.name);
+		const isTeamMember = await ghIssue.hasWriteAccess(review.user.login);
+		return isTeamMember;
 	});
+	const reviewerNames = teamMemberReviews.map((r) => r.user?.login ?? 'Unknown');
+	let meetsReviewThreshold = false;
 	// Team members require 1 review, external requires two
 	if (await ghIssue.hasWriteAccess(author)) {
-		return teamMemberReviews.length >= 1;
+		meetsReviewThreshold = reviewerNames.length >= 1;
 	} else {
-		return teamMemberReviews.length >= 2;
+		meetsReviewThreshold = reviewerNames.length >= 2;
 	}
+	// Some more logging to help diagnose issues
+	if (meetsReviewThreshold) {
+		safeLog(`Met review threshold: ${reviewerNames.join(', ')}`);
+	}
+	return meetsReviewThreshold;
 }
 
 async function listAllMemberships(web: WebClient) {
