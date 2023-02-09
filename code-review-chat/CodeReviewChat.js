@@ -205,6 +205,7 @@ class CodeReviewChat extends Chatter {
 }
 exports.CodeReviewChat = CodeReviewChat;
 async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
+    var _a, _b, _c;
     const reviews = await octokit.pulls.listReviews({
         pull_number: prNumber,
         owner,
@@ -212,6 +213,14 @@ async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
     });
     // Get author of PR
     const author = (await ghIssue.getIssue()).author.name;
+    // Get timestamp of last commit
+    const lastCommitTimestamp = (_c = (_b = (_a = (await octokit.pulls.listCommits({
+        pull_number: prNumber,
+        owner,
+        repo,
+    })).data[0]) === null || _a === void 0 ? void 0 : _a.commit) === null || _b === void 0 ? void 0 : _b.committer) === null || _c === void 0 ? void 0 : _c.date;
+    // Convert date string into unix timestamp
+    const lastCommitUnixTimestamp = lastCommitTimestamp ? new Date(lastCommitTimestamp).getTime() : 0;
     // Get all reviews that are from team members, excluding the author
     const teamMemberReviews = reviews.data.filter(async (review) => {
         if (!review.user || !review.user.name) {
@@ -220,10 +229,16 @@ async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
         if (review.user.name === author || review.user.login === author) {
             return false;
         }
+        const reviewTimestamp = review.submitted_at ? new Date(review.submitted_at).getTime() : 0;
+        // Check that the review occured after the last commit
+        if (reviewTimestamp < lastCommitUnixTimestamp) {
+            return false;
+        }
         const isTeamMember = await ghIssue.hasWriteAccess(review.user.login);
         return isTeamMember;
     });
-    const reviewerNames = teamMemberReviews.map((r) => { var _a, _b; return (_b = (_a = r.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'Unknown'; });
+    // While more expensive to convert from Array -> Set -> Array, we want to ensure the same name isn't double counted if a user has multiple reviews
+    const reviewerNames = Array.from(new Set(teamMemberReviews.map((r) => { var _a, _b; return (_b = (_a = r.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'Unknown'; })));
     let meetsReviewThreshold = false;
     // Team members require 1 review, external requires two
     if (await ghIssue.hasWriteAccess(author)) {

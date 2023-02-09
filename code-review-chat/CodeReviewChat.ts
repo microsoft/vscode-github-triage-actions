@@ -318,6 +318,16 @@ export async function meetsReviewThreshold(
 	});
 	// Get author of PR
 	const author = (await ghIssue.getIssue()).author.name;
+	// Get timestamp of last commit
+	const lastCommitTimestamp = (
+		await octokit.pulls.listCommits({
+			pull_number: prNumber,
+			owner,
+			repo,
+		})
+	).data[0]?.commit?.committer?.date;
+	// Convert date string into unix timestamp
+	const lastCommitUnixTimestamp = lastCommitTimestamp ? new Date(lastCommitTimestamp).getTime() : 0;
 	// Get all reviews that are from team members, excluding the author
 	const teamMemberReviews = reviews.data.filter(async (review) => {
 		if (!review.user || !review.user.name) {
@@ -326,10 +336,16 @@ export async function meetsReviewThreshold(
 		if (review.user.name === author || review.user.login === author) {
 			return false;
 		}
+		const reviewTimestamp = review.submitted_at ? new Date(review.submitted_at).getTime() : 0;
+		// Check that the review occured after the last commit
+		if (reviewTimestamp < lastCommitUnixTimestamp) {
+			return false;
+		}
 		const isTeamMember = await ghIssue.hasWriteAccess(review.user.login);
 		return isTeamMember;
 	});
-	const reviewerNames = teamMemberReviews.map((r) => r.user?.login ?? 'Unknown');
+	// While more expensive to convert from Array -> Set -> Array, we want to ensure the same name isn't double counted if a user has multiple reviews
+	const reviewerNames = Array.from(new Set(teamMemberReviews.map((r) => r.user?.login ?? 'Unknown')));
 	let meetsReviewThreshold = false;
 	// Team members require 1 review, external requires two
 	if (await ghIssue.hasWriteAccess(author)) {
