@@ -8,7 +8,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { context } from '@actions/github';
 import { OctoKit, OctoKitIssue } from '../../../api/octokit';
-import { getRequiredInput, getInput, safeLog } from '../../../common/utils';
+import { getRequiredInput, getInput, safeLog, daysAgoToHumanReadbleDate } from '../../../common/utils';
 import { Action } from '../../../common/Action';
 import { trackEvent } from '../../../common/telemetry';
 
@@ -204,11 +204,25 @@ class ApplyLabels extends Action {
 						}
 						if (!debug) {
 							await issue.addLabel('triage-needed');
-							for (let i = 0; i < 3 && i < available.length; i++) {
-								// This is now a random selection because we shuffled the array above
-								const randomSelection = available[i];
-								safeLog('assigning', randomSelection);
-								await issue.addAssignee(randomSelection);
+							let i = 0;
+							const randomSelection = available[i];
+							safeLog('assigning', randomSelection);
+							await issue.addAssignee(randomSelection);
+							const staleIssues = github.query({
+								q: `is:issue is:open label:triage-needed updated:<${daysAgoToHumanReadbleDate(
+									7,
+								)}`,
+							});
+							// Loop through assigning new people to issues which are over a week old and not triaged
+							for await (const page of staleIssues) {
+								for (const issue of page) {
+									i += 1;
+									if (i >= available.length) {
+										i = 0;
+									}
+									safeLog('assigning to stale issue', available[i]);
+									await issue.addAssignee(available[i]);
+								}
 							}
 						}
 					} else {
