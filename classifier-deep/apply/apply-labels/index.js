@@ -153,11 +153,32 @@ class ApplyLabels extends Action_1.Action {
                 try {
                     const available = await manifest;
                     if (available) {
-                        const randomSelection = available[Math.floor(Math.random() * available.length)];
-                        (0, utils_1.safeLog)('assigning', randomSelection);
+                        // Shuffle the array
+                        for (let i = available.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [available[i], available[j]] = [available[j], available[i]];
+                        }
                         if (!debug) {
                             await issue.addLabel('triage-needed');
+                            let i = 0;
+                            const randomSelection = available[i];
+                            (0, utils_1.safeLog)('assigning', randomSelection);
                             await issue.addAssignee(randomSelection);
+                            const staleIssues = github.query({
+                                q: `is:issue is:open label:triage-needed -label:stale -label:info-needed updated:<${(0, utils_1.daysAgoToHumanReadbleDate)(7)}`,
+                            });
+                            // Loop through assigning new people to issues which are over a week old and not triaged
+                            for await (const page of staleIssues) {
+                                for (const issue of page) {
+                                    i += 1;
+                                    if (i >= available.length) {
+                                        i = 0;
+                                    }
+                                    (0, utils_1.safeLog)('assigning to stale issue', available[i]);
+                                    await issue.addAssignee(available[i]);
+                                    await issue.addLabel('stale');
+                                }
+                            }
                         }
                     }
                     else {
