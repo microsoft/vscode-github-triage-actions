@@ -153,11 +153,19 @@ class ApplyLabels extends Action_1.Action {
                 try {
                     const available = await manifest;
                     if (available) {
-                        const randomSelection = available[Math.floor(Math.random() * available.length)];
-                        (0, utils_1.safeLog)('assigning', randomSelection);
+                        // Shuffle the array
+                        for (let i = available.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [available[i], available[j]] = [available[j], available[i]];
+                        }
                         if (!debug) {
                             await issue.addLabel('triage-needed');
-                            await issue.addAssignee(randomSelection);
+                            for (let i = 0; i < 3 && i < available.length; i++) {
+                                // This is now a random selection because we shuffled the array above
+                                const randomSelection = available[i];
+                                (0, utils_1.safeLog)('assigning', randomSelection);
+                                await issue.addAssignee(randomSelection);
+                            }
                         }
                     }
                     else {
