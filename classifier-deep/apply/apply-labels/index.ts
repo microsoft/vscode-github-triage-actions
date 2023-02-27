@@ -209,7 +209,7 @@ class ApplyLabels extends Action {
 							safeLog('assigning', randomSelection);
 							await issue.addAssignee(randomSelection);
 							const staleIssues = github.query({
-								q: `is:issue is:open label:triage-needed updated:<${daysAgoToHumanReadbleDate(
+								q: `is:issue is:open label:triage-needed -label:stale -label:info-needed updated:<${daysAgoToHumanReadbleDate(
 									7,
 								)}`,
 							});
@@ -222,6 +222,7 @@ class ApplyLabels extends Action {
 									}
 									safeLog('assigning to stale issue', available[i]);
 									await issue.addAssignee(available[i]);
+									await issue.addLabel('stale');
 								}
 							}
 						}

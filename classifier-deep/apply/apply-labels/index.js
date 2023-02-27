@@ -165,7 +165,7 @@ class ApplyLabels extends Action_1.Action {
                             (0, utils_1.safeLog)('assigning', randomSelection);
                             await issue.addAssignee(randomSelection);
                             const staleIssues = github.query({
-                                q: `is:issue is:open label:triage-needed updated:<${(0, utils_1.daysAgoToHumanReadbleDate)(7)}`,
+                                q: `is:issue is:open label:triage-needed -label:stale -label:info-needed updated:<${(0, utils_1.daysAgoToHumanReadbleDate)(7)}`,
                             });
                             // Loop through assigning new people to issues which are over a week old and not triaged
                             for await (const page of staleIssues) {
@@ -176,6 +176,7 @@ class ApplyLabels extends Action_1.Action {
                                     }
                                     (0, utils_1.safeLog)('assigning to stale issue', available[i]);
                                     await issue.addAssignee(available[i]);
+                                    await issue.addLabel('stale');
                                 }
                             }
                         }
