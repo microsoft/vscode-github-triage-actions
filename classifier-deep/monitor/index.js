@@ -16,6 +16,7 @@ class DeepClassifierMonitor extends Action_1.Action {
         const assigner = await issue.getAssigner(assignee);
         if (assigner !== (0, utils_1.getRequiredInput)('botName')) {
             await issue.removeLabel('triage-needed');
+            await issue.removeLabel('stale');
         }
     }
     async onUnassigned(issue, assignee) {

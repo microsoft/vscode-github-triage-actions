@@ -15,6 +15,7 @@ class DeepClassifierMonitor extends Action {
 		const assigner = await issue.getAssigner(assignee);
 		if (assigner !== getRequiredInput('botName')) {
 			await issue.removeLabel('triage-needed');
+			await issue.removeLabel('stale');
 		}
 	}
 
