@@ -222,21 +222,24 @@ async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
     // Convert date string into unix timestamp
     const lastCommitUnixTimestamp = lastCommitTimestamp ? new Date(lastCommitTimestamp).getTime() : 0;
     // Get all reviews that are from team members, excluding the author
-    const teamMemberReviews = reviews.data.filter(async (review) => {
+    const teamMemberReviews = [];
+    for (const review of reviews.data) {
         if (!review.user || !review.user.name) {
-            return false;
+            continue;
         }
         if (review.user.name === author || review.user.login === author) {
-            return false;
+            continue;
         }
         const reviewTimestamp = review.submitted_at ? new Date(review.submitted_at).getTime() : 0;
         // Check that the review occured after the last commit
         if (reviewTimestamp < lastCommitUnixTimestamp) {
-            return false;
+            continue;
         }
         const isTeamMember = await ghIssue.hasWriteAccess(review.user.login);
-        return isTeamMember;
-    });
+        if (isTeamMember) {
+            teamMemberReviews.push(review);
+        }
+    }
     // While more expensive to convert from Array -> Set -> Array, we want to ensure the same name isn't double counted if a user has multiple reviews
     const reviewerNames = Array.from(new Set(teamMemberReviews.map((r) => { var _a, _b; return (_b = (_a = r.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'Unknown'; })));
     let meetsReviewThreshold = false;
