@@ -6,6 +6,7 @@
 import axios from 'axios';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
+import { ConsecutiveBreaker, ExponentialBackoff, circuitBreaker, handleAll, retry, wrap } from 'cockatiel';
 
 type Response = {
 	rateLimit: RateLimitResponse;
@@ -87,13 +88,12 @@ export type CommentEvent = {
 	bodyText: string;
 };
 
-export const download = async (token: string, repo: { owner: string; repo: string }, endCursor?: string) => {
-	const data = await axios
-		.post(
-			'https://api.github.com/graphql',
-			JSON.stringify({
-				query: `{
-			repository(name: "${repo.repo}", owner: "${repo.owner}") {
+async function loadData(owner: string, repo: string, token: string, endCursor?: string) {
+	const response = await axios.post<{ data: Response }>(
+		'https://api.github.com/graphql',
+		JSON.stringify({
+			query: `{
+			repository(name: "${repo}", owner: "${owner}") {
 				issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
 					pageInfo {
 						endCursor
@@ -155,23 +155,35 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 				remaining
 			}
 		}`,
-			}),
-			{
-				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json',
-					Authorization: 'bearer ' + token,
-				},
+		}),
+		{
+			headers: {
+				'Content-Type': 'application/json',
+				Accept: 'application/json',
+				Authorization: 'bearer ' + token,
 			},
-		)
-		.then((r) => r.data)
-		.catch((err) => {
-			console.error(err);
-			process.exit(1);
-		});
+		},
+	);
 
-	const response = data.data as Response;
+	return response.data.data;
+}
 
+// Combine these! Create a policy that retries 3 times, calling through the circuit breaker
+const retryWithBreaker = wrap(
+	// Create a retry policy that'll try whatever function we execute 3
+	// times with a randomized exponential backoff.
+	retry(handleAll, { maxAttempts: 10, backoff: new ExponentialBackoff() }),
+	// Create a circuit breaker that'll stop calling the executed function for 60
+	// seconds if it fails 5 times in a row. This can give time for e.g. a database
+	// to recover without getting tons of traffic.
+	circuitBreaker(handleAll, {
+		halfOpenAfter: 60 * 1000,
+		breaker: new ConsecutiveBreaker(5),
+	})
+);
+
+export const download = async (token: string, repo: { owner: string; repo: string }, endCursor?: string) => {
+	const response = await retryWithBreaker.execute(() => loadData(repo.owner, repo.repo, token, endCursor));
 	const issues: JSONOutputLine[] = response.repository.issues.nodes.map((issue) => ({
 		number: issue.number,
 		title: issue.title,

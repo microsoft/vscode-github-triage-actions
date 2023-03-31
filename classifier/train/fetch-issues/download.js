@@ -8,11 +8,11 @@ exports.download = void 0;
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
-const download = async (token, repo, endCursor) => {
-    const data = await axios_1.default
-        .post('https://api.github.com/graphql', JSON.stringify({
+const cockatiel_1 = require("cockatiel");
+async function loadData(owner, repo, token, endCursor) {
+    const response = await axios_1.default.post('https://api.github.com/graphql', JSON.stringify({
         query: `{
-			repository(name: "${repo.repo}", owner: "${repo.owner}") {
+			repository(name: "${repo}", owner: "${owner}") {
 				issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
 					pageInfo {
 						endCursor
@@ -80,13 +80,23 @@ const download = async (token, repo, endCursor) => {
             Accept: 'application/json',
             Authorization: 'bearer ' + token,
         },
-    })
-        .then((r) => r.data)
-        .catch((err) => {
-        console.error(err);
-        process.exit(1);
     });
-    const response = data.data;
+    return response.data.data;
+}
+// Combine these! Create a policy that retries 3 times, calling through the circuit breaker
+const retryWithBreaker = (0, cockatiel_1.wrap)(
+// Create a retry policy that'll try whatever function we execute 3
+// times with a randomized exponential backoff.
+(0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 10, backoff: new cockatiel_1.ExponentialBackoff() }), 
+// Create a circuit breaker that'll stop calling the executed function for 60
+// seconds if it fails 5 times in a row. This can give time for e.g. a database
+// to recover without getting tons of traffic.
+(0, cockatiel_1.circuitBreaker)(cockatiel_1.handleAll, {
+    halfOpenAfter: 60 * 1000,
+    breaker: new cockatiel_1.ConsecutiveBreaker(5),
+}));
+const download = async (token, repo, endCursor) => {
+    const response = await retryWithBreaker.execute(() => loadData(repo.owner, repo.repo, token, endCursor));
     const issues = response.repository.issues.nodes.map((issue) => ({
         number: issue.number,
         title: issue.title,
