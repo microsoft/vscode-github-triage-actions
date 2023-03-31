@@ -12,63 +12,68 @@ const download = async (token, repo, endCursor) => {
     const data = await axios_1.default
         .post('https://api.github.com/graphql', JSON.stringify({
         query: `{
-      repository(name: "${repo.repo}", owner: "${repo.owner}") {
-        issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-          nodes {
-            body
-            title
-            number
-            createdAt
-            userContentEdits(first: 100) {
-              nodes {
-                editedAt
-                diff
-              }
-            }
-            assignees(first: 100) {
-              nodes {
-                login
-              }
-            }
-            labels(first: 100) {
-              nodes {
-                name
-              }
-            }
-            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
-              nodes {
-                __typename
-                ... on UnlabeledEvent {
-                  createdAt
-                  label { name }
-                }
-                ... on LabeledEvent {
-                  createdAt
-                  label { name }
-                  actor { login }
-                }
-                ... on RenamedTitleEvent {
-                  createdAt
-                  currentTitle
-                  previousTitle
-                }
-                ... on ClosedEvent {
-                  __typename
-                }
-              }
-            }
-          }
-        }
-      }
-      rateLimit {
-        cost
-        remaining
-      }
-    }`,
+			repository(name: "${repo.repo}", owner: "${repo.owner}") {
+				issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
+					pageInfo {
+						endCursor
+						hasNextPage
+					}
+					nodes {
+						body
+						bodyText
+						title
+						number
+						createdAt
+						userContentEdits(first: 100) {
+							nodes {
+								editedAt
+								diff
+							}
+						}
+						assignees(first: 100) {
+							nodes {
+								login
+							}
+						}
+						labels(first: 100) {
+							nodes {
+								name
+							}
+						}
+						timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT, ISSUE_COMMENT], first: 250) {
+							nodes {
+								__typename
+								... on UnlabeledEvent {
+									createdAt
+									label { name }
+								}
+								... on LabeledEvent {
+									createdAt
+									label { name }
+									actor { login }
+								}
+								... on RenamedTitleEvent {
+									createdAt
+									currentTitle
+									previousTitle
+								}
+								... on ClosedEvent {
+									__typename
+								}
+								... on IssueComment {
+									author { login }
+									bodyText
+								}
+							}
+						}
+					}
+				}
+			}
+			rateLimit {
+				cost
+				remaining
+			}
+		}`,
     }), {
         headers: {
             'Content-Type': 'application/json',
@@ -86,10 +91,12 @@ const download = async (token, repo, endCursor) => {
         number: issue.number,
         title: issue.title,
         body: issue.body,
+        bodyText: issue.bodyText,
         createdAt: +new Date(issue.createdAt),
         labels: issue.labels.nodes.map((label) => label.name),
         assignees: issue.assignees.nodes.map((assignee) => assignee.login),
         labelEvents: extractLabelEvents(issue),
+        commentEvents: extractCommentEvents(issue),
         closedWithCode: !!issue.timelineItems.nodes.find((event) => {
             var _a, _b;
             return event.__typename === 'ClosedEvent' &&
@@ -174,5 +181,20 @@ const extractLabelEvents = (_issue) => {
         }
     }
     return labelEvents;
+};
+function isCommentEvent(node) {
+    return node.__typename === 'IssueComment';
+}
+const extractCommentEvents = (issue) => {
+    const result = [];
+    for (const node of issue.timelineItems.nodes) {
+        if (isCommentEvent(node)) {
+            result.push({
+                author: node.author.login,
+                bodyText: node.bodyText
+            });
+        }
+    }
+    return result;
 };
 //# sourceMappingURL=download.js.map
