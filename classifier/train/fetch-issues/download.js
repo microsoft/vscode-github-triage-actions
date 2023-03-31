@@ -116,10 +116,12 @@ const download = async (token, repo, endCursor) => {
     endCursor = pageInfo.endCursor;
     if (pageInfo.hasNextPage) {
         return new Promise((resolve) => {
+            // to avoid rate limit
+            // https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
             setTimeout(async () => {
                 await (0, exports.download)(token, repo, endCursor);
                 resolve();
-            }, 1000);
+            }, 600);
         });
     }
 };
