@@ -8,105 +8,88 @@ exports.download = void 0;
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
-const cockatiel_1 = require("cockatiel");
-async function loadData(owner, repo, token, endCursor) {
-    const response = await axios_1.default.post('https://api.github.com/graphql', JSON.stringify({
+const download = async (token, repo, endCursor) => {
+    const data = await axios_1.default
+        .post('https://api.github.com/graphql', JSON.stringify({
         query: `{
-			repository(name: "${repo}", owner: "${owner}") {
-				issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
-					pageInfo {
-						endCursor
-						hasNextPage
-					}
-					nodes {
-						body
-						bodyText
-						title
-						number
-						createdAt
-						userContentEdits(first: 100) {
-							nodes {
-								editedAt
-								diff
-							}
-						}
-						assignees(first: 100) {
-							nodes {
-								login
-							}
-						}
-						labels(first: 100) {
-							nodes {
-								name
-							}
-						}
-						timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT, ISSUE_COMMENT], first: 250) {
-							nodes {
-								__typename
-								... on UnlabeledEvent {
-									createdAt
-									label { name }
-								}
-								... on LabeledEvent {
-									createdAt
-									label { name }
-									actor { login }
-								}
-								... on RenamedTitleEvent {
-									createdAt
-									currentTitle
-									previousTitle
-								}
-								... on ClosedEvent {
-									__typename
-								}
-								... on IssueComment {
-									author { login }
-									bodyText
-								}
-							}
-						}
-					}
-				}
-			}
-			rateLimit {
-				cost
-				remaining
-			}
-		}`,
+      repository(name: "${repo.repo}", owner: "${repo.owner}") {
+        issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+          nodes {
+            body
+            title
+            number
+            createdAt
+            userContentEdits(first: 100) {
+              nodes {
+                editedAt
+                diff
+              }
+            }
+            assignees(first: 100) {
+              nodes {
+                login
+              }
+            }
+            labels(first: 100) {
+              nodes {
+                name
+              }
+            }
+            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
+              nodes {
+                __typename
+                ... on UnlabeledEvent {
+                  createdAt
+                  label { name }
+                }
+                ... on LabeledEvent {
+                  createdAt
+                  label { name }
+                  actor { login }
+                }
+                ... on RenamedTitleEvent {
+                  createdAt
+                  currentTitle
+                  previousTitle
+                }
+                ... on ClosedEvent {
+                  __typename
+                }
+              }
+            }
+          }
+        }
+      }
+      rateLimit {
+        cost
+        remaining
+      }
+    }`,
     }), {
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
             Authorization: 'bearer ' + token,
         },
+    })
+        .then((r) => r.data)
+        .catch((err) => {
+        console.error(err);
+        process.exit(1);
     });
-    return response.data.data;
-}
-// Combine these! Create a policy that retries 3 times, calling through the circuit breaker
-const retryWithBreaker = (0, cockatiel_1.wrap)(
-// Create a retry policy that'll try whatever function we execute 3
-// times with a randomized exponential backoff.
-(0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 10, backoff: new cockatiel_1.ExponentialBackoff() }), 
-// Create a circuit breaker that'll stop calling the executed function for 60
-// seconds if it fails 5 times in a row. This can give time for e.g. a database
-// to recover without getting tons of traffic.
-(0, cockatiel_1.circuitBreaker)(cockatiel_1.handleAll, {
-    halfOpenAfter: 60 * 1000,
-    breaker: new cockatiel_1.ConsecutiveBreaker(5),
-}));
-const download = async (token, repo, endCursor) => {
-    const response = await retryWithBreaker.execute(() => loadData(repo.owner, repo.repo, token, endCursor));
+    const response = data.data;
     const issues = response.repository.issues.nodes.map((issue) => ({
         number: issue.number,
         title: issue.title,
         body: issue.body,
-        bodyText: issue.bodyText,
         createdAt: +new Date(issue.createdAt),
         labels: issue.labels.nodes.map((label) => label.name),
         assignees: issue.assignees.nodes.map((assignee) => assignee.login),
         labelEvents: extractLabelEvents(issue),
-        commentEvents: extractCommentEvents(issue),
         closedWithCode: !!issue.timelineItems.nodes.find((event) => {
             var _a, _b;
             return event.__typename === 'ClosedEvent' &&
@@ -126,12 +109,10 @@ const download = async (token, repo, endCursor) => {
     endCursor = pageInfo.endCursor;
     if (pageInfo.hasNextPage) {
         return new Promise((resolve) => {
-            // to avoid rate limit
-            // https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
             setTimeout(async () => {
                 await (0, exports.download)(token, repo, endCursor);
                 resolve();
-            }, 600);
+            }, 1000);
         });
     }
 };
@@ -193,20 +174,5 @@ const extractLabelEvents = (_issue) => {
         }
     }
     return labelEvents;
-};
-function isCommentEvent(node) {
-    return node.__typename === 'IssueComment';
-}
-const extractCommentEvents = (issue) => {
-    const result = [];
-    for (const node of issue.timelineItems.nodes) {
-        if (isCommentEvent(node)) {
-            result.push({
-                author: node.author.login,
-                bodyText: node.bodyText
-            });
-        }
-    }
-    return result;
 };
 //# sourceMappingURL=download.js.map

@@ -29,6 +29,7 @@
     "applicationinsights": "^2.3.1",
     "axios": "^0.27.2",
     "cockatiel": "^3.1.1",
+    "limiter": "^2.1.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
