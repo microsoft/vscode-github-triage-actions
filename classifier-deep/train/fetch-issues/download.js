@@ -8,13 +8,12 @@ exports.download = void 0;
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
-const utils_1 = require("../../../common/utils");
-const download = async (token, repo, startCursor, isRetry = false) => {
-    var _a, _b;
-    const data = await axios_1.default
-        .post('https://api.github.com/graphql', {
+const cockatiel_1 = require("cockatiel");
+const limiter_1 = require("limiter");
+async function loadData(owner, repo, token, startCursor) {
+    const response = await axios_1.default.post('https://api.github.com/graphql', {
         query: `{
-      repository(name: "${repo.repo}", owner: "${repo.owner}") {
+      repository(name: "${repo}", owner: "${owner}") {
         issues(last: 100 ${startCursor ? `before: "${startCursor}"` : ''}) {
           pageInfo {
             startCursor
@@ -22,6 +21,7 @@ const download = async (token, repo, startCursor, isRetry = false) => {
           }
           nodes {
             body
+						bodyText
             title
             number
             createdAt
@@ -42,7 +42,7 @@ const download = async (token, repo, startCursor, isRetry = false) => {
                 color
               }
             }
-            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
+            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT, ISSUE_COMMENT], first: 250) {
               nodes {
                 __typename
                 ... on UnlabeledEvent {
@@ -62,6 +62,11 @@ const download = async (token, repo, startCursor, isRetry = false) => {
                 ... on ClosedEvent {
                   __typename
                 }
+								... on IssueComment {
+                  createdAt
+									author { login }
+									bodyText
+								}
               }
             }
           }
@@ -79,30 +84,35 @@ const download = async (token, repo, startCursor, isRetry = false) => {
             Authorization: 'bearer ' + token,
             'User-Agent': 'github-actions://microsoft/vscode-github-triage-actions#fetch-issues',
         },
-    })
-        .then((r) => r.data);
-    const response = data.data;
-    if (!((_b = (_a = response === null || response === void 0 ? void 0 : response.repository) === null || _a === void 0 ? void 0 : _a.issues) === null || _b === void 0 ? void 0 : _b.nodes)) {
-        (0, utils_1.safeLog)('recieved unexpected response', JSON.stringify(data));
-        if (isRetry) {
-            console.error('max retries exceeded');
-            return;
-        }
-        return new Promise((resolve) => {
-            setTimeout(async () => {
-                await (0, exports.download)(token, repo, startCursor, true);
-                resolve();
-            }, 60000);
-        });
-    }
+    });
+    return response.data.data;
+}
+// Combine these! Create a policy that retries 3 times, calling through the circuit breaker
+const retryWithBreaker = (0, cockatiel_1.wrap)(
+// Create a retry policy that'll try whatever function we execute 3
+// times with a randomized exponential backoff.
+(0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 10, backoff: new cockatiel_1.ExponentialBackoff() }), 
+// Create a circuit breaker that'll stop calling the executed function for 60
+// seconds if it fails 5 times in a row. This can give time for e.g. a database
+// to recover without getting tons of traffic.
+(0, cockatiel_1.circuitBreaker)(cockatiel_1.handleAll, {
+    halfOpenAfter: 60 * 1000,
+    breaker: new cockatiel_1.ConsecutiveBreaker(5),
+}));
+// https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
+const rateLimiter = new limiter_1.RateLimiter({ tokensPerInterval: 5000, interval: 'hour' });
+const download = async (token, repo, startCursor) => {
+    const response = await retryWithBreaker.execute(() => loadData(repo.owner, repo.repo, token, startCursor));
     const issues = response.repository.issues.nodes.map((issue) => ({
         number: issue.number,
         title: issue.title,
         body: issue.body,
+        bodyText: issue.bodyText,
         createdAt: +new Date(issue.createdAt),
         labels: issue.labels.nodes.map((label) => ({ name: label.name, color: label.color })),
         assignees: issue.assignees.nodes.map((assignee) => assignee.login),
         labelEvents: extractLabelEvents(issue),
+        commentEvents: extractCommentEvents(issue),
         closedWithCode: !!issue.timelineItems.nodes.find((event) => {
             var _a, _b;
             return event.__typename === 'ClosedEvent' &&
@@ -114,19 +124,10 @@ const download = async (token, repo, startCursor, isRetry = false) => {
     });
     const pageInfo = response.repository.issues.pageInfo;
     const rateInfo = response.rateLimit;
-    console.log({
-        lastIssue: issues[issues.length - 1].number,
-        quota: rateInfo.remaining,
-        startCursor: pageInfo.startCursor,
-    });
-    startCursor = pageInfo.startCursor;
+    console.log(`Downloaded ${issues.length} issues (${issues[issues.length - 1].number} remaining). Cost ${rateInfo.cost} points (${rateInfo.remaining} remaining).`);
     if (pageInfo.hasPreviousPage) {
-        return new Promise((resolve) => {
-            setTimeout(async () => {
-                await (0, exports.download)(token, repo, startCursor);
-                resolve();
-            }, 5000);
-        });
+        await rateLimiter.removeTokens(rateInfo.cost);
+        (0, exports.download)(token, repo, pageInfo.startCursor);
     }
 };
 exports.download = download;
@@ -187,5 +188,21 @@ const extractLabelEvents = (_issue) => {
         }
     }
     return labelEvents;
+};
+function isCommentEvent(node) {
+    return node.__typename === 'IssueComment';
+}
+const extractCommentEvents = (issue) => {
+    const result = [];
+    for (const node of issue.timelineItems.nodes) {
+        if (isCommentEvent(node)) {
+            result.push({
+                timestamp: +new Date(node.createdAt),
+                author: node.author.login,
+                bodyText: node.bodyText
+            });
+        }
+    }
+    return result;
 };
 //# sourceMappingURL=download.js.map

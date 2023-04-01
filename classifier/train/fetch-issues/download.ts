@@ -6,7 +6,6 @@
 import axios from 'axios';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { ConsecutiveBreaker, ExponentialBackoff, circuitBreaker, handleAll, retry, wrap } from 'cockatiel';
 
 type Response = {
 	rateLimit: RateLimitResponse;
@@ -31,18 +30,11 @@ type GHCloseEvent = {
 	closer: { __typename: 'Commit' | 'PullRequest' } | null;
 };
 
-type GHCommentEvent = {
-	__typename: 'IssueComment';
-	author: { login: string };
-	bodyText: string;
-};
-
 type RateLimitResponse = { cost: number; remaining: number };
 type IssueResponse = {
 	pageInfo: { endCursor: string; hasNextPage: boolean };
 	nodes: {
 		body: string;
-		bodyText: string;
 		title: string;
 		number: number;
 		createdAt: number;
@@ -50,7 +42,7 @@ type IssueResponse = {
 		assignees: { nodes: { login: string }[] };
 		labels: { nodes: { name: string }[] };
 		timelineItems: {
-			nodes: (GHLabelEvent | GHRenameEvent | GHCloseEvent | GHCommentEvent)[];
+			nodes: (GHLabelEvent | GHRenameEvent | GHCloseEvent)[];
 		};
 	}[];
 };
@@ -59,12 +51,10 @@ export type JSONOutputLine = {
 	number: number;
 	title: string;
 	body: string;
-	bodyText: string;
 	createdAt: number;
 	labels: string[];
 	assignees: string[];
 	labelEvents: LabelEvent[];
-	commentEvents: CommentEvent[];
 	closedWithCode: boolean;
 };
 
@@ -83,117 +73,94 @@ export type RemovedLabelEvent = {
 	label: string;
 };
 
-export type CommentEvent = {
-	author: string;
-	bodyText: string;
-};
-
-async function loadData(owner: string, repo: string, token: string, endCursor?: string) {
-	const response = await axios.post<{ data: Response }>(
-		'https://api.github.com/graphql',
-		JSON.stringify({
-			query: `{
-			repository(name: "${repo}", owner: "${owner}") {
-				issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
-					pageInfo {
-						endCursor
-						hasNextPage
-					}
-					nodes {
-						body
-						bodyText
-						title
-						number
-						createdAt
-						userContentEdits(first: 100) {
-							nodes {
-								editedAt
-								diff
-							}
-						}
-						assignees(first: 100) {
-							nodes {
-								login
-							}
-						}
-						labels(first: 100) {
-							nodes {
-								name
-							}
-						}
-						timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT, ISSUE_COMMENT], first: 250) {
-							nodes {
-								__typename
-								... on UnlabeledEvent {
-									createdAt
-									label { name }
-								}
-								... on LabeledEvent {
-									createdAt
-									label { name }
-									actor { login }
-								}
-								... on RenamedTitleEvent {
-									createdAt
-									currentTitle
-									previousTitle
-								}
-								... on ClosedEvent {
-									__typename
-								}
-								... on IssueComment {
-									author { login }
-									bodyText
-								}
-							}
-						}
-					}
-				}
-			}
-			rateLimit {
-				cost
-				remaining
-			}
-		}`,
-		}),
-		{
-			headers: {
-				'Content-Type': 'application/json',
-				Accept: 'application/json',
-				Authorization: 'bearer ' + token,
-			},
-		},
-	);
-
-	return response.data.data;
-}
-
-// Combine these! Create a policy that retries 3 times, calling through the circuit breaker
-const retryWithBreaker = wrap(
-	// Create a retry policy that'll try whatever function we execute 3
-	// times with a randomized exponential backoff.
-	retry(handleAll, { maxAttempts: 10, backoff: new ExponentialBackoff() }),
-	// Create a circuit breaker that'll stop calling the executed function for 60
-	// seconds if it fails 5 times in a row. This can give time for e.g. a database
-	// to recover without getting tons of traffic.
-	circuitBreaker(handleAll, {
-		halfOpenAfter: 60 * 1000,
-		breaker: new ConsecutiveBreaker(5),
-	})
-);
-
 export const download = async (token: string, repo: { owner: string; repo: string }, endCursor?: string) => {
-	const response = await retryWithBreaker.execute(() => loadData(repo.owner, repo.repo, token, endCursor));
+	const data = await axios
+		.post(
+			'https://api.github.com/graphql',
+			JSON.stringify({
+				query: `{
+      repository(name: "${repo.repo}", owner: "${repo.owner}") {
+        issues(first: 100 ${endCursor ? `after: "${endCursor}"` : ''}) {
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+          nodes {
+            body
+            title
+            number
+            createdAt
+            userContentEdits(first: 100) {
+              nodes {
+                editedAt
+                diff
+              }
+            }
+            assignees(first: 100) {
+              nodes {
+                login
+              }
+            }
+            labels(first: 100) {
+              nodes {
+                name
+              }
+            }
+            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
+              nodes {
+                __typename
+                ... on UnlabeledEvent {
+                  createdAt
+                  label { name }
+                }
+                ... on LabeledEvent {
+                  createdAt
+                  label { name }
+                  actor { login }
+                }
+                ... on RenamedTitleEvent {
+                  createdAt
+                  currentTitle
+                  previousTitle
+                }
+                ... on ClosedEvent {
+                  __typename
+                }
+              }
+            }
+          }
+        }
+      }
+      rateLimit {
+        cost
+        remaining
+      }
+    }`,
+			}),
+			{
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json',
+					Authorization: 'bearer ' + token,
+				},
+			},
+		)
+		.then((r) => r.data)
+		.catch((err) => {
+			console.error(err);
+			process.exit(1);
+		});
+
+	const response = data.data as Response;
+
 	const issues: JSONOutputLine[] = response.repository.issues.nodes.map((issue) => ({
 		number: issue.number,
 		title: issue.title,
 		body: issue.body,
-		bodyText: issue.bodyText,
 		createdAt: +new Date(issue.createdAt),
 		labels: issue.labels.nodes.map((label) => label.name),
 		assignees: issue.assignees.nodes.map((assignee) => assignee.login),
 		labelEvents: extractLabelEvents(issue),
-		commentEvents: extractCommentEvents(issue),
 		closedWithCode: !!issue.timelineItems.nodes.find(
 			(event) =>
 				event.__typename === 'ClosedEvent' &&
@@ -221,12 +188,10 @@ export const download = async (token: string, repo: { owner: string; repo: strin
 	endCursor = pageInfo.endCursor;
 	if (pageInfo.hasNextPage) {
 		return new Promise<void>((resolve) => {
-			// to avoid rate limit
-			// https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
 			setTimeout(async () => {
 				await download(token, repo, endCursor);
 				resolve();
-			}, 600);
+			}, 1000);
 		});
 	}
 };
@@ -252,12 +217,12 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 			.map((node) => ({ ...node, issue }))
 			.map(
 				(node) =>
-				({
-					timestamp: +new Date(node.createdAt),
-					type: 'labeled',
-					label: node.label.name,
-					actor: node.actor?.login ?? 'ghost',
-				} as const),
+					({
+						timestamp: +new Date(node.createdAt),
+						type: 'labeled',
+						label: node.label.name,
+						actor: node.actor?.login ?? 'ghost',
+					} as const),
 			),
 	);
 
@@ -266,11 +231,11 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 			.filter((node): node is GHLabelEvent => node.__typename === 'UnlabeledEvent')
 			.map(
 				(node) =>
-				({
-					timestamp: +new Date(node.createdAt),
-					type: 'unlabeled',
-					label: node.label.name,
-				} as const),
+					({
+						timestamp: +new Date(node.createdAt),
+						type: 'unlabeled',
+						label: node.label.name,
+					} as const),
 			),
 	);
 
@@ -279,12 +244,12 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 			.filter((node): node is GHRenameEvent => node.__typename === 'RenamedTitleEvent')
 			.map(
 				(node) =>
-				({
-					timestamp: +new Date(node.createdAt),
-					type: 'titleEdited',
-					new: node.currentTitle,
-					old: node.previousTitle,
-				} as const),
+					({
+						timestamp: +new Date(node.createdAt),
+						type: 'titleEdited',
+						new: node.currentTitle,
+						old: node.previousTitle,
+					} as const),
 			),
 	);
 
@@ -313,23 +278,4 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 	}
 
 	return labelEvents;
-};
-
-function isCommentEvent(node: GHLabelEvent | GHRenameEvent | GHCloseEvent | GHCommentEvent): node is GHCommentEvent {
-	return node.__typename === 'IssueComment';
-}
-
-const extractCommentEvents = (issue: IssueResponse['nodes'][number]): CommentEvent[] => {
-	const result: CommentEvent[] = [];
-
-	for (const node of issue.timelineItems.nodes) {
-		if (isCommentEvent(node)) {
-			result.push({
-				author: node.author.login,
-				bodyText: node.bodyText
-			});
-		}
-	}
-
-	return result;
 };
