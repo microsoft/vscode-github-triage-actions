@@ -176,7 +176,7 @@ async function loadData(owner: string, repo: string, token: string, startCursor?
 
 // Create a retry policy that'll try whatever function we execute 3
 // times with a randomized exponential backoff.
-const retryPolicy = retry(handleAll, { maxAttempts: 50, backoff: new ExponentialBackoff({ initialDelay: 2000, maxDelay: 300_000 }) });
+const retryPolicy = retry(handleAll, { maxAttempts: 50, backoff: new ExponentialBackoff() });
 
 // https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
 const rateLimiter = new RateLimiter({ tokensPerInterval: 5000, interval: 'hour' });

@@ -89,7 +89,7 @@ async function loadData(owner, repo, token, startCursor) {
 }
 // Create a retry policy that'll try whatever function we execute 3
 // times with a randomized exponential backoff.
-const retryPolicy = (0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 50, backoff: new cockatiel_1.ExponentialBackoff({ initialDelay: 2000, maxDelay: 300000 }) });
+const retryPolicy = (0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 50, backoff: new cockatiel_1.ExponentialBackoff() });
 // https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
 const rateLimiter = new limiter_1.RateLimiter({ tokensPerInterval: 5000, interval: 'hour' });
 const download = async (token, repo, startCursor) => {
