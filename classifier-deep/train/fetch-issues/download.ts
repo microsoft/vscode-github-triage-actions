@@ -35,7 +35,7 @@ type GHCloseEvent = {
 type GHCommentEvent = {
 	__typename: 'IssueComment';
 	createdAt: string;
-	author: { login: string };
+	author?: { login: string };
 	bodyText: string;
 };
 
@@ -72,7 +72,7 @@ export type JSONOutputLine = {
 
 export type CommentEvent = {
 	timestamp: number;
-	author: string;
+	author?: string;
 	bodyText: string;
 };
 
@@ -327,7 +327,7 @@ const extractCommentEvents = (issue: IssueResponse['nodes'][number]): CommentEve
 		if (isCommentEvent(node)) {
 			result.push({
 				timestamp: +new Date(node.createdAt),
-				author: node.author.login,
+				author: node.author?.login,
 				bodyText: node.bodyText
 			});
 		}
