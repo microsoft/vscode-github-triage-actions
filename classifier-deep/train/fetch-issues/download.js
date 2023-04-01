@@ -193,12 +193,13 @@ function isCommentEvent(node) {
     return node.__typename === 'IssueComment';
 }
 const extractCommentEvents = (issue) => {
+    var _a;
     const result = [];
     for (const node of issue.timelineItems.nodes) {
         if (isCommentEvent(node)) {
             result.push({
                 timestamp: +new Date(node.createdAt),
-                author: node.author.login,
+                author: (_a = node.author) === null || _a === void 0 ? void 0 : _a.login,
                 bodyText: node.bodyText
             });
         }
