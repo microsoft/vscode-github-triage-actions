@@ -87,22 +87,13 @@ async function loadData(owner, repo, token, startCursor) {
     });
     return response.data.data;
 }
-// Combine these! Create a policy that retries 3 times, calling through the circuit breaker
-const retryWithBreaker = (0, cockatiel_1.wrap)(
 // Create a retry policy that'll try whatever function we execute 3
 // times with a randomized exponential backoff.
-(0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 10, backoff: new cockatiel_1.ExponentialBackoff() }), 
-// Create a circuit breaker that'll stop calling the executed function for 60
-// seconds if it fails 5 times in a row. This can give time for e.g. a database
-// to recover without getting tons of traffic.
-(0, cockatiel_1.circuitBreaker)(cockatiel_1.handleAll, {
-    halfOpenAfter: 60 * 1000,
-    breaker: new cockatiel_1.ConsecutiveBreaker(5),
-}));
+const retryPolicy = (0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 50, backoff: new cockatiel_1.ExponentialBackoff({ initialDelay: 2000, maxDelay: 300000 }) });
 // https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
 const rateLimiter = new limiter_1.RateLimiter({ tokensPerInterval: 5000, interval: 'hour' });
 const download = async (token, repo, startCursor) => {
-    const response = await retryWithBreaker.execute(() => loadData(repo.owner, repo.repo, token, startCursor));
+    const response = await retryPolicy.execute(() => loadData(repo.owner, repo.repo, token, startCursor));
     const issues = response.repository.issues.nodes.map((issue) => ({
         number: issue.number,
         title: issue.title,
