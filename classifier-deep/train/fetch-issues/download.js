@@ -8,11 +8,13 @@ exports.download = void 0;
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
-const cockatiel_1 = require("cockatiel");
-async function loadData(owner, repo, token, startCursor) {
-    const response = await axios_1.default.post('https://api.github.com/graphql', {
+const utils_1 = require("../../../common/utils");
+const download = async (token, repo, startCursor, isRetry = false) => {
+    var _a, _b;
+    const data = await axios_1.default
+        .post('https://api.github.com/graphql', {
         query: `{
-      repository(name: "${repo}", owner: "${owner}") {
+      repository(name: "${repo.repo}", owner: "${repo.owner}") {
         issues(last: 100 ${startCursor ? `before: "${startCursor}"` : ''}) {
           pageInfo {
             startCursor
@@ -20,7 +22,6 @@ async function loadData(owner, repo, token, startCursor) {
           }
           nodes {
             body
-						bodyText
             title
             number
             createdAt
@@ -41,7 +42,7 @@ async function loadData(owner, repo, token, startCursor) {
                 color
               }
             }
-            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT, ISSUE_COMMENT], first: 250) {
+            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
               nodes {
                 __typename
                 ... on UnlabeledEvent {
@@ -61,11 +62,6 @@ async function loadData(owner, repo, token, startCursor) {
                 ... on ClosedEvent {
                   __typename
                 }
-								... on IssueComment {
-                  createdAt
-									author { login }
-									bodyText
-								}
               }
             }
           }
@@ -83,34 +79,30 @@ async function loadData(owner, repo, token, startCursor) {
             Authorization: 'bearer ' + token,
             'User-Agent': 'github-actions://microsoft/vscode-github-triage-actions#fetch-issues',
         },
-    });
-    return response.data.data;
-}
-// Create a retry policy that'll try whatever function we execute 3
-// times with a randomized exponential backoff.
-const retryPolicy = (0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 50, backoff: new cockatiel_1.ExponentialBackoff() });
-function backoff(remaining) {
-    if (remaining > 1000) {
-        return 0;
+    })
+        .then((r) => r.data);
+    const response = data.data;
+    if (!((_b = (_a = response === null || response === void 0 ? void 0 : response.repository) === null || _a === void 0 ? void 0 : _a.issues) === null || _b === void 0 ? void 0 : _b.nodes)) {
+        (0, utils_1.safeLog)('recieved unexpected response', JSON.stringify(data));
+        if (isRetry) {
+            console.error('max retries exceeded');
+            return;
+        }
+        return new Promise((resolve) => {
+            setTimeout(async () => {
+                await (0, exports.download)(token, repo, startCursor, true);
+                resolve();
+            }, 60000);
+        });
     }
-    const x = 1000 - remaining;
-    return (5 * x) / 3 + (7 * Math.pow(x, 2)) / 120;
-}
-function timeout(ms) {
-    return new Promise(r => setTimeout(r, ms));
-}
-const download = async (token, repo, startCursor) => {
-    const response = await retryPolicy.execute(() => loadData(repo.owner, repo.repo, token, startCursor));
     const issues = response.repository.issues.nodes.map((issue) => ({
         number: issue.number,
         title: issue.title,
         body: issue.body,
-        bodyText: issue.bodyText,
         createdAt: +new Date(issue.createdAt),
         labels: issue.labels.nodes.map((label) => ({ name: label.name, color: label.color })),
         assignees: issue.assignees.nodes.map((assignee) => assignee.login),
         labelEvents: extractLabelEvents(issue),
-        commentEvents: extractCommentEvents(issue),
         closedWithCode: !!issue.timelineItems.nodes.find((event) => {
             var _a, _b;
             return event.__typename === 'ClosedEvent' &&
@@ -122,10 +114,19 @@ const download = async (token, repo, startCursor) => {
     });
     const pageInfo = response.repository.issues.pageInfo;
     const rateInfo = response.rateLimit;
-    console.log(`Downloaded ${issues.length} issues (${issues[issues.length - 1].number} remaining). Cost ${rateInfo.cost} points (${rateInfo.remaining} remaining).`);
+    console.log({
+        lastIssue: issues[issues.length - 1].number,
+        quota: rateInfo.remaining,
+        startCursor: pageInfo.startCursor,
+    });
+    startCursor = pageInfo.startCursor;
     if (pageInfo.hasPreviousPage) {
-        await timeout(backoff(rateInfo.remaining));
-        (0, exports.download)(token, repo, pageInfo.startCursor);
+        return new Promise((resolve) => {
+            setTimeout(async () => {
+                await (0, exports.download)(token, repo, startCursor);
+                resolve();
+            }, 5000);
+        });
     }
 };
 exports.download = download;
@@ -186,22 +187,5 @@ const extractLabelEvents = (_issue) => {
         }
     }
     return labelEvents;
-};
-function isCommentEvent(node) {
-    return node.__typename === 'IssueComment';
-}
-const extractCommentEvents = (issue) => {
-    var _a;
-    const result = [];
-    for (const node of issue.timelineItems.nodes) {
-        if (isCommentEvent(node)) {
-            result.push({
-                timestamp: +new Date(node.createdAt),
-                author: (_a = node.author) === null || _a === void 0 ? void 0 : _a.login,
-                bodyText: node.bodyText
-            });
-        }
-    }
-    return result;
 };
 //# sourceMappingURL=download.js.map

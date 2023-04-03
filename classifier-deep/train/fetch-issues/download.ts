@@ -6,7 +6,7 @@
 import axios from 'axios';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { ExponentialBackoff, handleAll, retry } from 'cockatiel';
+import { safeLog } from '../../../common/utils';
 
 type Response = {
 	rateLimit: RateLimitResponse;
@@ -31,19 +31,11 @@ type GHCloseEvent = {
 	closer: { __typename: 'Commit' | 'PullRequest' } | null;
 };
 
-type GHCommentEvent = {
-	__typename: 'IssueComment';
-	createdAt: string;
-	author?: { login: string };
-	bodyText: string;
-};
-
 type RateLimitResponse = { cost: number; remaining: number };
 type IssueResponse = {
 	pageInfo: { startCursor: string; hasPreviousPage: boolean };
 	nodes: {
 		body: string;
-		bodyText: string;
 		title: string;
 		number: number;
 		createdAt: number;
@@ -51,7 +43,7 @@ type IssueResponse = {
 		assignees: { nodes: { login: string }[] };
 		labels: { nodes: { name: string; color: string }[] };
 		timelineItems: {
-			nodes: (GHLabelEvent | GHRenameEvent | GHCloseEvent | GHCommentEvent)[];
+			nodes: (GHLabelEvent | GHRenameEvent | GHCloseEvent)[];
 		};
 	}[];
 };
@@ -60,19 +52,11 @@ export type JSONOutputLine = {
 	number: number;
 	title: string;
 	body: string;
-	bodyText: string;
 	createdAt: number;
 	labels: { name: string; color: string }[];
 	assignees: string[];
 	labelEvents: LabelEvent[];
-	commentEvents: CommentEvent[];
 	closedWithCode: boolean;
-};
-
-export type CommentEvent = {
-	timestamp: number;
-	author?: string;
-	bodyText: string;
 };
 
 export type LabelEvent = AddedLabelEvent | RemovedLabelEvent;
@@ -90,12 +74,18 @@ export type RemovedLabelEvent = {
 	label: string;
 };
 
-async function loadData(owner: string, repo: string, token: string, startCursor?: string) {
-	const response = await axios.post<{ data: Response }>(
-		'https://api.github.com/graphql',
-		{
-			query: `{
-      repository(name: "${repo}", owner: "${owner}") {
+export const download = async (
+	token: string,
+	repo: { owner: string; repo: string },
+	startCursor?: string,
+	isRetry = false,
+) => {
+	const data = await axios
+		.post(
+			'https://api.github.com/graphql',
+			{
+				query: `{
+      repository(name: "${repo.repo}", owner: "${repo.owner}") {
         issues(last: 100 ${startCursor ? `before: "${startCursor}"` : ''}) {
           pageInfo {
             startCursor
@@ -103,7 +93,6 @@ async function loadData(owner: string, repo: string, token: string, startCursor?
           }
           nodes {
             body
-						bodyText
             title
             number
             createdAt
@@ -124,7 +113,7 @@ async function loadData(owner: string, repo: string, token: string, startCursor?
                 color
               }
             }
-            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT, ISSUE_COMMENT], first: 250) {
+            timelineItems(itemTypes: [LABELED_EVENT, RENAMED_TITLE_EVENT, UNLABELED_EVENT, CLOSED_EVENT], first: 100) {
               nodes {
                 __typename
                 ... on UnlabeledEvent {
@@ -144,11 +133,6 @@ async function loadData(owner: string, repo: string, token: string, startCursor?
                 ... on ClosedEvent {
                   __typename
                 }
-								... on IssueComment {
-                  createdAt
-									author { login }
-									bodyText
-								}
               }
             }
           }
@@ -159,53 +143,42 @@ async function loadData(owner: string, repo: string, token: string, startCursor?
         remaining
       }
     }`,
-		},
-		{
-			headers: {
-				'Content-Type': 'application/json',
-				Accept: 'application/json',
-				Authorization: 'bearer ' + token,
-				'User-Agent': 'github-actions://microsoft/vscode-github-triage-actions#fetch-issues',
 			},
-		},
-	);
+			{
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json',
+					Authorization: 'bearer ' + token,
+					'User-Agent': 'github-actions://microsoft/vscode-github-triage-actions#fetch-issues',
+				},
+			},
+		)
+		.then((r) => r.data);
 
-	return response.data.data;
-}
+	const response = data.data as Response;
 
-// Create a retry policy that'll try whatever function we execute 3
-// times with a randomized exponential backoff.
-const retryPolicy = retry(handleAll, { maxAttempts: 50, backoff: new ExponentialBackoff() });
-
-function backoff(remaining: number) {
-	if (remaining > 1000) {
-		return 0;
+	if (!response?.repository?.issues?.nodes) {
+		safeLog('recieved unexpected response', JSON.stringify(data));
+		if (isRetry) {
+			console.error('max retries exceeded');
+			return;
+		}
+		return new Promise<void>((resolve) => {
+			setTimeout(async () => {
+				await download(token, repo, startCursor, true);
+				resolve();
+			}, 60000);
+		});
 	}
 
-	const x = 1000 - remaining;
-	return (5 * x) / 3 + (7 * Math.pow(x, 2)) / 120;
-}
-
-function timeout(ms: number) {
-	return new Promise<void>(r => setTimeout(r, ms));
-}
-
-export const download = async (
-	token: string,
-	repo: { owner: string; repo: string },
-	startCursor?: string
-) => {
-	const response = await retryPolicy.execute(() => loadData(repo.owner, repo.repo, token, startCursor));
 	const issues: JSONOutputLine[] = response.repository.issues.nodes.map((issue) => ({
 		number: issue.number,
 		title: issue.title,
 		body: issue.body,
-		bodyText: issue.bodyText,
 		createdAt: +new Date(issue.createdAt),
 		labels: issue.labels.nodes.map((label) => ({ name: label.name, color: label.color })),
 		assignees: issue.assignees.nodes.map((assignee) => assignee.login),
 		labelEvents: extractLabelEvents(issue),
-		commentEvents: extractCommentEvents(issue),
 		closedWithCode: !!issue.timelineItems.nodes.find(
 			(event) =>
 				event.__typename === 'ClosedEvent' &&
@@ -223,11 +196,21 @@ export const download = async (
 
 	const pageInfo = response.repository.issues.pageInfo;
 	const rateInfo = response.rateLimit;
-	console.log(`Downloaded ${issues.length} issues (${issues[issues.length - 1].number} remaining). Cost ${rateInfo.cost} points (${rateInfo.remaining} remaining).`)
 
+	console.log({
+		lastIssue: issues[issues.length - 1].number,
+		quota: rateInfo.remaining,
+		startCursor: pageInfo.startCursor,
+	});
+
+	startCursor = pageInfo.startCursor;
 	if (pageInfo.hasPreviousPage) {
-		await timeout(backoff(rateInfo.remaining));
-		download(token, repo, pageInfo.startCursor);
+		return new Promise<void>((resolve) => {
+			setTimeout(async () => {
+				await download(token, repo, startCursor);
+				resolve();
+			}, 5000);
+		});
 	}
 };
 
@@ -252,12 +235,12 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 			.map((node) => ({ ...node, issue }))
 			.map(
 				(node) =>
-				({
-					timestamp: +new Date(node.createdAt),
-					type: 'labeled',
-					label: node.label.name,
-					actor: node.actor?.login ?? 'ghost',
-				} as const),
+					({
+						timestamp: +new Date(node.createdAt),
+						type: 'labeled',
+						label: node.label.name,
+						actor: node.actor?.login ?? 'ghost',
+					} as const),
 			),
 	);
 
@@ -266,11 +249,11 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 			.filter((node): node is GHLabelEvent => node.__typename === 'UnlabeledEvent')
 			.map(
 				(node) =>
-				({
-					timestamp: +new Date(node.createdAt),
-					type: 'unlabeled',
-					label: node.label.name,
-				} as const),
+					({
+						timestamp: +new Date(node.createdAt),
+						type: 'unlabeled',
+						label: node.label.name,
+					} as const),
 			),
 	);
 
@@ -279,12 +262,12 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 			.filter((node): node is GHRenameEvent => node.__typename === 'RenamedTitleEvent')
 			.map(
 				(node) =>
-				({
-					timestamp: +new Date(node.createdAt),
-					type: 'titleEdited',
-					new: node.currentTitle,
-					old: node.previousTitle,
-				} as const),
+					({
+						timestamp: +new Date(node.createdAt),
+						type: 'titleEdited',
+						new: node.currentTitle,
+						old: node.previousTitle,
+					} as const),
 			),
 	);
 
@@ -313,24 +296,4 @@ const extractLabelEvents = (_issue: IssueResponse['nodes'][number]): LabelEvent[
 	}
 
 	return labelEvents;
-};
-
-function isCommentEvent(node: GHLabelEvent | GHRenameEvent | GHCloseEvent | GHCommentEvent): node is GHCommentEvent {
-	return node.__typename === 'IssueComment';
-}
-
-const extractCommentEvents = (issue: IssueResponse['nodes'][number]): CommentEvent[] => {
-	const result: CommentEvent[] = [];
-
-	for (const node of issue.timelineItems.nodes) {
-		if (isCommentEvent(node)) {
-			result.push({
-				timestamp: +new Date(node.createdAt),
-				author: node.author?.login,
-				bodyText: node.bodyText
-			});
-		}
-	}
-
-	return result;
 };
