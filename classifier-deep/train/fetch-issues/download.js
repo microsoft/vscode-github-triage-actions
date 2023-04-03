@@ -9,7 +9,6 @@ const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const cockatiel_1 = require("cockatiel");
-const limiter_1 = require("limiter");
 async function loadData(owner, repo, token, startCursor) {
     const response = await axios_1.default.post('https://api.github.com/graphql', {
         query: `{
@@ -90,8 +89,16 @@ async function loadData(owner, repo, token, startCursor) {
 // Create a retry policy that'll try whatever function we execute 3
 // times with a randomized exponential backoff.
 const retryPolicy = (0, cockatiel_1.retry)(cockatiel_1.handleAll, { maxAttempts: 50, backoff: new cockatiel_1.ExponentialBackoff() });
-// https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
-const rateLimiter = new limiter_1.RateLimiter({ tokensPerInterval: 5000, interval: 'hour' });
+function backoff(remaining) {
+    if (remaining > 1000) {
+        return 0;
+    }
+    const x = 1000 - remaining;
+    return (5 * x) / 3 + (7 * Math.pow(x, 2)) / 120;
+}
+function timeout(ms) {
+    return new Promise(r => setTimeout(r, ms));
+}
 const download = async (token, repo, startCursor) => {
     const response = await retryPolicy.execute(() => loadData(repo.owner, repo.repo, token, startCursor));
     const issues = response.repository.issues.nodes.map((issue) => ({
@@ -117,7 +124,7 @@ const download = async (token, repo, startCursor) => {
     const rateInfo = response.rateLimit;
     console.log(`Downloaded ${issues.length} issues (${issues[issues.length - 1].number} remaining). Cost ${rateInfo.cost} points (${rateInfo.remaining} remaining).`);
     if (pageInfo.hasPreviousPage) {
-        await rateLimiter.removeTokens(rateInfo.cost);
+        await timeout(backoff(rateInfo.remaining));
         (0, exports.download)(token, repo, pageInfo.startCursor);
     }
 };

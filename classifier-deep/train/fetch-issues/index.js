@@ -22,15 +22,26 @@ class FetchIssues extends Action_1.Action {
         this.id = 'Classifier/Train/FetchIssues';
     }
     async onTriggered() {
-        if (endCursor) {
-            await (0, download_1.download)(token, github_1.context.repo, endCursor);
-        }
-        else {
-            try {
-                (0, fs_1.statSync)((0, path_1.join)(__dirname, 'issues.json')).isFile();
+        try {
+            if (endCursor) {
+                await (0, download_1.download)(token, github_1.context.repo, endCursor);
             }
-            catch {
-                await (0, download_1.download)(token, github_1.context.repo);
+            else {
+                try {
+                    (0, fs_1.statSync)((0, path_1.join)(__dirname, 'issues.json')).isFile();
+                }
+                catch {
+                    await (0, download_1.download)(token, github_1.context.repo);
+                }
+            }
+        }
+        catch (err) {
+            if (err && 'message' in err && /'AxiosError: Request failed with status code 502'/i.test(err.message)) {
+                // Log error but don't fail the action, upload what we have
+                console.error(err);
+            }
+            else {
+                throw err;
             }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
