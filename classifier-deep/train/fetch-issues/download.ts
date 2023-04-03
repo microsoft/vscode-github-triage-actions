@@ -6,8 +6,7 @@
 import axios from 'axios';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { ConsecutiveBreaker, ExponentialBackoff, circuitBreaker, handleAll, retry, wrap } from 'cockatiel';
-import { RateLimiter } from 'limiter';
+import { ExponentialBackoff, handleAll, retry } from 'cockatiel';
 
 type Response = {
 	rateLimit: RateLimitResponse;
@@ -178,8 +177,18 @@ async function loadData(owner: string, repo: string, token: string, startCursor?
 // times with a randomized exponential backoff.
 const retryPolicy = retry(handleAll, { maxAttempts: 50, backoff: new ExponentialBackoff() });
 
-// https://docs.github.com/en/graphql/overview/resource-limitations#rate-limit
-const rateLimiter = new RateLimiter({ tokensPerInterval: 5000, interval: 'hour' });
+function backoff(remaining: number) {
+	if (remaining > 1000) {
+		return 0;
+	}
+
+	const x = 1000 - remaining;
+	return (5 * x) / 3 + (7 * Math.pow(x, 2)) / 120;
+}
+
+function timeout(ms: number) {
+	return new Promise<void>(r => setTimeout(r, ms));
+}
 
 export const download = async (
 	token: string,
@@ -217,7 +226,7 @@ export const download = async (
 	console.log(`Downloaded ${issues.length} issues (${issues[issues.length - 1].number} remaining). Cost ${rateInfo.cost} points (${rateInfo.remaining} remaining).`)
 
 	if (pageInfo.hasPreviousPage) {
-		await rateLimiter.removeTokens(rateInfo.cost);
+		await timeout(backoff(rateInfo.remaining));
 		download(token, repo, pageInfo.startCursor);
 	}
 };
