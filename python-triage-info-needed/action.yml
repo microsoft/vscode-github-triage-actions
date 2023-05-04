@@ -1,0 +1,23 @@
+name: Triage "info-needed" label
+
+inputs:
+  token:
+    description: 'GitHub token'
+    default: ${{ github.token }}
+    required: true
+  action:
+    description: 'Whether to add or remove the "info-needed" label'
+    required: true
+    default: 'add'
+  triagers:
+    description: 'Triagers to add to the issue'
+    required: true
+    default: '["karrtikr","karthiknadig","paulacamargo25","eleanorjboyd", "brettcannon"]'
+  keywords:
+    description: 'Keywords that indicate a question is being asked'
+    required: false
+    default: '["\\?", "please", "kindly", "let me know", "try", "can you", "could you", "would you", "may I", "provide", "let us know", "tell me", "give me", "send me", "what", "when", "where", "why", "how"]'
+
+runs:
+  using: 'node16'
+  main: 'index.js'
