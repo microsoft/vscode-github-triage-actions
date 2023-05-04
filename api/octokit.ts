@@ -15,7 +15,7 @@ export const getNumRequests = () => numRequests;
 
 export class OctoKit implements GitHub {
 	private _octokit: ReturnType<typeof getOctokit>;
-	protected get octokit(): ReturnType<typeof getOctokit> {
+	public get octokit(): ReturnType<typeof getOctokit> {
 		numRequests++;
 		return this._octokit;
 	}

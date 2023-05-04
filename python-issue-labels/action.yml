@@ -1,0 +1,18 @@
+name: Triage "info-needed" label
+
+inputs:
+  token:
+    description: 'GitHub token'
+    default: ${{ github.token }}
+    required: true
+  triagers:
+    description: 'Triagers to add to the issue'
+    required: false
+    default: '["karrtikr","karthiknadig","paulacamargo25","eleanorjboyd"]'
+  repo_labels:
+    description: 'Keywords that indicate a question is being asked'
+    required: true
+
+runs:
+  using: 'node16'
+  main: 'index.js'

@@ -1,0 +1,11 @@
+name: Classify PR
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'PR impact specified'
+      uses: mheap/github-action-required-labels@v4
+      with:
+        mode: exactly
+        count: 1
+        labels: 'bug, debt, feature-request, no-changelog'
