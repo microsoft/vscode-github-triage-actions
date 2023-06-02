@@ -353,6 +353,7 @@ export class ReviewReminder {
 		preview: string,
 		blocks?: KnownBlock[],
 		timestampToSend?: number,
+		skipCooldown?: boolean,
 	) {
 		// Given an email find the user id
 		let userId: string | undefined = undefined;
@@ -389,7 +390,7 @@ export class ReviewReminder {
 				const lastMessageDate = new Date(parseInt(lastMessage.ts) * 1000);
 				const tenDaysAgo = new Date();
 				tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-				if (lastMessageDate > tenDaysAgo) {
+				if (lastMessageDate > tenDaysAgo && !skipCooldown) {
 					console.log(`Skipping DM as last message was ${lastMessageDate}`);
 					return;
 				}
@@ -452,6 +453,8 @@ export class ReviewReminder {
 					reviewer.monthlyCount,
 					reviewer.place ?? 'third',
 				),
+				undefined,
+				true,
 			);
 		}
 

@@ -272,7 +272,7 @@ class ReviewReminder {
      * @param blocks The blocks which construct the rich message
      * @param timestampToSend An otpional timestamp to schedule the message for
      */
-    async sendSlackDM(userEmail, preview, blocks, timestampToSend) {
+    async sendSlackDM(userEmail, preview, blocks, timestampToSend, skipCooldown) {
         var _a, _b;
         // Given an email find the user id
         let userId = undefined;
@@ -305,7 +305,7 @@ class ReviewReminder {
                 const lastMessageDate = new Date(parseInt(lastMessage.ts) * 1000);
                 const tenDaysAgo = new Date();
                 tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
-                if (lastMessageDate > tenDaysAgo) {
+                if (lastMessageDate > tenDaysAgo && !skipCooldown) {
                     console.log(`Skipping DM as last message was ${lastMessageDate}`);
                     return;
                 }
@@ -356,7 +356,7 @@ class ReviewReminder {
                 console.log(`Could not find account this is definitely a bug!`);
                 continue;
             }
-            await this.sendSlackDM(account.vsts, 'Top Reviewer!', ReviewReminder.topReviewerMessage(reviewer.weeklyCount, reviewer.monthlyCount, (_a = reviewer.place) !== null && _a !== void 0 ? _a : 'third'));
+            await this.sendSlackDM(account.vsts, 'Top Reviewer!', ReviewReminder.topReviewerMessage(reviewer.weeklyCount, reviewer.monthlyCount, (_a = reviewer.place) !== null && _a !== void 0 ? _a : 'third'), undefined, true);
         }
         for (const reviewer of stats.bottomReviewers) {
             const account = teamMembers.get(reviewer.reviewer);
