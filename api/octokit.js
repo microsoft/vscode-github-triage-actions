@@ -113,7 +113,8 @@ class OctoKit {
             ...this.params,
             username: username,
         })).data.permission;
-        return (this.writeAccessCache[username] = permissions === 'admin' || permissions === 'write');
+        return (this.writeAccessCache[username] =
+            permissions === 'admin' || permissions === 'write' || permissions === 'maintain');
     }
     async repoHasLabel(name) {
         try {
