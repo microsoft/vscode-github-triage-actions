@@ -5,7 +5,6 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FeatureRequestOnMilestone = exports.FeatureRequestOnLabel = exports.FeatureRequestQueryer = exports.ACCEPT_MARKER = exports.REJECT_MARKER = exports.WARN_MARKER = exports.CREATE_MARKER = void 0;
-const telemetry_1 = require("../common/telemetry");
 const utils_1 = require("../common/utils");
 exports.CREATE_MARKER = '<!-- 6d457af9-96bd-47a8-a0e8-ecf120dfffc1 -->'; // do not change, this is how we find the comments the bot made when assigning the issue was assigned to the candidate milestone
 exports.WARN_MARKER = '<!-- 7e568b0a-a7ce-58b9-b1f9-fd0231e000d2 -->'; // do not change, this is how we find the comments the bot made when writing a warning message
@@ -43,7 +42,6 @@ class FeatureRequestQueryer {
             this.config.comments.accept &&
             this.config.milestones.backlogID) {
             (0, utils_1.safeLog)(`Issue #${issueData.number} sucessfully promoted`);
-            await (0, telemetry_1.trackEvent)(issue, 'feature-request:accepted');
             await Promise.all([
                 issue.setMilestone(this.config.milestones.backlogID),
                 issue.postComment(exports.ACCEPT_MARKER + '\n' + this.config.comments.accept),
@@ -75,7 +73,6 @@ class FeatureRequestQueryer {
             }
             else if (this.daysSince(state.warnTimestamp) > this.config.delays.warn) {
                 (0, utils_1.safeLog)(`Issue #${issueData.number} rejected`);
-                await (0, telemetry_1.trackEvent)(issue, 'feature-request:rejected');
                 await issue.postComment(exports.REJECT_MARKER + '\n' + this.config.comments.reject);
                 await issue.closeIssue('not_planned');
                 if (this.config.comments.rejectLabel) {

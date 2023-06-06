@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHubIssue, Issue, User } from '../api/api';
-import { trackEvent } from '../common/telemetry';
 import { safeLog } from '../common/utils';
 
 /* eslint-disable */
@@ -55,8 +54,6 @@ export class Commands {
 	private async perform(command: Command, issue: Issue) {
 		if (!(await this.matches(command, issue))) return;
 		safeLog(`Running command ${command.name}:`);
-
-		await trackEvent(this.github, 'command', { name: command.name });
 
 		const tasks = [];
 
