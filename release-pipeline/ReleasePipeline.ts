@@ -5,7 +5,6 @@
 
 import { GitHub, GitHubIssue } from '../api/api';
 import { loadLatestRelease, Release, safeLog } from '../common/utils';
-import { trackEvent } from '../common/telemetry';
 
 export class ReleasePipeline {
 	constructor(
@@ -67,7 +66,6 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
 			.catch(() => 'unknown' as const);
 
 		if (releaseContainsCommit === 'yes') {
-			await trackEvent(issue, 'insiders-released:released');
 			await issue.removeLabel(this.notYetReleasedLabel);
 			await issue.addLabel(this.insidersReleasedLabel);
 		} else if (releaseContainsCommit === 'no') {
@@ -91,9 +89,6 @@ export const enrollIssue = async (issue: GitHubIssue, notYetReleasedLabel: strin
 		if (releaseMilestone !== undefined) {
 			await issue.setMilestone(releaseMilestone);
 		}
-		await trackEvent(issue, 'insiders-released:unreleased');
-	} else {
-		await trackEvent(issue, 'insiders-released:skipped');
 	}
 };
 

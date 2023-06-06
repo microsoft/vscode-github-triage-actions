@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { GitHub, GitHubIssue } from '../api/api';
-import { trackEvent } from '../common/telemetry';
 import { safeLog } from '../common/utils';
 
 export const CREATE_MARKER = '<!-- 6d457af9-96bd-47a8-a0e8-ecf120dfffc1 -->'; // do not change, this is how we find the comments the bot made when assigning the issue was assigned to the candidate milestone
@@ -57,7 +56,6 @@ export class FeatureRequestQueryer {
 			this.config.milestones.backlogID
 		) {
 			safeLog(`Issue #${issueData.number} sucessfully promoted`);
-			await trackEvent(issue, 'feature-request:accepted');
 			await Promise.all([
 				issue.setMilestone(this.config.milestones.backlogID),
 				issue.postComment(ACCEPT_MARKER + '\n' + this.config.comments.accept),
@@ -95,7 +93,6 @@ export class FeatureRequestQueryer {
 				}
 			} else if (this.daysSince(state.warnTimestamp) > this.config.delays.warn) {
 				safeLog(`Issue #${issueData.number} rejected`);
-				await trackEvent(issue, 'feature-request:rejected');
 				await issue.postComment(REJECT_MARKER + '\n' + this.config.comments.reject);
 				await issue.closeIssue('not_planned');
 

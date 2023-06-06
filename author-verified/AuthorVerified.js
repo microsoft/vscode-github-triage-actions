@@ -6,7 +6,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthorVerifiedLabeler = void 0;
 const utils_1 = require("../common/utils");
-const telemetry_1 = require("../common/telemetry");
 class AuthorVerifiedLabeler {
     constructor(github, comment, releasedLabel, authorVerificationRequestedLabel, verifiedLabel) {
         this.github = github;
@@ -36,7 +35,6 @@ class AuthorVerifiedLabeler {
             const latestRelease = await (0, utils_1.loadLatestRelease)('insider');
             if (!latestRelease)
                 throw Error('Error loading latest release');
-            await (0, telemetry_1.trackEvent)(this.github, 'author-verified:verifiable');
             if (!issue.labels.includes(this.verifiedLabel)) {
                 if (issue.locked) {
                     await this.github.unlockIssue();

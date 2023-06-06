@@ -6,7 +6,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.unenrollIssue = exports.enrollIssue = exports.ReleasePipeline = void 0;
 const utils_1 = require("../common/utils");
-const telemetry_1 = require("../common/telemetry");
 class ReleasePipeline {
     constructor(github, notYetReleasedLabel, insidersReleasedLabel) {
         this.github = github;
@@ -61,7 +60,6 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
             .releaseContainsCommit(latestRelease.version, closingHash)
             .catch(() => 'unknown');
         if (releaseContainsCommit === 'yes') {
-            await (0, telemetry_1.trackEvent)(issue, 'insiders-released:released');
             await issue.removeLabel(this.notYetReleasedLabel);
             await issue.addLabel(this.insidersReleasedLabel);
         }
@@ -88,10 +86,6 @@ const enrollIssue = async (issue, notYetReleasedLabel) => {
         if (releaseMilestone !== undefined) {
             await issue.setMilestone(releaseMilestone);
         }
-        await (0, telemetry_1.trackEvent)(issue, 'insiders-released:unreleased');
-    }
-    else {
-        await (0, telemetry_1.trackEvent)(issue, 'insiders-released:skipped');
     }
 };
 exports.enrollIssue = enrollIssue;

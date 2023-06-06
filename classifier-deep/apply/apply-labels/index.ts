@@ -10,7 +10,6 @@ import { context } from '@actions/github';
 import { OctoKit, OctoKitIssue } from '../../../api/octokit';
 import { getRequiredInput, getInput, safeLog, daysAgoToHumanReadbleDate } from '../../../common/utils';
 import { Action } from '../../../common/Action';
-import { trackEvent } from '../../../common/telemetry';
 
 const token = getRequiredInput('token');
 const manifestDbConnectionString = getInput('manifestDbConnectionString');
@@ -147,10 +146,6 @@ class ApplyLabels extends Action {
 							? labelConfig.assign.map((assignee) => addAssignee(assignee))
 							: []),
 					]);
-
-					await trackEvent(issue, 'classification:performed', {
-						label: labeling.area.category,
-					});
 				}
 			}
 
@@ -174,9 +169,6 @@ class ApplyLabels extends Action {
 				if (confident) {
 					safeLog('has assignee');
 					await addAssignee(category);
-					await trackEvent(issue, 'classification:performed', {
-						assignee: labeling.assignee.category,
-					});
 				}
 			}
 

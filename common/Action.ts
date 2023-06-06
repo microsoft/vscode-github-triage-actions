@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKit, OctoKitIssue, getNumRequests } from '../api/octokit';
+import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { context, getOctokit } from '@actions/github';
-import { getRequiredInput, logErrorToIssue, getRateLimit, errorLoggingIssue, safeLog } from './utils';
+import { getRequiredInput, logErrorToIssue, errorLoggingIssue, safeLog } from './utils';
 import { getInput, setFailed } from '@actions/core';
-import { aiHandle } from './telemetry';
 import { v4 as uuid } from 'uuid';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 
@@ -25,20 +24,6 @@ export abstract class Action {
 				(v) => v.data.name ?? 'unknown',
 				() => 'unknown',
 			);
-	}
-
-	public async trackMetric(telemetry: { name: string; value: number }) {
-		if (aiHandle) {
-			aiHandle.trackMetric({
-				...telemetry,
-				properties: {
-					repo: `${context.repo.owner}/${context.repo.repo}`,
-					issue: '' + context.issue.number,
-					id: this.id,
-					user: await this.username,
-				},
-			});
-		}
 	}
 
 	public async run() {
@@ -119,13 +104,6 @@ export abstract class Action {
 				setFailed(err.message);
 			}
 		}
-
-		await this.trackMetric({ name: 'octokit_request_count', value: getNumRequests() });
-
-		const usage = await getRateLimit(this.token);
-		await this.trackMetric({ name: 'usage_core', value: usage.core });
-		await this.trackMetric({ name: 'usage_graphql', value: usage.graphql });
-		await this.trackMetric({ name: 'usage_search', value: usage.search });
 	}
 
 	private async error(error: Error) {
@@ -145,10 +123,6 @@ Actor: ${details.user}
 ID: ${details.id}
 `;
 		await logErrorToIssue(rendered, true, this.token);
-
-		if (aiHandle) {
-			aiHandle.trackException({ exception: error });
-		}
 
 		setFailed(error.message);
 	}

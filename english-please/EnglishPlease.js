@@ -4,7 +4,6 @@ exports.LanguageSpecificLabeler = exports.EnglishPleaseLabler = void 0;
 const axios_1 = require("axios");
 const utils_1 = require("../common/utils");
 const translation_data_json_1 = require("./translation-data.json");
-const telemetry_1 = require("../common/telemetry");
 const commonNames = translation_data_json_1.commonNames;
 const knownTranslations = translation_data_json_1.knownTranslations;
 const usKeyboardChars = /\w|\s|\d|[[\]{}`~!@#$%^&*()_+=<>,.?/\\:;'"|-]/gu;
@@ -123,7 +122,6 @@ class LanguageSpecificLabeler {
                     }
                 }
             }
-            await (0, telemetry_1.trackEvent)(this.issue, 'english-please-added', { language });
             await this.issue.postComment(`${targetLanguageComment}\n\n---\n${englishComment}\n<!-- translation_requested_comment -->`);
         }
     }

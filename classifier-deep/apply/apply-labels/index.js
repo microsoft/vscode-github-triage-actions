@@ -12,7 +12,6 @@ const github_1 = require("@actions/github");
 const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
-const telemetry_1 = require("../../../common/telemetry");
 const token = (0, utils_1.getRequiredInput)('token');
 const manifestDbConnectionString = (0, utils_1.getInput)('manifestDbConnectionString');
 const allowLabels = ((0, utils_1.getInput)('allowLabels') || '').split('|');
@@ -112,9 +111,6 @@ class ApplyLabels extends Action_1.Action {
                             ? labelConfig.assign.map((assignee) => addAssignee(assignee))
                             : []),
                     ]);
-                    await (0, telemetry_1.trackEvent)(issue, 'classification:performed', {
-                        label: labeling.area.category,
-                    });
                 }
             }
             {
@@ -132,9 +128,6 @@ class ApplyLabels extends Action_1.Action {
                 if (confident) {
                     (0, utils_1.safeLog)('has assignee');
                     await addAssignee(category);
-                    await (0, telemetry_1.trackEvent)(issue, 'classification:performed', {
-                        assignee: labeling.assignee.category,
-                    });
                 }
             }
             let performedAssignment = false;
