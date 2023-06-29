@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.VSCodeToolsAPIManager = void 0;
 const core_http_1 = require("@azure/core-http");
 const identity_1 = require("@azure/identity");
+const vscodeToolsTypes_1 = require("./vscodeToolsTypes");
 const API_URL = 'https://tools.code.visualstudio.com/api';
 class VSCodeToolsAPIManager {
     constructor(config) {
@@ -14,7 +15,7 @@ class VSCodeToolsAPIManager {
     }
     async getTriagerGitHubIds() {
         const members = await this.getTeamMembers();
-        return members.filter((member) => { var _a; return (_a = member.duties) === null || _a === void 0 ? void 0 : _a.includes('triage'); }).map((member) => member.id);
+        return members.filter((member) => { var _a; return (_a = member.duties) === null || _a === void 0 ? void 0 : _a.includes(vscodeToolsTypes_1.TRIAGE_DUTY); }).map((member) => member.id);
     }
     async getTeamMemberFromGitHubId(gitHubId) {
         const teamMembers = await this.getTeamMembers();
