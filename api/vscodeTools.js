@@ -15,7 +15,13 @@ class VSCodeToolsAPIManager {
     }
     async getTriagerGitHubIds() {
         const members = await this.getTeamMembers();
-        return members.filter((member) => { var _a; return (_a = member.duties) === null || _a === void 0 ? void 0 : _a.includes(vscodeToolsTypes_1.TRIAGE_DUTY); }).map((member) => member.id);
+        return members
+            .filter((member) => {
+            var _a;
+            return ((_a = member.duties) === null || _a === void 0 ? void 0 : _a.includes(vscodeToolsTypes_1.TRIAGE_DUTY)) &&
+                member.availability !== vscodeToolsTypes_1.Availability.NOT_AVAILABLE;
+        })
+            .map((member) => member.id);
     }
     async getTeamMemberFromGitHubId(gitHubId) {
         const teamMembers = await this.getTeamMembers();

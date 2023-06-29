@@ -1,6 +1,6 @@
 import { ServiceClient } from '@azure/core-http';
 import { ClientSecretCredential } from '@azure/identity';
-import { TRIAGE_DUTY, type ITeamMember } from './vscodeToolsTypes';
+import { TRIAGE_DUTY, type ITeamMember, Availability } from './vscodeToolsTypes';
 
 const API_URL = 'https://tools.code.visualstudio.com/api';
 
@@ -17,7 +17,13 @@ export class VSCodeToolsAPIManager {
 
 	async getTriagerGitHubIds(): Promise<string[]> {
 		const members = await this.getTeamMembers();
-		return members.filter((member) => member.duties?.includes(TRIAGE_DUTY)).map((member) => member.id);
+		return members
+			.filter(
+				(member) =>
+					member.duties?.includes(TRIAGE_DUTY) &&
+					member.availability !== Availability.NOT_AVAILABLE,
+			)
+			.map((member) => member.id);
 	}
 
 	async getTeamMemberFromGitHubId(gitHubId: string) {
