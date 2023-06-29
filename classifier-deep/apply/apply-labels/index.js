@@ -5,15 +5,20 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Availability = void 0;
-const mongodb = require("mongodb");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const github_1 = require("@actions/github");
 const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
+const vscodeTools_1 = require("../../../api/vscodeTools");
 const token = (0, utils_1.getRequiredInput)('token');
-const manifestDbConnectionString = (0, utils_1.getInput)('manifestDbConnectionString');
+const apiConfig = {
+    tenantId: (0, utils_1.getRequiredInput)('tenantId'),
+    clientId: (0, utils_1.getRequiredInput)('clientId'),
+    clientSecret: (0, utils_1.getRequiredInput)('clientSecret'),
+    clientScope: (0, utils_1.getRequiredInput)('clientScope'),
+};
 const allowLabels = ((0, utils_1.getInput)('allowLabels') || '').split('|');
 const debug = !!(0, utils_1.getInput)('__debug');
 // Do not modify.
@@ -32,34 +37,6 @@ class ApplyLabels extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a;
-        let manifest = Promise.resolve(undefined);
-        if (manifestDbConnectionString) {
-            (0, utils_1.safeLog)('has manifestDbConnectionString');
-            manifest = mongodb.MongoClient.connect(manifestDbConnectionString).then(async (client) => {
-                (0, utils_1.safeLog)('connected to db');
-                try {
-                    // Get the database from the mongo client
-                    const db = client.db('admin');
-                    const collection = db.collection('testers');
-                    const triagers = await collection.find({}).toArray();
-                    return triagers
-                        .filter((t) => t.triager && t.availability !== Availability.NOT_AVAILABLE)
-                        .map((t) => t.id);
-                }
-                catch (e) {
-                    (0, utils_1.safeLog)('error reading from db');
-                    (0, utils_1.safeLog)(e.message);
-                }
-                finally {
-                    (0, utils_1.safeLog)('disconnected from db');
-                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                    client.close();
-                }
-            });
-        }
-        else {
-            (0, utils_1.safeLog)('has no manifestDbConnectionString');
-        }
         const config = await github.readConfig((0, utils_1.getRequiredInput)('configPath'));
         const labelings = JSON.parse((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
         for (const labeling of labelings) {
@@ -144,7 +121,10 @@ class ApplyLabels extends Action_1.Action {
             if (!performedAssignment) {
                 (0, utils_1.safeLog)('could not find assignee, picking a random one...');
                 try {
-                    const available = await manifest;
+                    const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager(apiConfig);
+                    const triagers = await vscodeToolsAPI.getTriagerGitHubIds();
+                    (0, utils_1.safeLog)('Acquired list of available triagers');
+                    const available = triagers;
                     if (available) {
                         // Shuffle the array
                         for (let i = available.length - 1; i > 0; i--) {

@@ -23,11 +23,13 @@
   "dependencies": {
     "@actions/core": "^1.9.1",
     "@actions/github": "^5.0.3",
+    "@azure/core-http": "^3.0.2",
+    "@azure/identity": "^3.2.3",
+    "@azure/storage-blob": "^12.13.0",
     "@octokit/rest": "^19.0.3",
     "@slack/web-api": "^6.7.2",
     "axios": "^0.27.2",
-    "uuid": "^8.3.2",
-    "@azure/storage-blob": "^12.13.0"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.3",
@@ -42,7 +44,6 @@
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
     "mocha": "^10.0.0",
-    "mongodb": "^4.8.1",
     "nock": "^13.2.9",
     "prettier": "2.7.1",
     "ts-node": "^10.9.1",

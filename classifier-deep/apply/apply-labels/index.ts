@@ -3,16 +3,21 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as mongodb from 'mongodb';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { context } from '@actions/github';
 import { OctoKit, OctoKitIssue } from '../../../api/octokit';
 import { getRequiredInput, getInput, safeLog, daysAgoToHumanReadbleDate } from '../../../common/utils';
 import { Action } from '../../../common/Action';
+import { VSCodeToolsAPIManager } from '../../../api/vscodeTools';
 
 const token = getRequiredInput('token');
-const manifestDbConnectionString = getInput('manifestDbConnectionString');
+const apiConfig = {
+	tenantId: getRequiredInput('tenantId'),
+	clientId: getRequiredInput('clientId'),
+	clientSecret: getRequiredInput('clientSecret'),
+	clientScope: getRequiredInput('clientScope'),
+};
 
 const allowLabels = (getInput('allowLabels') || '').split('|');
 const debug = !!getInput('__debug');
@@ -39,43 +44,10 @@ export enum Availability {
 	NOT_AVAILABLE,
 }
 
-type Triager = {
-	id: string;
-	triager: boolean;
-	availability: Availability;
-};
-
 class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels';
 
 	async onTriggered(github: OctoKit) {
-		let manifest: Promise<string[] | undefined> = Promise.resolve(undefined);
-
-		if (manifestDbConnectionString) {
-			safeLog('has manifestDbConnectionString');
-			manifest = mongodb.MongoClient.connect(manifestDbConnectionString).then(async (client) => {
-				safeLog('connected to db');
-				try {
-					// Get the database from the mongo client
-					const db = client.db('admin');
-					const collection = db.collection('testers');
-					const triagers = await collection.find<Triager>({}).toArray();
-					return triagers
-						.filter((t) => t.triager && t.availability !== Availability.NOT_AVAILABLE)
-						.map((t) => t.id);
-				} catch (e) {
-					safeLog('error reading from db');
-					safeLog((e as any).message);
-				} finally {
-					safeLog('disconnected from db');
-					// eslint-disable-next-line @typescript-eslint/no-floating-promises
-					client.close();
-				}
-			});
-		} else {
-			safeLog('has no manifestDbConnectionString');
-		}
-
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'));
 		const labelings: LabelingsFile = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
@@ -187,7 +159,10 @@ class ApplyLabels extends Action {
 			if (!performedAssignment) {
 				safeLog('could not find assignee, picking a random one...');
 				try {
-					const available = await manifest;
+					const vscodeToolsAPI = new VSCodeToolsAPIManager(apiConfig);
+					const triagers = await vscodeToolsAPI.getTriagerGitHubIds();
+					safeLog('Acquired list of available triagers');
+					const available = triagers;
 					if (available) {
 						// Shuffle the array
 						for (let i = available.length - 1; i > 0; i--) {
