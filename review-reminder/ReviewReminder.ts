@@ -5,7 +5,9 @@
 
 import { Octokit } from '@octokit/rest';
 import { HeaderBlock, KnownBlock, SectionBlock, WebClient } from '@slack/web-api';
-import { Accounts, readAccountsFromBlobStorage } from '../common/utils';
+import { VSCodeToolsAPIManager } from '../api/vscodeTools';
+import { ITeamMember } from '../api/vscodeToolsTypes';
+import { safeLog } from '../common/utils';
 
 interface IReview {
 	prUrl: string;
@@ -33,7 +35,7 @@ export class ReviewReminder {
 	private readonly slackClient: WebClient;
 	private readonly octokit: Octokit;
 
-	constructor(gitHubToken: string, slackToken: string, private readonly connectionString: string) {
+	constructor(gitHubToken: string, slackToken: string, private readonly toolsAPI: VSCodeToolsAPIManager) {
 		this.slackClient = new WebClient(slackToken);
 		this.octokit = new Octokit({ auth: gitHubToken });
 	}
@@ -113,7 +115,7 @@ export class ReviewReminder {
 	private async processRepository(
 		octokit: Octokit,
 		repositoryInfo: { owner: string; repo: string },
-		teamMembers: Map<string, Accounts>,
+		teamMembers: Map<string, ITeamMember>,
 		numberOfDays = 30,
 	) {
 		const data: IReview[] = [];
@@ -262,7 +264,7 @@ export class ReviewReminder {
 	 * @param teamMembers The map of team members to their various accounts
 	 * @returns A set of review stats regarding reviews completed
 	 */
-	private async processAllRepositories(teamMembers: Map<string, Accounts>): Promise<IReviewStats> {
+	private async processAllRepositories(teamMembers: Map<string, ITeamMember>): Promise<IReviewStats> {
 		let data: IReview[] = [];
 		for await (const repository of this.getRepositories(this.octokit)) {
 			const owner = repository.owner.login;
@@ -275,8 +277,8 @@ export class ReviewReminder {
 
 		// Intialize the map with all team members
 		for (const member of teamMembers.values()) {
-			monthlyStats.set(member.github, 0);
-			weeklyStats.set(member.github, 0);
+			monthlyStats.set(member.id, 0);
+			weeklyStats.set(member.id, 0);
 		}
 
 		// Calculate the stats
@@ -349,24 +351,14 @@ export class ReviewReminder {
 	 * @param timestampToSend An otpional timestamp to schedule the message for
 	 */
 	private async sendSlackDM(
-		userEmail: string,
+		slackId: string,
 		preview: string,
 		blocks?: KnownBlock[],
 		timestampToSend?: number,
 		skipCooldown?: boolean,
 	) {
-		// Given an email find the user id
-		let userId: string | undefined = undefined;
-		try {
-			const user = await this.slackClient.users.lookupByEmail({ email: userEmail });
-			userId = user.user?.id;
-		} catch (e) {
-			console.error(`Failed to find slack user for email ${userEmail}`);
-			return;
-		}
-
 		// If user isn't populated and we didn't return early in the error handler, return now
-		if (!userId) {
+		if (!slackId) {
 			return;
 		}
 
@@ -376,7 +368,7 @@ export class ReviewReminder {
 				types: 'im',
 				limit: 100,
 			})
-		).channels?.find((c) => c.user === userId);
+		).channels?.find((c) => c.user === slackId);
 
 		// If we have an existing conversation with that user then make sure we're not spamming them
 		if (conversation && conversation.id) {
@@ -399,7 +391,7 @@ export class ReviewReminder {
 
 		if (timestampToSend) {
 			await this.slackClient.chat.scheduleMessage({
-				channel: userId,
+				channel: slackId,
 				post_at: timestampToSend,
 				text: preview,
 				blocks,
@@ -407,7 +399,7 @@ export class ReviewReminder {
 		} else {
 			// Send DM to user
 			await this.slackClient.chat.postMessage({
-				channel: userId,
+				channel: slackId,
 				text: preview,
 				blocks,
 			});
@@ -419,20 +411,20 @@ export class ReviewReminder {
 	 */
 	async run() {
 		console.time('Review Reminder Action');
-		const accounts = await readAccountsFromBlobStorage(this.connectionString);
+		const accounts = await this.toolsAPI.getTeamMembers();
 		// Mapping of GitHub accounts to entry in blob storage
-		const teamMembers = new Map<string, Accounts>();
+		const teamMembers = new Map<string, ITeamMember>();
 		for (const account of accounts) {
 			// Don't include the high level managers and non devs. Eventually we will have nice API to skip them
 			if (
-				account.github === 'gregvanl' ||
-				account.github === 'chrisdias' ||
-				account.github === 'egamma' ||
-				account.github === 'kieferrm'
+				account.id === 'gregvanl' ||
+				account.id === 'chrisdias' ||
+				account.id === 'egamma' ||
+				account.id === 'kieferrm'
 			) {
 				continue;
 			}
-			teamMembers.set(account.github, account);
+			teamMembers.set(account.id, account);
 		}
 
 		const stats = await this.processAllRepositories(teamMembers);
@@ -445,8 +437,12 @@ export class ReviewReminder {
 				console.log(`Could not find account this is definitely a bug!`);
 				continue;
 			}
+			if (!account.slack) {
+				safeLog(`No slack account for ${account.id}`);
+				continue;
+			}
 			await this.sendSlackDM(
-				account.vsts,
+				account.slack,
 				'Top Reviewer!',
 				ReviewReminder.topReviewerMessage(
 					reviewer.weeklyCount,
@@ -461,13 +457,17 @@ export class ReviewReminder {
 		for (const reviewer of stats.bottomReviewers) {
 			const account = teamMembers.get(reviewer.reviewer);
 			if (!account) {
-				console.log(`Could not find account this is definitely a bug!`);
+				safeLog(`Could not find account this is definitely a bug!`);
+				continue;
+			}
+			if (!account.slack) {
+				safeLog(`No slack account for ${account.id}`);
 				continue;
 			}
 			// Generate a random unix timestamp in the next 4 hours
 			const timestampToSend = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 14400);
 			await this.sendSlackDM(
-				account.vsts,
+				account.slack,
 				'Review Reminder!',
 				ReviewReminder.reviewWarningMessage(reviewer.weeklyCount, stats.topReviewers[0].weeklyCount),
 				timestampToSend,
