@@ -6,16 +6,22 @@
 import { getRequiredInput } from '../common/utils';
 import { Action } from '../common/Action';
 import { ReviewReminder } from './ReviewReminder';
+import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 
 const slackToken = getRequiredInput('slack_token');
 const auth = getRequiredInput('token');
-const connectionString = getRequiredInput('connection_string');
+const apiConfig = {
+	tenantId: getRequiredInput('tenantId'),
+	clientId: getRequiredInput('clientId'),
+	clientSecret: getRequiredInput('clientSecret'),
+	clientScope: getRequiredInput('clientScope'),
+};
 
 class ReviewReminderAction extends Action {
 	id = 'ReviewReminder';
 
 	async onTriggered() {
-		await new ReviewReminder(auth, slackToken, connectionString).run();
+		await new ReviewReminder(auth, slackToken, new VSCodeToolsAPIManager(apiConfig)).run();
 	}
 }
 
