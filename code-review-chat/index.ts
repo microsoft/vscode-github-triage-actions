@@ -9,11 +9,18 @@ import { CodeReviewChat, CodeReviewChatDeleter, meetsReviewThreshold } from './C
 import { Action } from '../common/Action';
 import { OctoKitIssue } from '../api/octokit';
 import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
+import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 
 const slackToken = getRequiredInput('slack_token');
 const elevatedUserToken = getInput('slack_user_token');
 const auth = getRequiredInput('token');
 const channel = getRequiredInput('notification_channel');
+const apiConfig = {
+	tenantId: getRequiredInput('tenantId'),
+	clientId: getRequiredInput('clientId'),
+	clientSecret: getRequiredInput('clientSecret'),
+	clientScope: getRequiredInput('clientScope'),
+};
 
 class CodeReviewChatAction extends Action {
 	id = 'CodeReviewChat';
@@ -50,7 +57,7 @@ class CodeReviewChatAction extends Action {
 
 		await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
 
-		await new CodeReviewChat(github, issue, {
+		await new CodeReviewChat(github, new VSCodeToolsAPIManager(apiConfig), issue, {
 			slackToken,
 			codereviewChannel: channel,
 			payload: {
@@ -83,9 +90,12 @@ class CodeReviewChatAction extends Action {
 		if (!payload.pull_request || !payload.repository) {
 			throw Error('expected payload to contain pull request url');
 		}
+		const toolsAPI = new VSCodeToolsAPIManager(apiConfig);
+		const teamMembers = new Set((await toolsAPI.getTeamMembers()).map((t) => t.id));
 		const github = new Octokit({ auth });
 		const meetsThreshold = await meetsReviewThreshold(
 			github,
+			teamMembers,
 			payload.pull_request.number,
 			payload.repository.name,
 			payload.repository.owner.login,

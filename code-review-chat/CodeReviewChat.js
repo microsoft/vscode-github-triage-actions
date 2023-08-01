@@ -114,9 +114,10 @@ class CodeReviewChatDeleter extends Chatter {
 }
 exports.CodeReviewChatDeleter = CodeReviewChatDeleter;
 class CodeReviewChat extends Chatter {
-    constructor(octokit, issue, options) {
+    constructor(octokit, toolsAPI, issue, options) {
         super(options.slackToken, options.codereviewChannel);
         this.octokit = octokit;
+        this.toolsAPI = toolsAPI;
         this.issue = issue;
         this.options = options;
         this.pr = options.payload.pr;
@@ -153,10 +154,10 @@ class CodeReviewChat extends Chatter {
             return;
         }
         const data = await this.issue.getIssue();
+        const teamMembers = new Set((await this.toolsAPI.getTeamMembers()).map((t) => t.id));
         const author = data.author;
         // Author must have write access to the repo or be a bot
-        if ((!(await this.issue.hasWriteAccess(author.name)) && !author.isGitHubApp) ||
-            author.name.includes('dependabot')) {
+        if ((!teamMembers.has(author.name) && !author.isGitHubApp) || author.name.includes('dependabot')) {
             (0, utils_1.safeLog)('Issue author not team member, ignoring');
             return;
         }
@@ -173,7 +174,7 @@ class CodeReviewChat extends Chatter {
         tasks.push((async () => {
             var _a, _b;
             const [hasExistingReview, existingRequests] = await Promise.all([
-                meetsReviewThreshold(this.octokit, this.options.payload.pr.number, this.options.payload.repo, this.options.payload.owner, this.issue),
+                meetsReviewThreshold(this.octokit, teamMembers, this.options.payload.pr.number, this.options.payload.repo, this.options.payload.owner, this.issue),
                 this.octokit.pulls.listRequestedReviewers({
                     owner: this.options.payload.owner,
                     repo: this.options.payload.repo,
@@ -186,7 +187,7 @@ class CodeReviewChat extends Chatter {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
                 process.exit(0);
             }
-            const cleanTitle = this.pr.title.replace(/`/g, '');
+            const cleanTitle = this.pr.title.replace(/`/g, '').replace('https://github.com/', '');
             const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
             const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
             // The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
@@ -204,7 +205,7 @@ class CodeReviewChat extends Chatter {
     }
 }
 exports.CodeReviewChat = CodeReviewChat;
-async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
+async function meetsReviewThreshold(octokit, teamMembers, prNumber, repo, owner, ghIssue) {
     var _a, _b, _c;
     const reviews = await octokit.pulls.listReviews({
         pull_number: prNumber,
@@ -235,7 +236,7 @@ async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
         if (reviewTimestamp < lastCommitUnixTimestamp) {
             continue;
         }
-        const isTeamMember = await ghIssue.hasWriteAccess(review.user.login);
+        const isTeamMember = teamMembers.has(review.user.login);
         if (isTeamMember) {
             teamMemberReviews.push(review);
         }
@@ -244,7 +245,7 @@ async function meetsReviewThreshold(octokit, prNumber, repo, owner, ghIssue) {
     const reviewerNames = Array.from(new Set(teamMemberReviews.map((r) => { var _a, _b; return (_b = (_a = r.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'Unknown'; })));
     let meetsReviewThreshold = false;
     // Team members require 1 review, external requires two
-    if (await ghIssue.hasWriteAccess(author)) {
+    if (teamMembers.has(author)) {
         meetsReviewThreshold = reviewerNames.length >= 1;
     }
     else {
