@@ -8,6 +8,7 @@ import { WebClient } from '@slack/web-api';
 import { GitHubIssue } from '../api/api';
 import { OctoKitIssue } from '../api/octokit';
 import { safeLog } from '../common/utils';
+import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 
 interface PR {
 	number: number;
@@ -175,7 +176,12 @@ export class CodeReviewChatDeleter extends Chatter {
 
 export class CodeReviewChat extends Chatter {
 	private pr: PR;
-	constructor(private octokit: Octokit, private issue: GitHubIssue, private options: Options) {
+	constructor(
+		private octokit: Octokit,
+		private toolsAPI: VSCodeToolsAPIManager,
+		private issue: GitHubIssue,
+		private options: Options,
+	) {
 		super(options.slackToken, options.codereviewChannel);
 		this.pr = options.payload.pr;
 	}
@@ -219,12 +225,10 @@ export class CodeReviewChat extends Chatter {
 		}
 
 		const data = await this.issue.getIssue();
+		const teamMembers = new Set((await this.toolsAPI.getTeamMembers()).map((t) => t.id));
 		const author = data.author;
 		// Author must have write access to the repo or be a bot
-		if (
-			(!(await this.issue.hasWriteAccess(author.name)) && !author.isGitHubApp) ||
-			author.name.includes('dependabot')
-		) {
+		if ((!teamMembers.has(author.name) && !author.isGitHubApp) || author.name.includes('dependabot')) {
 			safeLog('Issue author not team member, ignoring');
 			return;
 		}
@@ -248,6 +252,7 @@ export class CodeReviewChat extends Chatter {
 				const [hasExistingReview, existingRequests] = await Promise.all([
 					meetsReviewThreshold(
 						this.octokit,
+						teamMembers,
 						this.options.payload.pr.number,
 						this.options.payload.repo,
 						this.options.payload.owner,
@@ -267,7 +272,7 @@ export class CodeReviewChat extends Chatter {
 					process.exit(0);
 				}
 
-				const cleanTitle = this.pr.title.replace(/`/g, '');
+				const cleanTitle = this.pr.title.replace(/`/g, '').replace('https://github.com/', '');
 				const changedFilesMessage =
 					`${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
 				const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
@@ -306,6 +311,7 @@ interface ConversationsList {
 
 export async function meetsReviewThreshold(
 	octokit: Octokit,
+	teamMembers: Set<string>,
 	prNumber: number,
 	repo: string,
 	owner: string,
@@ -342,7 +348,7 @@ export async function meetsReviewThreshold(
 		if (reviewTimestamp < lastCommitUnixTimestamp) {
 			continue;
 		}
-		const isTeamMember = await ghIssue.hasWriteAccess(review.user.login);
+		const isTeamMember = teamMembers.has(review.user.login);
 		if (isTeamMember) {
 			teamMemberReviews.push(review);
 		}
@@ -351,7 +357,7 @@ export async function meetsReviewThreshold(
 	const reviewerNames = Array.from(new Set(teamMemberReviews.map((r) => r.user?.login ?? 'Unknown')));
 	let meetsReviewThreshold = false;
 	// Team members require 1 review, external requires two
-	if (await ghIssue.hasWriteAccess(author)) {
+	if (teamMembers.has(author)) {
 		meetsReviewThreshold = reviewerNames.length >= 1;
 	} else {
 		meetsReviewThreshold = reviewerNames.length >= 2;
