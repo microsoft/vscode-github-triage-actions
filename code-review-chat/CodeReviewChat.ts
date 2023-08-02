@@ -363,7 +363,7 @@ export async function getTeamMemberReviews(
 	// Get all reviews that are from team members, excluding the author
 	const teamMemberReviews = [];
 	for (const review of reviews.data) {
-		if (!review.user || !review.user.name) {
+		if (!review.user) {
 			continue;
 		}
 		if (review.user.name === author || review.user.login === author) {
