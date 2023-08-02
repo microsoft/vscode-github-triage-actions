@@ -73,7 +73,7 @@ class CodeReviewChatAction extends Action_1.Action {
                     title: payload.pull_request.title,
                 },
             },
-        }, external).run();
+        }, payload.pull_request.number, external).run();
     }
     /**
      * TODO @lramos15 Extend support possibly to the base action

@@ -114,14 +114,14 @@ class CodeReviewChatDeleter extends Chatter {
 }
 exports.CodeReviewChatDeleter = CodeReviewChatDeleter;
 class CodeReviewChat extends Chatter {
-    constructor(octokit, toolsAPI, issue, options, _externalContributorPR) {
+    constructor(octokit, toolsAPI, issue, options, pullRequestNumber, _externalContributorPR) {
         super(options.slackToken, options.codereviewChannel);
         this.octokit = octokit;
         this.toolsAPI = toolsAPI;
         this.issue = issue;
         this.options = options;
+        this.pullRequestNumber = pullRequestNumber;
         this._externalContributorPR = _externalContributorPR;
-        this.pr = options.payload.pr;
     }
     async postMessage(message) {
         const { client, channel } = await this.getChat();
@@ -131,7 +131,7 @@ class CodeReviewChat extends Chatter {
             link_names: true,
         });
     }
-    async postExternalPRMessage() {
+    async postExternalPRMessage(pr) {
         const requestedReviewersAPIResponse = await this.octokit.pulls.listRequestedReviewers({
             owner: this.options.payload.owner,
             repo: this.options.payload.repo,
@@ -142,27 +142,27 @@ class CodeReviewChat extends Chatter {
             (0, utils_1.safeLog)('A secondary reviewer has been requested for this PR, skipping');
             return;
         }
-        const message = this.getSlackMessage();
+        const message = this.getSlackMessage(pr);
         await this.postMessage(message);
     }
-    getSlackMessage() {
-        const cleanTitle = this.pr.title.replace(/`/g, '').replace('https://github.com/', '');
-        const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
-        const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
+    getSlackMessage(pr) {
+        const cleanTitle = pr.title.replace(/`/g, '').replace('https://github.com/', '');
+        const changedFilesMessage = `${pr.changed_files} file` + (pr.changed_files > 1 ? 's' : '');
+        const diffMessage = `+${pr.additions.toLocaleString()} -${pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
         // The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
         const repoMessage = this.options.payload.repo_full_name === 'microsoft/vscode'
             ? ':'
             : ` (in ${this.options.payload.repo_full_name}):`;
-        const githubUrl = this.pr.url;
-        const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
+        const githubUrl = pr.url;
+        const vscodeDevUrl = pr.url.replace('https://', 'https://insiders.vscode.dev/');
         const externalPrefix = this._externalContributorPR ? 'External PR: ' : '';
-        const message = `${externalPrefix}*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+        const message = `${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
         return message;
     }
     async run() {
         // Must request the PR again from the octokit api as it may have changed since creation
         const prFromApi = (await this.octokit.pulls.get({
-            pull_number: this.pr.number,
+            pull_number: this.pullRequestNumber,
             owner: this.options.payload.owner,
             repo: this.options.payload.repo,
         })).data;
@@ -178,13 +178,13 @@ class CodeReviewChat extends Chatter {
             return;
         }
         // TODO @lramos15 possibly make this configurable
-        if (this.pr.baseBranchName.startsWith('release')) {
+        if (prFromApi.baseBranchName.startsWith('release')) {
             (0, utils_1.safeLog)('PR is on a release branch, ignoring');
             return;
         }
         // This is an external PR which already received one review and is just awaiting a second
         if (this._externalContributorPR) {
-            await this.postExternalPRMessage();
+            await this.postExternalPRMessage(prFromApi);
             return;
         }
         const data = await this.issue.getIssue();
@@ -221,7 +221,7 @@ class CodeReviewChat extends Chatter {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
                 process.exit(0);
             }
-            const message = this.getSlackMessage();
+            const message = this.getSlackMessage(prFromApi);
             (0, utils_1.safeLog)(message);
             await this.postMessage(message);
         })());

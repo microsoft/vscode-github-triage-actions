@@ -175,16 +175,15 @@ export class CodeReviewChatDeleter extends Chatter {
 }
 
 export class CodeReviewChat extends Chatter {
-	private pr: PR;
 	constructor(
 		private octokit: Octokit,
 		private toolsAPI: VSCodeToolsAPIManager,
 		private issue: GitHubIssue,
 		private options: Options,
+		private readonly pullRequestNumber: number,
 		private readonly _externalContributorPR?: boolean,
 	) {
 		super(options.slackToken, options.codereviewChannel);
-		this.pr = options.payload.pr;
 	}
 
 	private async postMessage(message: string) {
@@ -197,7 +196,7 @@ export class CodeReviewChat extends Chatter {
 		});
 	}
 
-	private async postExternalPRMessage() {
+	private async postExternalPRMessage(pr: PR) {
 		const requestedReviewersAPIResponse = await this.octokit.pulls.listRequestedReviewers({
 			owner: this.options.payload.owner,
 			repo: this.options.payload.repo,
@@ -208,25 +207,25 @@ export class CodeReviewChat extends Chatter {
 			safeLog('A secondary reviewer has been requested for this PR, skipping');
 			return;
 		}
-		const message = this.getSlackMessage();
+		const message = this.getSlackMessage(pr);
 		await this.postMessage(message);
 	}
 
-	private getSlackMessage() {
-		const cleanTitle = this.pr.title.replace(/`/g, '').replace('https://github.com/', '');
-		const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
-		const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
+	private getSlackMessage(pr: PR) {
+		const cleanTitle = pr.title.replace(/`/g, '').replace('https://github.com/', '');
+		const changedFilesMessage = `${pr.changed_files} file` + (pr.changed_files > 1 ? 's' : '');
+		const diffMessage = `+${pr.additions.toLocaleString()} -${pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
 		// The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
 		const repoMessage =
 			this.options.payload.repo_full_name === 'microsoft/vscode'
 				? ':'
 				: ` (in ${this.options.payload.repo_full_name}):`;
 
-		const githubUrl = this.pr.url;
-		const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
+		const githubUrl = pr.url;
+		const vscodeDevUrl = pr.url.replace('https://', 'https://insiders.vscode.dev/');
 
 		const externalPrefix = this._externalContributorPR ? 'External PR: ' : '';
-		const message = `${externalPrefix}*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+		const message = `${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
 		return message;
 	}
 
@@ -234,11 +233,11 @@ export class CodeReviewChat extends Chatter {
 		// Must request the PR again from the octokit api as it may have changed since creation
 		const prFromApi = (
 			await this.octokit.pulls.get({
-				pull_number: this.pr.number,
+				pull_number: this.pullRequestNumber,
 				owner: this.options.payload.owner,
 				repo: this.options.payload.repo,
 			})
-		).data;
+		).data as unknown as PR;
 		if (prFromApi.draft) {
 			safeLog('PR is draft, ignoring');
 			return;
@@ -253,14 +252,14 @@ export class CodeReviewChat extends Chatter {
 		}
 
 		// TODO @lramos15 possibly make this configurable
-		if (this.pr.baseBranchName.startsWith('release')) {
+		if (prFromApi.baseBranchName.startsWith('release')) {
 			safeLog('PR is on a release branch, ignoring');
 			return;
 		}
 
 		// This is an external PR which already received one review and is just awaiting a second
 		if (this._externalContributorPR) {
-			await this.postExternalPRMessage();
+			await this.postExternalPRMessage(prFromApi);
 			return;
 		}
 
@@ -312,7 +311,7 @@ export class CodeReviewChat extends Chatter {
 					process.exit(0);
 				}
 
-				const message = this.getSlackMessage();
+				const message = this.getSlackMessage(prFromApi);
 				safeLog(message);
 				await this.postMessage(message);
 			})(),
