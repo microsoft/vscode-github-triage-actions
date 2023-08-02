@@ -135,6 +135,7 @@ class CodeReviewChatAction extends Action {
 		// Check if the PR author is in the team
 		const author = payload.pull_request.user.login;
 		if (!teamMembers.has(author)) {
+			safeLog('PR author is not in the team, checking if they need to be posted for another review');
 			const teamMemberReviews = await getTeamMemberReviews(
 				github,
 				teamMembers,
@@ -144,7 +145,10 @@ class CodeReviewChatAction extends Action {
 				issue,
 			);
 			// Get only the approving reviews from team members
-			const approvingReviews = teamMemberReviews?.filter((review) => review.state === 'APPROVED');
+			const approvingReviews = teamMemberReviews?.filter((review) => {
+				safeLog(`Reviewer: ${review?.user?.login} - ${review.state}`);
+				return review.state === 'APPROVED';
+			});
 			if (approvingReviews && approvingReviews.length === 1) {
 				safeLog(`External PR with one review received, posting to receive a second`);
 				await this.executeCodeReviewChat(github, issue, payload, true);
