@@ -38,13 +38,19 @@ class CodeReviewChatAction extends Action_1.Action {
         await this.closedOrDraftHandler(_issue, payload);
     }
     async onOpened(issue, payload) {
-        var _a, _b, _c;
         if (!payload.pull_request || !payload.repository) {
             throw Error('expected payload to contain pull request and repository');
         }
         const github = new rest_1.Octokit({ auth });
         await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
-        await new CodeReviewChat_1.CodeReviewChat(github, new vscodeTools_1.VSCodeToolsAPIManager(apiConfig), issue, {
+        await this.executeCodeReviewChat(github, issue, payload, false);
+    }
+    async executeCodeReviewChat(github, issue, payload, external) {
+        var _a, _b, _c;
+        if (!payload.pull_request || !payload.repository) {
+            throw Error('expected payload to contain pull request and repository');
+        }
+        return new CodeReviewChat_1.CodeReviewChat(github, new vscodeTools_1.VSCodeToolsAPIManager(apiConfig), issue, {
             slackToken,
             codereviewChannel: channel,
             payload: {
@@ -67,7 +73,7 @@ class CodeReviewChatAction extends Action_1.Action {
                     title: payload.pull_request.title,
                 },
             },
-        }).run();
+        }, external).run();
     }
     /**
      * TODO @lramos15 Extend support possibly to the base action
@@ -84,6 +90,18 @@ class CodeReviewChatAction extends Action_1.Action {
         if (meetsThreshold) {
             (0, utils_1.safeLog)(`Review threshold met, deleting ${payload.pull_request.html_url}}`);
             await this.closedOrDraftHandler(issue, payload);
+        }
+        // TODO @lramos15, possibly move more of this into CodeReviewChat.ts to keep index smal
+        // Check if the PR author is in the team
+        const author = payload.pull_request.user.login;
+        if (!teamMembers.has(author)) {
+            const teamMemberReviews = await (0, CodeReviewChat_1.getTeamMemberReviews)(github, teamMembers, payload.pull_request.number, payload.repository.name, payload.repository.owner.login, issue);
+            // Get only the approving reviews from team members
+            const approvingReviews = teamMemberReviews === null || teamMemberReviews === void 0 ? void 0 : teamMemberReviews.filter((review) => review.state === 'APPROVED');
+            if (approvingReviews && approvingReviews.length === 1) {
+                (0, utils_1.safeLog)(`External PR with one review received, posting to receive a second`);
+                await this.executeCodeReviewChat(github, issue, payload, true);
+            }
         }
     }
     async onTriggered() {

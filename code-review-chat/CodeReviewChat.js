@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.meetsReviewThreshold = exports.CodeReviewChat = exports.CodeReviewChatDeleter = void 0;
+exports.meetsReviewThreshold = exports.getTeamMemberReviews = exports.CodeReviewChat = exports.CodeReviewChatDeleter = void 0;
 const web_api_1 = require("@slack/web-api");
 const utils_1 = require("../common/utils");
 class Chatter {
@@ -114,12 +114,13 @@ class CodeReviewChatDeleter extends Chatter {
 }
 exports.CodeReviewChatDeleter = CodeReviewChatDeleter;
 class CodeReviewChat extends Chatter {
-    constructor(octokit, toolsAPI, issue, options) {
+    constructor(octokit, toolsAPI, issue, options, _externalContributorPR) {
         super(options.slackToken, options.codereviewChannel);
         this.octokit = octokit;
         this.toolsAPI = toolsAPI;
         this.issue = issue;
         this.options = options;
+        this._externalContributorPR = _externalContributorPR;
         this.pr = options.payload.pr;
     }
     async postMessage(message) {
@@ -129,6 +130,34 @@ class CodeReviewChat extends Chatter {
             channel,
             link_names: true,
         });
+    }
+    async postExternalPRMessage() {
+        const requestedReviewersAPIResponse = await this.octokit.pulls.listRequestedReviewers({
+            owner: this.options.payload.owner,
+            repo: this.options.payload.repo,
+            pull_number: this.options.payload.pr.number,
+        });
+        const requestedReviewers = requestedReviewersAPIResponse.data.users.map((user) => user.login);
+        if (requestedReviewers.length !== 0) {
+            (0, utils_1.safeLog)('A secondary reviewer has been requested for this PR, skipping');
+            return;
+        }
+        const message = this.getSlackMessage();
+        await this.postMessage(message);
+    }
+    getSlackMessage() {
+        const cleanTitle = this.pr.title.replace(/`/g, '').replace('https://github.com/', '');
+        const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
+        const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
+        // The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
+        const repoMessage = this.options.payload.repo_full_name === 'microsoft/vscode'
+            ? ':'
+            : ` (in ${this.options.payload.repo_full_name}):`;
+        const githubUrl = this.pr.url;
+        const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
+        const externalPrefix = this._externalContributorPR ? 'External PR: ' : '';
+        const message = `${externalPrefix}*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+        return message;
     }
     async run() {
         // Must request the PR again from the octokit api as it may have changed since creation
@@ -151,6 +180,11 @@ class CodeReviewChat extends Chatter {
         // TODO @lramos15 possibly make this configurable
         if (this.pr.baseBranchName.startsWith('release')) {
             (0, utils_1.safeLog)('PR is on a release branch, ignoring');
+            return;
+        }
+        // This is an external PR which already received one review and is just awaiting a second
+        if (this._externalContributorPR) {
+            await this.postExternalPRMessage();
             return;
         }
         const data = await this.issue.getIssue();
@@ -187,17 +221,7 @@ class CodeReviewChat extends Chatter {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
                 process.exit(0);
             }
-            const cleanTitle = this.pr.title.replace(/`/g, '').replace('https://github.com/', '');
-            const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
-            const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
-            // The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
-            const repoMessage = this.options.payload.repo_full_name === 'microsoft/vscode'
-                ? ':'
-                : ` (in ${this.options.payload.repo_full_name}):`;
-            const githubUrl = this.pr.url;
-            const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
-            // Nicely formatted chat message
-            const message = `*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+            const message = this.getSlackMessage();
             (0, utils_1.safeLog)(message);
             await this.postMessage(message);
         })());
@@ -205,7 +229,7 @@ class CodeReviewChat extends Chatter {
     }
 }
 exports.CodeReviewChat = CodeReviewChat;
-async function meetsReviewThreshold(octokit, teamMembers, prNumber, repo, owner, ghIssue) {
+async function getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner, ghIssue) {
     var _a, _b, _c;
     const reviews = await octokit.pulls.listReviews({
         pull_number: prNumber,
@@ -240,9 +264,16 @@ async function meetsReviewThreshold(octokit, teamMembers, prNumber, repo, owner,
         if (isTeamMember) {
             teamMemberReviews.push(review);
         }
+        return teamMemberReviews;
     }
+}
+exports.getTeamMemberReviews = getTeamMemberReviews;
+async function meetsReviewThreshold(octokit, teamMembers, prNumber, repo, owner, ghIssue) {
+    // Get author of PR
+    const author = (await ghIssue.getIssue()).author.name;
+    const teamMemberReviews = await getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner, ghIssue);
     // While more expensive to convert from Array -> Set -> Array, we want to ensure the same name isn't double counted if a user has multiple reviews
-    const reviewerNames = Array.from(new Set(teamMemberReviews.map((r) => { var _a, _b; return (_b = (_a = r.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'Unknown'; })));
+    const reviewerNames = Array.from(new Set(teamMemberReviews === null || teamMemberReviews === void 0 ? void 0 : teamMemberReviews.map((r) => { var _a, _b; return (_b = (_a = r.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'Unknown'; })));
     let meetsReviewThreshold = false;
     // Team members require 1 review, external requires two
     if (teamMembers.has(author)) {

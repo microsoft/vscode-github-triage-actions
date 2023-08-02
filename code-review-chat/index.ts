@@ -5,7 +5,12 @@
 
 import { Octokit } from '@octokit/rest';
 import { getRequiredInput, getInput, safeLog } from '../common/utils';
-import { CodeReviewChat, CodeReviewChatDeleter, meetsReviewThreshold } from './CodeReviewChat';
+import {
+	CodeReviewChat,
+	CodeReviewChatDeleter,
+	getTeamMemberReviews,
+	meetsReviewThreshold,
+} from './CodeReviewChat';
 import { Action } from '../common/Action';
 import { OctoKitIssue } from '../api/octokit';
 import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
@@ -57,30 +62,48 @@ class CodeReviewChatAction extends Action {
 
 		await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
 
-		await new CodeReviewChat(github, new VSCodeToolsAPIManager(apiConfig), issue, {
-			slackToken,
-			codereviewChannel: channel,
-			payload: {
-				owner: payload.repository.owner.login,
-				repo: payload.repository.name,
-				repo_url: payload.repository.html_url,
-				repo_full_name: payload.repository.full_name ?? payload.repository.name,
-				// https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
-				pr: {
-					number: payload.pull_request.number,
-					body: payload.pull_request.body || '',
-					additions: payload.pull_request.additions,
-					deletions: payload.pull_request.deletions,
-					changed_files: payload.pull_request.changed_files,
-					url: payload.pull_request.html_url || '',
-					owner: payload.pull_request.user.login,
-					draft: payload.pull_request.draft || false,
-					baseBranchName: payload.pull_request.base.ref ?? '',
-					headBranchName: payload.pull_request.head.ref ?? '',
-					title: payload.pull_request.title,
+		await this.executeCodeReviewChat(github, issue, payload, false);
+	}
+
+	private async executeCodeReviewChat(
+		github: Octokit,
+		issue: OctoKitIssue,
+		payload: WebhookPayload,
+		external: boolean,
+	) {
+		if (!payload.pull_request || !payload.repository) {
+			throw Error('expected payload to contain pull request and repository');
+		}
+		return new CodeReviewChat(
+			github,
+			new VSCodeToolsAPIManager(apiConfig),
+			issue,
+			{
+				slackToken,
+				codereviewChannel: channel,
+				payload: {
+					owner: payload.repository.owner.login,
+					repo: payload.repository.name,
+					repo_url: payload.repository.html_url,
+					repo_full_name: payload.repository.full_name ?? payload.repository.name,
+					// https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
+					pr: {
+						number: payload.pull_request.number,
+						body: payload.pull_request.body || '',
+						additions: payload.pull_request.additions,
+						deletions: payload.pull_request.deletions,
+						changed_files: payload.pull_request.changed_files,
+						url: payload.pull_request.html_url || '',
+						owner: payload.pull_request.user.login,
+						draft: payload.pull_request.draft || false,
+						baseBranchName: payload.pull_request.base.ref ?? '',
+						headBranchName: payload.pull_request.head.ref ?? '',
+						title: payload.pull_request.title,
+					},
 				},
 			},
-		}).run();
+			external,
+		).run();
 	}
 
 	/**
@@ -105,6 +128,27 @@ class CodeReviewChatAction extends Action {
 		if (meetsThreshold) {
 			safeLog(`Review threshold met, deleting ${payload.pull_request.html_url}}`);
 			await this.closedOrDraftHandler(issue, payload);
+		}
+
+		// TODO @lramos15, possibly move more of this into CodeReviewChat.ts to keep index smal
+
+		// Check if the PR author is in the team
+		const author = payload.pull_request.user.login;
+		if (!teamMembers.has(author)) {
+			const teamMemberReviews = await getTeamMemberReviews(
+				github,
+				teamMembers,
+				payload.pull_request.number,
+				payload.repository.name,
+				payload.repository.owner.login,
+				issue,
+			);
+			// Get only the approving reviews from team members
+			const approvingReviews = teamMemberReviews?.filter((review) => review.state === 'APPROVED');
+			if (approvingReviews && approvingReviews.length === 1) {
+				safeLog(`External PR with one review received, posting to receive a second`);
+				await this.executeCodeReviewChat(github, issue, payload, true);
+			}
 		}
 	}
 
