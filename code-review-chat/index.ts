@@ -144,6 +144,7 @@ class CodeReviewChatAction extends Action {
 				payload.repository.owner.login,
 				issue,
 			);
+			safeLog(`Found ${teamMemberReviews?.length ?? 0} reviews from team members`);
 			// Get only the approving reviews from team members
 			const approvingReviews = teamMemberReviews?.filter((review) => {
 				safeLog(`Reviewer: ${review?.user?.login} - ${review.state}`);
