@@ -102,6 +102,7 @@ class CodeReviewChatAction extends Action {
 					},
 				},
 			},
+			payload.pull_request.number,
 			external,
 		).run();
 	}
