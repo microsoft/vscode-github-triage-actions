@@ -181,6 +181,7 @@ export class CodeReviewChat extends Chatter {
 		private toolsAPI: VSCodeToolsAPIManager,
 		private issue: GitHubIssue,
 		private options: Options,
+		private readonly _externalContributorPR?: boolean,
 	) {
 		super(options.slackToken, options.codereviewChannel);
 		this.pr = options.payload.pr;
@@ -194,6 +195,39 @@ export class CodeReviewChat extends Chatter {
 			channel,
 			link_names: true,
 		});
+	}
+
+	private async postExternalPRMessage() {
+		const requestedReviewersAPIResponse = await this.octokit.pulls.listRequestedReviewers({
+			owner: this.options.payload.owner,
+			repo: this.options.payload.repo,
+			pull_number: this.options.payload.pr.number,
+		});
+		const requestedReviewers = requestedReviewersAPIResponse.data.users.map((user) => user.login);
+		if (requestedReviewers.length !== 0) {
+			safeLog('A secondary reviewer has been requested for this PR, skipping');
+			return;
+		}
+		const message = this.getSlackMessage();
+		await this.postMessage(message);
+	}
+
+	private getSlackMessage() {
+		const cleanTitle = this.pr.title.replace(/`/g, '').replace('https://github.com/', '');
+		const changedFilesMessage = `${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
+		const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
+		// The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
+		const repoMessage =
+			this.options.payload.repo_full_name === 'microsoft/vscode'
+				? ':'
+				: ` (in ${this.options.payload.repo_full_name}):`;
+
+		const githubUrl = this.pr.url;
+		const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
+
+		const externalPrefix = this._externalContributorPR ? 'External PR: ' : '';
+		const message = `${externalPrefix}*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+		return message;
 	}
 
 	async run() {
@@ -221,6 +255,12 @@ export class CodeReviewChat extends Chatter {
 		// TODO @lramos15 possibly make this configurable
 		if (this.pr.baseBranchName.startsWith('release')) {
 			safeLog('PR is on a release branch, ignoring');
+			return;
+		}
+
+		// This is an external PR which already received one review and is just awaiting a second
+		if (this._externalContributorPR) {
+			await this.postExternalPRMessage();
 			return;
 		}
 
@@ -272,21 +312,7 @@ export class CodeReviewChat extends Chatter {
 					process.exit(0);
 				}
 
-				const cleanTitle = this.pr.title.replace(/`/g, '').replace('https://github.com/', '');
-				const changedFilesMessage =
-					`${this.pr.changed_files} file` + (this.pr.changed_files > 1 ? 's' : '');
-				const diffMessage = `+${this.pr.additions.toLocaleString()} -${this.pr.deletions.toLocaleString()}, ${changedFilesMessage}`;
-				// The message that states which repo the PR is in, only populated for non microsoft/vscode PRs
-				const repoMessage =
-					this.options.payload.repo_full_name === 'microsoft/vscode'
-						? ':'
-						: ` (in ${this.options.payload.repo_full_name}):`;
-
-				const githubUrl = this.pr.url;
-				const vscodeDevUrl = this.pr.url.replace('https://', 'https://insiders.vscode.dev/');
-
-				// Nicely formatted chat message
-				const message = `*${cleanTitle}* by _${this.pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+				const message = this.getSlackMessage();
 				safeLog(message);
 				await this.postMessage(message);
 			})(),
@@ -309,7 +335,7 @@ interface ConversationsList {
 	};
 }
 
-export async function meetsReviewThreshold(
+export async function getTeamMemberReviews(
 	octokit: Octokit,
 	teamMembers: Set<string>,
 	prNumber: number,
@@ -352,9 +378,30 @@ export async function meetsReviewThreshold(
 		if (isTeamMember) {
 			teamMemberReviews.push(review);
 		}
+		return teamMemberReviews;
 	}
+}
+
+export async function meetsReviewThreshold(
+	octokit: Octokit,
+	teamMembers: Set<string>,
+	prNumber: number,
+	repo: string,
+	owner: string,
+	ghIssue: GitHubIssue | OctoKitIssue,
+) {
+	// Get author of PR
+	const author = (await ghIssue.getIssue()).author.name;
+	const teamMemberReviews = await getTeamMemberReviews(
+		octokit,
+		teamMembers,
+		prNumber,
+		repo,
+		owner,
+		ghIssue,
+	);
 	// While more expensive to convert from Array -> Set -> Array, we want to ensure the same name isn't double counted if a user has multiple reviews
-	const reviewerNames = Array.from(new Set(teamMemberReviews.map((r) => r.user?.login ?? 'Unknown')));
+	const reviewerNames = Array.from(new Set(teamMemberReviews?.map((r) => r.user?.login ?? 'Unknown')));
 	let meetsReviewThreshold = false;
 	// Team members require 1 review, external requires two
 	if (teamMembers.has(author)) {
