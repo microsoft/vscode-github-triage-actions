@@ -4,9 +4,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.meetsReviewThreshold = exports.getTeamMemberReviews = exports.CodeReviewChat = exports.CodeReviewChatDeleter = void 0;
+exports.meetsReviewThreshold = exports.getTeamMemberReviews = exports.CodeReviewChat = exports.CodeReviewChatDeleter = exports.createPRObject = void 0;
 const web_api_1 = require("@slack/web-api");
 const utils_1 = require("../common/utils");
+function createPRObject(pullRequestFromApi) {
+    var _a, _b;
+    const pr = {
+        number: pullRequestFromApi.number,
+        body: pullRequestFromApi.body || '',
+        additions: pullRequestFromApi.additions,
+        deletions: pullRequestFromApi.deletions,
+        changed_files: pullRequestFromApi.changed_files,
+        url: pullRequestFromApi.html_url || '',
+        owner: pullRequestFromApi.user.login,
+        draft: pullRequestFromApi.draft || false,
+        base: (_a = pullRequestFromApi.base.ref) !== null && _a !== void 0 ? _a : '',
+        headBranchName: (_b = pullRequestFromApi.head.ref) !== null && _b !== void 0 ? _b : '',
+        title: pullRequestFromApi.title,
+    };
+    return pr;
+}
+exports.createPRObject = createPRObject;
 class Chatter {
     constructor(slackToken, notificationChannel) {
         this.slackToken = slackToken;
@@ -166,7 +184,8 @@ class CodeReviewChat extends Chatter {
             owner: this.options.payload.owner,
             repo: this.options.payload.repo,
         })).data;
-        if (prFromApi.draft) {
+        const pr = createPRObject(prFromApi);
+        if (pr.draft) {
             (0, utils_1.safeLog)('PR is draft, ignoring');
             return;
         }
@@ -178,13 +197,13 @@ class CodeReviewChat extends Chatter {
             return;
         }
         // TODO @lramos15 possibly make this configurable
-        if (prFromApi.baseBranchName.startsWith('release')) {
+        if (pr.base.ref.startsWith('release')) {
             (0, utils_1.safeLog)('PR is on a release branch, ignoring');
             return;
         }
         // This is an external PR which already received one review and is just awaiting a second
         if (this._externalContributorPR) {
-            await this.postExternalPRMessage(prFromApi);
+            await this.postExternalPRMessage(pr);
             return;
         }
         const data = await this.issue.getIssue();
@@ -221,7 +240,7 @@ class CodeReviewChat extends Chatter {
                 (0, utils_1.safeLog)('had existing review requests, exiting');
                 process.exit(0);
             }
-            const message = this.getSlackMessage(prFromApi);
+            const message = this.getSlackMessage(pr);
             (0, utils_1.safeLog)(message);
             await this.postMessage(message);
         })());

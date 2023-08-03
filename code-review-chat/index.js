@@ -46,7 +46,7 @@ class CodeReviewChatAction extends Action_1.Action {
         await this.executeCodeReviewChat(github, issue, payload, false);
     }
     async executeCodeReviewChat(github, issue, payload, external) {
-        var _a, _b, _c;
+        var _a;
         if (!payload.pull_request || !payload.repository) {
             throw Error('expected payload to contain pull request and repository');
         }
@@ -59,19 +59,7 @@ class CodeReviewChatAction extends Action_1.Action {
                 repo_url: payload.repository.html_url,
                 repo_full_name: (_a = payload.repository.full_name) !== null && _a !== void 0 ? _a : payload.repository.name,
                 // https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
-                pr: {
-                    number: payload.pull_request.number,
-                    body: payload.pull_request.body || '',
-                    additions: payload.pull_request.additions,
-                    deletions: payload.pull_request.deletions,
-                    changed_files: payload.pull_request.changed_files,
-                    url: payload.pull_request.html_url || '',
-                    owner: payload.pull_request.user.login,
-                    draft: payload.pull_request.draft || false,
-                    baseBranchName: (_b = payload.pull_request.base.ref) !== null && _b !== void 0 ? _b : '',
-                    headBranchName: (_c = payload.pull_request.head.ref) !== null && _c !== void 0 ? _c : '',
-                    title: payload.pull_request.title,
-                },
+                pr: (0, CodeReviewChat_1.createPRObject)(payload.pull_request),
             },
         }, payload.pull_request.number, external).run();
     }

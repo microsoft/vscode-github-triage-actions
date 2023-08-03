@@ -19,10 +19,7 @@ interface PR {
 	url: string;
 	owner: string;
 	draft: boolean;
-	/**
-	 * The branch you're merging into i.e main
-	 */
-	baseBranchName: string;
+	base: { ref: string };
 	/**
 	 * The branch the PR is created from i.e. feature/foo
 	 */
@@ -57,6 +54,23 @@ export interface Options {
 		repo_url: string | undefined;
 		pr: PR;
 	};
+}
+
+export function createPRObject(pullRequestFromApi: any): PR {
+	const pr = {
+		number: pullRequestFromApi.number,
+		body: pullRequestFromApi.body || '',
+		additions: pullRequestFromApi.additions,
+		deletions: pullRequestFromApi.deletions,
+		changed_files: pullRequestFromApi.changed_files,
+		url: pullRequestFromApi.html_url || '',
+		owner: pullRequestFromApi.user.login,
+		draft: pullRequestFromApi.draft || false,
+		base: pullRequestFromApi.base.ref ?? '',
+		headBranchName: pullRequestFromApi.head.ref ?? '',
+		title: pullRequestFromApi.title,
+	};
+	return pr;
 }
 
 class Chatter {
@@ -237,8 +251,9 @@ export class CodeReviewChat extends Chatter {
 				owner: this.options.payload.owner,
 				repo: this.options.payload.repo,
 			})
-		).data as unknown as PR;
-		if (prFromApi.draft) {
+		).data;
+		const pr = createPRObject(prFromApi);
+		if (pr.draft) {
 			safeLog('PR is draft, ignoring');
 			return;
 		}
@@ -252,14 +267,14 @@ export class CodeReviewChat extends Chatter {
 		}
 
 		// TODO @lramos15 possibly make this configurable
-		if (prFromApi.baseBranchName.startsWith('release')) {
+		if (pr.base.ref.startsWith('release')) {
 			safeLog('PR is on a release branch, ignoring');
 			return;
 		}
 
 		// This is an external PR which already received one review and is just awaiting a second
 		if (this._externalContributorPR) {
-			await this.postExternalPRMessage(prFromApi);
+			await this.postExternalPRMessage(pr);
 			return;
 		}
 
@@ -311,7 +326,7 @@ export class CodeReviewChat extends Chatter {
 					process.exit(0);
 				}
 
-				const message = this.getSlackMessage(prFromApi);
+				const message = this.getSlackMessage(pr);
 				safeLog(message);
 				await this.postMessage(message);
 			})(),
