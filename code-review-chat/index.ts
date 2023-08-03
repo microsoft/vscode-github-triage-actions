@@ -8,6 +8,7 @@ import { getRequiredInput, getInput, safeLog } from '../common/utils';
 import {
 	CodeReviewChat,
 	CodeReviewChatDeleter,
+	createPRObject,
 	getTeamMemberReviews,
 	meetsReviewThreshold,
 } from './CodeReviewChat';
@@ -87,19 +88,7 @@ class CodeReviewChatAction extends Action {
 					repo_url: payload.repository.html_url,
 					repo_full_name: payload.repository.full_name ?? payload.repository.name,
 					// https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
-					pr: {
-						number: payload.pull_request.number,
-						body: payload.pull_request.body || '',
-						additions: payload.pull_request.additions,
-						deletions: payload.pull_request.deletions,
-						changed_files: payload.pull_request.changed_files,
-						url: payload.pull_request.html_url || '',
-						owner: payload.pull_request.user.login,
-						draft: payload.pull_request.draft || false,
-						baseBranchName: payload.pull_request.base.ref ?? '',
-						headBranchName: payload.pull_request.head.ref ?? '',
-						title: payload.pull_request.title,
-					},
+					pr: createPRObject(payload.pull_request),
 				},
 			},
 			payload.pull_request.number,
