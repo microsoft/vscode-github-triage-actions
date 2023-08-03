@@ -19,7 +19,10 @@ interface PR {
 	url: string;
 	owner: string;
 	draft: boolean;
-	base: { ref: string };
+	/**
+	 * The branch you're merging into i.e main
+	 */
+	baseBranchName: string;
 	/**
 	 * The branch the PR is created from i.e. feature/foo
 	 */
@@ -66,7 +69,7 @@ export function createPRObject(pullRequestFromApi: any): PR {
 		url: pullRequestFromApi.html_url || '',
 		owner: pullRequestFromApi.user.login,
 		draft: pullRequestFromApi.draft || false,
-		base: pullRequestFromApi.base.ref ?? '',
+		baseBranchName: pullRequestFromApi.base.ref ?? '',
 		headBranchName: pullRequestFromApi.head.ref ?? '',
 		title: pullRequestFromApi.title,
 	};
@@ -267,7 +270,7 @@ export class CodeReviewChat extends Chatter {
 		}
 
 		// TODO @lramos15 possibly make this configurable
-		if (pr.base.ref.startsWith('release')) {
+		if (pr.baseBranchName.startsWith('release')) {
 			safeLog('PR is on a release branch, ignoring');
 			return;
 		}

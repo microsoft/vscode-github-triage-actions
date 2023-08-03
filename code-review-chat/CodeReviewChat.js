@@ -18,7 +18,7 @@ function createPRObject(pullRequestFromApi) {
         url: pullRequestFromApi.html_url || '',
         owner: pullRequestFromApi.user.login,
         draft: pullRequestFromApi.draft || false,
-        base: (_a = pullRequestFromApi.base.ref) !== null && _a !== void 0 ? _a : '',
+        baseBranchName: (_a = pullRequestFromApi.base.ref) !== null && _a !== void 0 ? _a : '',
         headBranchName: (_b = pullRequestFromApi.head.ref) !== null && _b !== void 0 ? _b : '',
         title: pullRequestFromApi.title,
     };
@@ -197,7 +197,7 @@ class CodeReviewChat extends Chatter {
             return;
         }
         // TODO @lramos15 possibly make this configurable
-        if (pr.base.ref.startsWith('release')) {
+        if (pr.baseBranchName.startsWith('release')) {
             (0, utils_1.safeLog)('PR is on a release branch, ignoring');
             return;
         }
