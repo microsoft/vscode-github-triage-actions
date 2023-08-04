@@ -249,41 +249,36 @@ class CodeReviewChat extends Chatter {
 }
 exports.CodeReviewChat = CodeReviewChat;
 async function getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner, ghIssue) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c;
     const reviews = await octokit.pulls.listReviews({
         pull_number: prNumber,
         owner,
         repo,
     });
+    // Get author of PR
+    const author = (await ghIssue.getIssue()).author.name;
+    // Get timestamp of last commit
+    const lastCommitTimestamp = (_c = (_b = (_a = (await octokit.pulls.listCommits({
+        pull_number: prNumber,
+        owner,
+        repo,
+    })).data[0]) === null || _a === void 0 ? void 0 : _a.commit) === null || _b === void 0 ? void 0 : _b.committer) === null || _c === void 0 ? void 0 : _c.date;
+    // Convert date string into unix timestamp
+    const lastCommitUnixTimestamp = lastCommitTimestamp ? new Date(lastCommitTimestamp).getTime() : 0;
     // Only take the latest review of each user
     const latestReviews = new Map();
     for (const review of reviews.data) {
         if (!review.user) {
             continue;
         }
-        const existingReview = latestReviews.get(review.user.login);
-        if (!existingReview ||
-            new Date((_a = review.submitted_at) !== null && _a !== void 0 ? _a : 0).getTime() > new Date(existingReview.submitted_at).getTime()) {
-            latestReviews.set(review.user.login, review);
-        }
-    }
-    // Get author of PR
-    const author = (await ghIssue.getIssue()).author.name;
-    // Get timestamp of last commit
-    const lastCommitTimestamp = (_d = (_c = (_b = (await octokit.pulls.listCommits({
-        pull_number: prNumber,
-        owner,
-        repo,
-    })).data[0]) === null || _b === void 0 ? void 0 : _b.commit) === null || _c === void 0 ? void 0 : _c.committer) === null || _d === void 0 ? void 0 : _d.date;
-    // Convert date string into unix timestamp
-    const lastCommitUnixTimestamp = lastCommitTimestamp ? new Date(lastCommitTimestamp).getTime() : 0;
-    // Get all reviews that are from team members, excluding the author
-    const teamMemberReviews = [];
-    for (const review of latestReviews.values()) {
-        if (!review.user) {
+        if (review.user.name === author || review.user.login === author) {
             continue;
         }
-        if (review.user.name === author || review.user.login === author) {
+        if (review.state === 'COMMENTED') {
+            continue;
+        }
+        const isTeamMember = teamMembers.has(review.user.login);
+        if (!isTeamMember) {
             continue;
         }
         const reviewTimestamp = review.submitted_at ? new Date(review.submitted_at).getTime() : 0;
@@ -291,12 +286,12 @@ async function getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner,
         if (reviewTimestamp < lastCommitUnixTimestamp) {
             continue;
         }
-        const isTeamMember = teamMembers.has(review.user.login);
-        if (isTeamMember) {
-            teamMemberReviews.push(review);
+        const existingReview = latestReviews.get(review.user.login);
+        if (!existingReview || reviewTimestamp > new Date(existingReview.submitted_at).getTime()) {
+            latestReviews.set(review.user.login, review);
         }
-        return teamMemberReviews;
     }
+    return Array.from(latestReviews.values());
 }
 exports.getTeamMemberReviews = getTeamMemberReviews;
 async function meetsReviewThreshold(octokit, teamMembers, prNumber, repo, owner, ghIssue) {

@@ -365,20 +365,6 @@ export async function getTeamMemberReviews(
 		owner,
 		repo,
 	});
-	// Only take the latest review of each user
-	const latestReviews = new Map();
-	for (const review of reviews.data) {
-		if (!review.user) {
-			continue;
-		}
-		const existingReview = latestReviews.get(review.user.login);
-		if (
-			!existingReview ||
-			new Date(review.submitted_at ?? 0).getTime() > new Date(existingReview.submitted_at).getTime()
-		) {
-			latestReviews.set(review.user.login, review);
-		}
-	}
 	// Get author of PR
 	const author = (await ghIssue.getIssue()).author.name;
 	// Get timestamp of last commit
@@ -389,15 +375,24 @@ export async function getTeamMemberReviews(
 			repo,
 		})
 	).data[0]?.commit?.committer?.date;
+
 	// Convert date string into unix timestamp
 	const lastCommitUnixTimestamp = lastCommitTimestamp ? new Date(lastCommitTimestamp).getTime() : 0;
-	// Get all reviews that are from team members, excluding the author
-	const teamMemberReviews = [];
-	for (const review of latestReviews.values()) {
+
+	// Only take the latest review of each user
+	const latestReviews = new Map();
+	for (const review of reviews.data) {
 		if (!review.user) {
 			continue;
 		}
 		if (review.user.name === author || review.user.login === author) {
+			continue;
+		}
+		if (review.state === 'COMMENTED') {
+			continue;
+		}
+		const isTeamMember = teamMembers.has(review.user.login);
+		if (!isTeamMember) {
 			continue;
 		}
 		const reviewTimestamp = review.submitted_at ? new Date(review.submitted_at).getTime() : 0;
@@ -405,12 +400,12 @@ export async function getTeamMemberReviews(
 		if (reviewTimestamp < lastCommitUnixTimestamp) {
 			continue;
 		}
-		const isTeamMember = teamMembers.has(review.user.login);
-		if (isTeamMember) {
-			teamMemberReviews.push(review);
+		const existingReview = latestReviews.get(review.user.login);
+		if (!existingReview || reviewTimestamp > new Date(existingReview.submitted_at).getTime()) {
+			latestReviews.set(review.user.login, review);
 		}
-		return teamMemberReviews;
 	}
+	return Array.from(latestReviews.values());
 }
 
 export async function meetsReviewThreshold(
