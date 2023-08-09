@@ -124,7 +124,7 @@ class CodeReviewChatAction extends Action {
 
 		// Check if the PR author is in the team
 		const author = payload.pull_request.user.login;
-		if (!teamMembers.has(author)) {
+		if (!teamMembers.has(author) && payload.pull_request.user?.type !== 'Bot') {
 			safeLog('PR author is not in the team, checking if they need to be posted for another review');
 			const teamMemberReviews = await getTeamMemberReviews(
 				github,

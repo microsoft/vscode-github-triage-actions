@@ -67,7 +67,7 @@ class CodeReviewChatAction extends Action_1.Action {
      * TODO @lramos15 Extend support possibly to the base action
      */
     async onSubmitReview(issue, payload) {
-        var _a;
+        var _a, _b;
         if (!payload.pull_request || !payload.repository) {
             throw Error('expected payload to contain pull request url');
         }
@@ -83,10 +83,10 @@ class CodeReviewChatAction extends Action_1.Action {
         // TODO @lramos15, possibly move more of this into CodeReviewChat.ts to keep index smal
         // Check if the PR author is in the team
         const author = payload.pull_request.user.login;
-        if (!teamMembers.has(author)) {
+        if (!teamMembers.has(author) && ((_a = payload.pull_request.user) === null || _a === void 0 ? void 0 : _a.type) !== 'Bot') {
             (0, utils_1.safeLog)('PR author is not in the team, checking if they need to be posted for another review');
             const teamMemberReviews = await (0, CodeReviewChat_1.getTeamMemberReviews)(github, teamMembers, payload.pull_request.number, payload.repository.name, payload.repository.owner.login, issue);
-            (0, utils_1.safeLog)(`Found ${(_a = teamMemberReviews === null || teamMemberReviews === void 0 ? void 0 : teamMemberReviews.length) !== null && _a !== void 0 ? _a : 0} reviews from team members`);
+            (0, utils_1.safeLog)(`Found ${(_b = teamMemberReviews === null || teamMemberReviews === void 0 ? void 0 : teamMemberReviews.length) !== null && _b !== void 0 ? _b : 0} reviews from team members`);
             // Get only the approving reviews from team members
             const approvingReviews = teamMemberReviews === null || teamMemberReviews === void 0 ? void 0 : teamMemberReviews.filter((review) => {
                 var _a;
