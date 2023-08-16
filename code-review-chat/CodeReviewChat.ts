@@ -276,12 +276,18 @@ export class CodeReviewChat extends Chatter {
 		}
 
 		// This is an external PR which already received one review and is just awaiting a second
+		const data = await this.issue.getIssue();
 		if (this._externalContributorPR) {
-			await this.postExternalPRMessage(pr);
+			const externalTasks = [];
+			const currentMilestone = await this.issue.getCurrentRepoMilestone();
+			if (!data.milestone && currentMilestone) {
+				externalTasks.push(this.issue.setMilestone(currentMilestone));
+			}
+			externalTasks.push(this.postExternalPRMessage(pr));
+			await Promise.all(externalTasks);
 			return;
 		}
 
-		const data = await this.issue.getIssue();
 		const teamMembers = new Set((await this.toolsAPI.getTeamMembers()).map((t) => t.id));
 		const author = data.author;
 		// Author must have write access to the repo or be a bot
