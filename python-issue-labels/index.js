@@ -58,16 +58,6 @@ class IssueLabels extends Action_1.Action {
             issue_number: github_1.context.issue.number,
             assignees: assigneesToRemove,
         });
-        const knownLabels = JSON.parse((0, utils_1.getRequiredInput)('repo_labels'));
-        for (const label of labels) {
-            if (!knownLabels.includes(label)) {
-                await github.rest.issues.deleteLabel({
-                    owner: github_1.context.repo.owner,
-                    repo: github_1.context.repo.repo,
-                    name: label,
-                });
-            }
-        }
     }
 }
 new IssueLabels().run(); // eslint-disable-line

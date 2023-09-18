@@ -68,16 +68,6 @@ class IssueLabels extends Action {
 			issue_number: context.issue.number,
 			assignees: assigneesToRemove,
 		});
-		const knownLabels = JSON.parse(getRequiredInput('repo_labels'));
-		for (const label of labels) {
-			if (!knownLabels.includes(label)) {
-				await github.rest.issues.deleteLabel({
-					owner: context.repo.owner,
-					repo: context.repo.repo,
-					name: label,
-				});
-			}
-		}
 	}
 }
 
