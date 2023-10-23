@@ -67,13 +67,27 @@ export class TestPlanItemValidator {
 					return;
 				}
 				const octokit = new Octokit({ auth: this.token });
-				for (const referencedIssueNum of testPlan.issueRefs) {
-					await octokit.issues.addLabels({
-						owner: this.github.repoOwner,
-						repo: this.github.repoName,
-						issue_number: referencedIssueNum,
-						labels: [this.refLabel],
-					});
+				for (const referencedIssue of testPlan.issueRefs) {
+					if (typeof referencedIssue === 'number') {
+						await octokit.issues.addLabels({
+							owner: this.github.repoOwner,
+							repo: this.github.repoName,
+							issue_number: referencedIssue,
+							labels: [this.refLabel],
+						});
+					} else {
+						// If referenced issue is a string, it's a gh url so we need to extract the owner, repo, and issue number
+						const urlParts = referencedIssue.split('/');
+						const owner = urlParts[3];
+						const repo = urlParts[4];
+						const issueNumber = parseInt(urlParts[6]);
+						await octokit.issues.addLabels({
+							owner,
+							repo,
+							issue_number: issueNumber,
+							labels: [this.refLabel],
+						});
+					}
 				}
 			}
 			const currentMilestone = issue.milestone;
