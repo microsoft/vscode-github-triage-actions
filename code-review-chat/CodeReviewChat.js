@@ -171,7 +171,7 @@ class CodeReviewChat extends Chatter {
         const repoMessage = this.options.payload.repo_full_name === 'microsoft/vscode'
             ? ':'
             : ` (in ${this.options.payload.repo_full_name}):`;
-        const githubUrl = pr.url;
+        const githubUrl = `${pr.url}/files`;
         const vscodeDevUrl = pr.url.replace('https://', 'https://insiders.vscode.dev/');
         const externalPrefix = this._externalContributorPR ? 'External PR: ' : '';
         const message = `${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;

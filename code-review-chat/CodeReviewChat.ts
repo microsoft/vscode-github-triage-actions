@@ -238,7 +238,7 @@ export class CodeReviewChat extends Chatter {
 				? ':'
 				: ` (in ${this.options.payload.repo_full_name}):`;
 
-		const githubUrl = pr.url;
+		const githubUrl = `${pr.url}/files`;
 		const vscodeDevUrl = pr.url.replace('https://', 'https://insiders.vscode.dev/');
 
 		const externalPrefix = this._externalContributorPR ? 'External PR: ' : '';
