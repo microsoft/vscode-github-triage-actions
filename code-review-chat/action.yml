@@ -12,7 +12,7 @@ inputs:
   slack_user_token:
     description: 'Elevated user token for actions requiring admin'
     required: false
-  notification_channel:
+  notification_channel_id:
     description: 'Which channel to send notifications to. Defaults to none.'
     required: true
   slack_bot_name:

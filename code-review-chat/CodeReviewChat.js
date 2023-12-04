@@ -26,23 +26,21 @@ function createPRObject(pullRequestFromApi) {
 }
 exports.createPRObject = createPRObject;
 class Chatter {
-    constructor(slackToken, notificationChannel) {
+    constructor(slackToken, notificationChannelID) {
         this.slackToken = slackToken;
-        this.notificationChannel = notificationChannel;
+        this.notificationChannelID = notificationChannelID;
     }
     async getChat() {
         const web = new web_api_1.WebClient(this.slackToken);
-        const memberships = await listAllMemberships(web);
-        const codereviewChannel = this.notificationChannel && memberships.find((m) => m.name === this.notificationChannel);
-        if (!codereviewChannel) {
-            throw Error(`Slack channel not found: ${this.notificationChannel}`);
+        if (!this.notificationChannelID) {
+            throw Error(`Slack channel not provided: ${this.notificationChannelID}`);
         }
-        return { client: web, channel: codereviewChannel.id };
+        return { client: web, channel: this.notificationChannelID };
     }
 }
 class CodeReviewChatDeleter extends Chatter {
-    constructor(slackToken, slackElevatedUserToken, notificationChannel, prUrl) {
-        super(slackToken, notificationChannel);
+    constructor(slackToken, slackElevatedUserToken, notificationChannelId, prUrl) {
+        super(slackToken, notificationChannelId);
         this.prUrl = prUrl;
         this.elevatedClient = slackElevatedUserToken ? new web_api_1.WebClient(slackElevatedUserToken) : undefined;
     }
@@ -133,7 +131,7 @@ class CodeReviewChatDeleter extends Chatter {
 exports.CodeReviewChatDeleter = CodeReviewChatDeleter;
 class CodeReviewChat extends Chatter {
     constructor(octokit, toolsAPI, issue, options, pullRequestNumber, _externalContributorPR) {
-        super(options.slackToken, options.codereviewChannel);
+        super(options.slackToken, options.codereviewChannelId);
         this.octokit = octokit;
         this.toolsAPI = toolsAPI;
         this.issue = issue;
@@ -321,24 +319,4 @@ async function meetsReviewThreshold(octokit, teamMembers, prNumber, repo, owner,
     return meetsReviewThreshold;
 }
 exports.meetsReviewThreshold = meetsReviewThreshold;
-async function listAllMemberships(web) {
-    var _a, _b;
-    let groups;
-    const channels = [];
-    do {
-        try {
-            groups = (await web.conversations.list({
-                types: 'public_channel,private_channel',
-                cursor: (_a = groups === null || groups === void 0 ? void 0 : groups.response_metadata) === null || _a === void 0 ? void 0 : _a.next_cursor,
-                limit: 100,
-            }));
-            channels.push(...groups.channels);
-        }
-        catch (err) {
-            (0, utils_1.safeLog)(`Error listing channels: ${err}`);
-            groups = undefined;
-        }
-    } while ((_b = groups === null || groups === void 0 ? void 0 : groups.response_metadata) === null || _b === void 0 ? void 0 : _b.next_cursor);
-    return channels.filter((c) => c.is_member);
-}
 //# sourceMappingURL=CodeReviewChat.js.map

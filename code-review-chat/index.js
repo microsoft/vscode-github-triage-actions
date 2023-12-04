@@ -13,7 +13,7 @@ const vscodeTools_1 = require("../api/vscodeTools");
 const slackToken = (0, utils_1.getRequiredInput)('slack_token');
 const elevatedUserToken = (0, utils_1.getInput)('slack_user_token');
 const auth = (0, utils_1.getRequiredInput)('token');
-const channel = (0, utils_1.getRequiredInput)('notification_channel');
+const channelId = (0, utils_1.getRequiredInput)('notification_channel_id');
 const apiConfig = {
     tenantId: (0, utils_1.getRequiredInput)('tenantId'),
     clientId: (0, utils_1.getRequiredInput)('clientId'),
@@ -29,7 +29,7 @@ class CodeReviewChatAction extends Action_1.Action {
         if (!payload.pull_request || !payload.repository || !payload.pull_request.html_url) {
             throw Error('expected payload to contain pull request url');
         }
-        await new CodeReviewChat_1.CodeReviewChatDeleter(slackToken, elevatedUserToken, channel, payload.pull_request.html_url).run();
+        await new CodeReviewChat_1.CodeReviewChatDeleter(slackToken, elevatedUserToken, channelId, payload.pull_request.html_url).run();
     }
     async onClosed(_issue, payload) {
         await this.closedOrDraftHandler(_issue, payload);
@@ -52,7 +52,7 @@ class CodeReviewChatAction extends Action_1.Action {
         }
         return new CodeReviewChat_1.CodeReviewChat(github, new vscodeTools_1.VSCodeToolsAPIManager(apiConfig), issue, {
             slackToken,
-            codereviewChannel: channel,
+            codereviewChannelId: channelId,
             payload: {
                 owner: payload.repository.owner.login,
                 repo: payload.repository.name,

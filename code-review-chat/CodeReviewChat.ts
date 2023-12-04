@@ -49,7 +49,7 @@ interface SlackMessage {
 
 export interface Options {
 	slackToken: string;
-	codereviewChannel: string;
+	codereviewChannelId: string;
 	payload: {
 		owner: string;
 		repo: string;
@@ -77,19 +77,15 @@ export function createPRObject(pullRequestFromApi: any): PR {
 }
 
 class Chatter {
-	constructor(protected slackToken: string, protected notificationChannel: string) {}
+	constructor(protected slackToken: string, protected notificationChannelID: string) {}
 
 	async getChat(): Promise<{ client: WebClient; channel: string }> {
 		const web = new WebClient(this.slackToken);
-		const memberships = await listAllMemberships(web);
 
-		const codereviewChannel =
-			this.notificationChannel && memberships.find((m) => m.name === this.notificationChannel);
-
-		if (!codereviewChannel) {
-			throw Error(`Slack channel not found: ${this.notificationChannel}`);
+		if (!this.notificationChannelID) {
+			throw Error(`Slack channel not provided: ${this.notificationChannelID}`);
 		}
-		return { client: web, channel: codereviewChannel.id };
+		return { client: web, channel: this.notificationChannelID };
 	}
 }
 
@@ -98,10 +94,10 @@ export class CodeReviewChatDeleter extends Chatter {
 	constructor(
 		slackToken: string,
 		slackElevatedUserToken: string | undefined,
-		notificationChannel: string,
+		notificationChannelId: string,
 		private prUrl: string,
 	) {
-		super(slackToken, notificationChannel);
+		super(slackToken, notificationChannelId);
 		this.elevatedClient = slackElevatedUserToken ? new WebClient(slackElevatedUserToken) : undefined;
 	}
 
@@ -200,7 +196,7 @@ export class CodeReviewChat extends Chatter {
 		private readonly pullRequestNumber: number,
 		private readonly _externalContributorPR?: boolean,
 	) {
-		super(options.slackToken, options.codereviewChannel);
+		super(options.slackToken, options.codereviewChannelId);
 	}
 
 	private async postMessage(message: string) {
@@ -345,19 +341,6 @@ export class CodeReviewChat extends Chatter {
 	}
 }
 
-interface Channel {
-	id: string;
-	name: string;
-	is_member: boolean;
-}
-
-interface ConversationsList {
-	channels: Channel[];
-	response_metadata?: {
-		next_cursor?: string;
-	};
-}
-
 export async function getTeamMemberReviews(
 	octokit: Octokit,
 	teamMembers: Set<string>,
@@ -446,23 +429,4 @@ export async function meetsReviewThreshold(
 		safeLog(`Met review threshold: ${reviewerNames.join(', ')}`);
 	}
 	return meetsReviewThreshold;
-}
-
-async function listAllMemberships(web: WebClient) {
-	let groups: ConversationsList | undefined;
-	const channels: Channel[] = [];
-	do {
-		try {
-			groups = (await web.conversations.list({
-				types: 'public_channel,private_channel',
-				cursor: groups?.response_metadata?.next_cursor,
-				limit: 100,
-			})) as unknown as ConversationsList;
-			channels.push(...groups.channels);
-		} catch (err) {
-			safeLog(`Error listing channels: ${err}`);
-			groups = undefined;
-		}
-	} while (groups?.response_metadata?.next_cursor);
-	return channels.filter((c) => c.is_member);
 }
