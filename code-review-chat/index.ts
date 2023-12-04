@@ -20,7 +20,7 @@ import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 const slackToken = getRequiredInput('slack_token');
 const elevatedUserToken = getInput('slack_user_token');
 const auth = getRequiredInput('token');
-const channel = getRequiredInput('notification_channel');
+const channelId = getRequiredInput('notification_channel_id');
 const apiConfig = {
 	tenantId: getRequiredInput('tenantId'),
 	clientId: getRequiredInput('clientId'),
@@ -38,7 +38,7 @@ class CodeReviewChatAction extends Action {
 		await new CodeReviewChatDeleter(
 			slackToken,
 			elevatedUserToken,
-			channel,
+			channelId,
 			payload.pull_request.html_url,
 		).run();
 	}
@@ -81,7 +81,7 @@ class CodeReviewChatAction extends Action {
 			issue,
 			{
 				slackToken,
-				codereviewChannel: channel,
+				codereviewChannelId: channelId,
 				payload: {
 					owner: payload.repository.owner.login,
 					repo: payload.repository.name,
