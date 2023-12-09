@@ -19,6 +19,7 @@ class LockerAction extends Action {
 			getInput('ignoredLabel') || undefined,
 			getInput('ignoreLabelUntil') || undefined,
 			getInput('labelUntil') || undefined,
+			getInput('typeIs') || undefined,
 		).run();
 	}
 }

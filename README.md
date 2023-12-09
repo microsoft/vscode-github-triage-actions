@@ -308,7 +308,7 @@ inputs:
 ```
 
 ### Locker
-Lock issues and PRs that have been closed and not updated for some time.
+Lock issues and/or PRs that have been closed and not updated for some time.
 
 ```yml
 inputs:
@@ -327,6 +327,8 @@ inputs:
     description: items with this label will not be automatically locked, until they also have the until label
   labelUntil:
     description: items with this will not automatically locked, even if they have the ignoreLabelUntil label
+  typeIs:
+    description: either 'issue' or 'pr' to limit the query to only those types
 ```
 
 ### Needs More Info Closer

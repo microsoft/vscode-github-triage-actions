@@ -7,25 +7,30 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Locker = void 0;
 const utils_1 = require("../common/utils");
 class Locker {
-    constructor(github, daysSinceClose, daysSinceUpdate, label, ignoreLabelUntil, labelUntil) {
+    constructor(github, daysSinceClose, daysSinceUpdate, label, ignoreLabelUntil, labelUntil, typeIs) {
         this.github = github;
         this.daysSinceClose = daysSinceClose;
         this.daysSinceUpdate = daysSinceUpdate;
         this.label = label;
         this.ignoreLabelUntil = ignoreLabelUntil;
         this.labelUntil = labelUntil;
+        this.typeIs = typeIs;
     }
     async run() {
         const closedTimestamp = (0, utils_1.daysAgoToHumanReadbleDate)(this.daysSinceClose);
         const updatedTimestamp = (0, utils_1.daysAgoToHumanReadbleDate)(this.daysSinceUpdate);
         const query = `closed:<${closedTimestamp} updated:<${updatedTimestamp} is:unlocked` +
-            (this.label ? ` -label:${this.label}` : '');
+            (this.label ? ` -label:${this.label}` : '') +
+            (this.typeIs ? ` is:${this.typeIs}` : '');
         for await (const page of this.github.query({ q: query })) {
             await Promise.all(page.map(async (issue) => {
                 const hydrated = await issue.getIssue();
                 if (!hydrated.locked &&
                     hydrated.open === false &&
-                    (!this.label || !hydrated.labels.includes(this.label))
+                    (!this.label || !hydrated.labels.includes(this.label)) &&
+                    (!this.typeIs ||
+                        (this.typeIs == 'issue' && !hydrated.isPr) ||
+                        (this.typeIs == 'pr' && hydrated.isPr))
                 // TODO: Verify closed and updated timestamps
                 ) {
                     const skipDueToIgnoreLabel = this.ignoreLabelUntil &&

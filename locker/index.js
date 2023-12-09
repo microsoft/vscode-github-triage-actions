@@ -13,7 +13,7 @@ class LockerAction extends Action_1.Action {
         this.id = 'Locker';
     }
     async onTriggered(github) {
-        await new Locker_1.Locker(github, +(0, utils_1.getRequiredInput)('daysSinceClose'), +(0, utils_1.getRequiredInput)('daysSinceUpdate'), (0, utils_1.getInput)('ignoredLabel') || undefined, (0, utils_1.getInput)('ignoreLabelUntil') || undefined, (0, utils_1.getInput)('labelUntil') || undefined).run();
+        await new Locker_1.Locker(github, +(0, utils_1.getRequiredInput)('daysSinceClose'), +(0, utils_1.getRequiredInput)('daysSinceUpdate'), (0, utils_1.getInput)('ignoredLabel') || undefined, (0, utils_1.getInput)('ignoreLabelUntil') || undefined, (0, utils_1.getInput)('labelUntil') || undefined, (0, utils_1.getInput)('typeIs') || undefined).run();
     }
 }
 new LockerAction().run(); // eslint-disable-line

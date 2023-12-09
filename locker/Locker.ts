@@ -14,6 +14,7 @@ export class Locker {
 		private label?: string,
 		private ignoreLabelUntil?: string,
 		private labelUntil?: string,
+		private typeIs?: string,
 	) {}
 
 	async run() {
@@ -22,7 +23,8 @@ export class Locker {
 
 		const query =
 			`closed:<${closedTimestamp} updated:<${updatedTimestamp} is:unlocked` +
-			(this.label ? ` -label:${this.label}` : '');
+			(this.label ? ` -label:${this.label}` : '') +
+			(this.typeIs ? ` is:${this.typeIs}` : '');
 
 		for await (const page of this.github.query({ q: query })) {
 			await Promise.all(
@@ -32,7 +34,10 @@ export class Locker {
 					if (
 						!hydrated.locked &&
 						hydrated.open === false &&
-						(!this.label || !hydrated.labels.includes(this.label))
+						(!this.label || !hydrated.labels.includes(this.label)) &&
+						(!this.typeIs ||
+							(this.typeIs == 'issue' && !hydrated.isPr) ||
+							(this.typeIs == 'pr' && hydrated.isPr))
 						// TODO: Verify closed and updated timestamps
 					) {
 						const skipDueToIgnoreLabel =
