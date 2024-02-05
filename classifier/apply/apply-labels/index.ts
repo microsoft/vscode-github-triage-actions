@@ -11,7 +11,6 @@ import { getRequiredInput, getInput, safeLog } from '../../../common/utils';
 import { Action } from '../../../common/Action';
 
 const token = getRequiredInput('token');
-const allowLabels = (getInput('allowLabels') || '').split('|');
 const debug = !!getInput('__debug');
 
 type ClassifierConfig = {
@@ -35,11 +34,9 @@ class ApplyLabels extends Action {
 		for (const labeling of labelings) {
 			const issue = new OctoKitIssue(token, context.repo, { number: labeling.number });
 			const issueData = await issue.getIssue();
-			if (
-				!debug &&
-				(issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))
-			) {
-				safeLog('skipping');
+
+			if (!debug && issueData.assignee) {
+				safeLog('skipping, already assigned');
 				continue;
 			}
 

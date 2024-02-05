@@ -11,7 +11,6 @@ const octokit_1 = require("../../../api/octokit");
 const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
 const token = (0, utils_1.getRequiredInput)('token');
-const allowLabels = ((0, utils_1.getInput)('allowLabels') || '').split('|');
 const debug = !!(0, utils_1.getInput)('__debug');
 class ApplyLabels extends Action_1.Action {
     constructor() {
@@ -25,9 +24,8 @@ class ApplyLabels extends Action_1.Action {
         for (const labeling of labelings) {
             const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
             const issueData = await issue.getIssue();
-            if (!debug &&
-                (issueData.assignee || issueData.labels.some((label) => !allowLabels.includes(label)))) {
-                (0, utils_1.safeLog)('skipping');
+            if (!debug && issueData.assignee) {
+                (0, utils_1.safeLog)('skipping, already assigned');
                 continue;
             }
             const assignee = labeling.assignee;

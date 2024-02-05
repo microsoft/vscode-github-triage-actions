@@ -6,7 +6,7 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { OctoKit } from '../../../api/octokit';
-import { getRequiredInput, daysAgoToHumanReadbleDate, normalizeIssue } from '../../../common/utils';
+import { getRequiredInput, daysAgoToHumanReadbleDate, normalizeIssue, safeLog } from '../../../common/utils';
 import { downloadBlobFile } from '../../blobStorage';
 import { Action } from '../../../common/Action';
 
@@ -22,6 +22,8 @@ class FetchIssues extends Action {
 
 	async onTriggered(github: OctoKit) {
 		const query = `created:>${from} updated:<${until} is:open`;
+
+		safeLog(`Querying for issues: ${query}`);
 
 		const data: { number: number; contents: string }[] = [];
 		for await (const page of github.query({ q: query })) {
