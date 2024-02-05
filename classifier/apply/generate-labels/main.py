@@ -58,23 +58,26 @@ def predict(text_clf, target_names, text, min_prob, ignore_labels):
     ]
 
 
-def main():
+def main(debug=False):
     results = []
     with open(os.path.join(BASE_PATH, "issue_data.json")) as f:
         issue_data = json.load(f)
         for issue in issue_data:
-            results.append(
-                {
-                    "number": issue["number"],
-                    "area": get_classification(issue["contents"], loadClassifier("area")),
-                    "assignee": get_classification(issue["contents"], loadClassifier("assignee")),
-                    "contents": issue["contents"],
-                }
-            )
+            result = {
+                "number": issue["number"],
+                "area": get_classification(issue["contents"], loadClassifier("area")),
+                "assignee": get_classification(issue["contents"], loadClassifier("assignee")),
+                "contents": issue["contents"],
+            }
+            results.append(result)
+            if (debug):
+                # Print issue number, area, and assignee from the results
+                print("Issue number: ", result["number"], "Area: ", result["area"], "Assignee: ", result["assignee"])
 
     with open(os.path.join(BASE_PATH, "issue_labels.json"), "w") as f:
         json.dump(results, f)
 
 
 if __name__ == "__main__":
-    main()
+    debug = '--debug' in sys.argv
+    main(debug=debug)
