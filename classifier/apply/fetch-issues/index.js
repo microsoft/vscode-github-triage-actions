@@ -21,6 +21,7 @@ class FetchIssues extends Action_1.Action {
     }
     async onTriggered(github) {
         const query = `created:>${from} updated:<${until} is:open`;
+        (0, utils_1.safeLog)(`Querying for issues: ${query}`);
         const data = [];
         for await (const page of github.query({ q: query })) {
             for (const issue of page) {
