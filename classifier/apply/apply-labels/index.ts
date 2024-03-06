@@ -17,7 +17,7 @@ type ClassifierConfig = {
 	labels?: {
 		[area: string]: { applyLabel?: boolean; comment?: string; assign?: [string] };
 	};
-	randomAssignment: boolean;
+	randomAssignment?: boolean;
 	assignees?: {
 		[assignee: string]: { assign: boolean; comment?: string };
 	};
@@ -60,8 +60,7 @@ class ApplyLabels extends Action {
 					assigneeConfig?.assign ? !debug && issue.addAssignee(assignee) : Promise.resolve(),
 					assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
 				]);
-			}
-			else if (config.randomAssignment && config.labels) {
+			} else if (config.randomAssignment && config.labels) {
 				safeLog('could not find assignee, picking a random one...');
 				const available = Object.keys(config.labels).reduce((acc, area) => {
 					const areaConfig = config.labels![area];
@@ -106,7 +105,7 @@ class ApplyLabels extends Action {
 					safeLog('error assigning random: no assigness found');
 				}
 			}
-			
+
 			const label = labeling.area;
 			if (label) {
 				safeLog(`adding label ${label} to issue ${issueData.number}`);
