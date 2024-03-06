@@ -6,6 +6,10 @@
 		"$schema": {
 			"type": "string"
 		},
+		"randomAssignment": {
+			"description": "Enables random assignment of issues to team members",
+			"type": "boolean"
+		},
 		"labels": {
 			"additionalProperties": {
 				"type": "object",

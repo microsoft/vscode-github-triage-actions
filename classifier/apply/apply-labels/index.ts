@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { context } from '@actions/github';
 import { OctoKit, OctoKitIssue } from '../../../api/octokit';
-import { getRequiredInput, getInput, safeLog } from '../../../common/utils';
+import { getRequiredInput, getInput, safeLog, daysAgoToHumanReadbleDate } from '../../../common/utils';
 import { Action } from '../../../common/Action';
 
 const token = getRequiredInput('token');
@@ -17,6 +17,7 @@ type ClassifierConfig = {
 	labels?: {
 		[area: string]: { applyLabel?: boolean; comment?: string; assign?: [string] };
 	};
+	randomAssignment: boolean;
 	assignees?: {
 		[assignee: string]: { assign: boolean; comment?: string };
 	};
@@ -60,7 +61,52 @@ class ApplyLabels extends Action {
 					assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
 				]);
 			}
+			else if (config.randomAssignment && config.labels) {
+				safeLog('could not find assignee, picking a random one...');
+				const available = Object.keys(config.labels).reduce((acc, area) => {
+					const areaConfig = config.labels![area];
+					if (areaConfig.assign) {
+						acc.push(...areaConfig.assign);
+					}
+					return acc;
+				}, [] as string[]);
+				if (available) {
+					// Shuffle the array
+					for (let i = available.length - 1; i > 0; i--) {
+						const j = Math.floor(Math.random() * (i + 1));
+						[available[i], available[j]] = [available[j], available[i]];
+					}
+					if (!debug) {
+						const issue = new OctoKitIssue(token, context.repo, { number: labeling.number });
 
+						await issue.addLabel('triage-needed');
+						let i = 0;
+						const randomSelection = available[i];
+						safeLog('assigning', randomSelection);
+						await issue.addAssignee(randomSelection);
+						const staleIssues = github.query({
+							q: `is:issue is:open label:triage-needed -label:stale -label:info-needed updated:<${daysAgoToHumanReadbleDate(
+								7,
+							)}`,
+						});
+						// Loop through assigning new people to issues which are over a week old and not triaged
+						for await (const page of staleIssues) {
+							for (const issue of page) {
+								i += 1;
+								if (i >= available.length) {
+									i = 0;
+								}
+								safeLog('assigning to stale issue', available[i]);
+								await issue.addAssignee(available[i]);
+								await issue.addLabel('stale');
+							}
+						}
+					}
+				} else {
+					safeLog('error assigning random: no assigness found');
+				}
+			}
+			
 			const label = labeling.area;
 			if (label) {
 				safeLog(`adding label ${label} to issue ${issueData.number}`);
