@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { context } from '@actions/github';
 import { OctoKit, OctoKitIssue } from '../../../api/octokit';
-import { getRequiredInput, getInput, safeLog, daysAgoToHumanReadbleDate } from '../../../common/utils';
+import { getRequiredInput, getInput, safeLog } from '../../../common/utils';
 import { Action } from '../../../common/Action';
 
 const token = getRequiredInput('token');
@@ -54,17 +54,23 @@ class ApplyLabels extends Action {
 				}
 
 				const assigneeConfig = config.assignees?.[assignee];
-				safeLog(JSON.stringify({ assigneeConfig }));
+				if (assigneeConfig) {
+					safeLog(JSON.stringify({ assigneeConfig }));
 
-				await Promise.all<any>([
-					assigneeConfig?.assign ? !debug && issue.addAssignee(assignee) : Promise.resolve(),
-					assigneeConfig?.comment ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
-				]);
+					await Promise.all<any>([
+						assigneeConfig?.assign ? !debug && issue.addAssignee(assignee) : Promise.resolve(),
+						assigneeConfig?.comment
+							? issue.postComment(assigneeConfig.comment)
+							: Promise.resolve(),
+					]);
+				} else if (!debug) {
+					await issue.addAssignee(assignee);
+				}
 			} else if (config.randomAssignment && config.labels) {
 				safeLog('could not find assignee, picking a random one...');
 				const available = Object.keys(config.labels).reduce((acc, area) => {
-					const areaConfig = config.labels![area];
-					if (areaConfig.assign) {
+					const areaConfig = config.labels?.[area];
+					if (areaConfig?.assign) {
 						acc.push(...areaConfig.assign);
 					}
 					return acc;
@@ -79,27 +85,9 @@ class ApplyLabels extends Action {
 						const issue = new OctoKitIssue(token, context.repo, { number: labeling.number });
 
 						await issue.addLabel('triage-needed');
-						let i = 0;
-						const randomSelection = available[i];
+						const randomSelection = available[0];
 						safeLog('assigning', randomSelection);
 						await issue.addAssignee(randomSelection);
-						const staleIssues = github.query({
-							q: `is:issue is:open label:triage-needed -label:stale -label:info-needed updated:<${daysAgoToHumanReadbleDate(
-								7,
-							)}`,
-						});
-						// Loop through assigning new people to issues which are over a week old and not triaged
-						for await (const page of staleIssues) {
-							for (const issue of page) {
-								i += 1;
-								if (i >= available.length) {
-									i = 0;
-								}
-								safeLog('assigning to stale issue', available[i]);
-								await issue.addAssignee(available[i]);
-								await issue.addLabel('stale');
-							}
-						}
 					}
 				} else {
 					safeLog('error assigning random: no assigness found');
