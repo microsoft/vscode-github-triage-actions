@@ -25,12 +25,12 @@ class ApplyLabels extends Action_1.Action {
             const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
             const issueData = await issue.getIssue();
             if (!debug && issueData.assignee) {
-                (0, utils_1.safeLog)('skipping, already assigned');
+                (0, utils_1.safeLog)('skipping, already assigned to: ', issueData.assignee);
                 continue;
             }
             const assignee = labeling.assignee;
             if (assignee) {
-                (0, utils_1.safeLog)('has assignee');
+                (0, utils_1.safeLog)('has assignee:', assignee);
                 if (debug) {
                     if (!(await github.repoHasLabel(assignee))) {
                         (0, utils_1.safeLog)(`creating assignee label`);

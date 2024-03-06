@@ -37,13 +37,13 @@ class ApplyLabels extends Action {
 			const issueData = await issue.getIssue();
 
 			if (!debug && issueData.assignee) {
-				safeLog('skipping, already assigned');
+				safeLog('skipping, already assigned to: ', issueData.assignee);
 				continue;
 			}
 
 			const assignee = labeling.assignee;
 			if (assignee) {
-				safeLog('has assignee');
+				safeLog('has assignee:', assignee);
 
 				if (debug) {
 					if (!(await github.repoHasLabel(assignee))) {
