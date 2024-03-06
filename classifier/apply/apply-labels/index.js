@@ -39,17 +39,25 @@ class ApplyLabels extends Action_1.Action {
                     await issue.addLabel(assignee);
                 }
                 const assigneeConfig = (_a = config.assignees) === null || _a === void 0 ? void 0 : _a[assignee];
-                (0, utils_1.safeLog)(JSON.stringify({ assigneeConfig }));
-                await Promise.all([
-                    (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) ? !debug && issue.addAssignee(assignee) : Promise.resolve(),
-                    (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment) ? issue.postComment(assigneeConfig.comment) : Promise.resolve(),
-                ]);
+                if (assigneeConfig) {
+                    (0, utils_1.safeLog)(JSON.stringify({ assigneeConfig }));
+                    await Promise.all([
+                        (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.assign) ? !debug && issue.addAssignee(assignee) : Promise.resolve(),
+                        (assigneeConfig === null || assigneeConfig === void 0 ? void 0 : assigneeConfig.comment)
+                            ? issue.postComment(assigneeConfig.comment)
+                            : Promise.resolve(),
+                    ]);
+                }
+                else if (!debug) {
+                    await issue.addAssignee(assignee);
+                }
             }
             else if (config.randomAssignment && config.labels) {
                 (0, utils_1.safeLog)('could not find assignee, picking a random one...');
                 const available = Object.keys(config.labels).reduce((acc, area) => {
-                    const areaConfig = config.labels[area];
-                    if (areaConfig.assign) {
+                    var _a;
+                    const areaConfig = (_a = config.labels) === null || _a === void 0 ? void 0 : _a[area];
+                    if (areaConfig === null || areaConfig === void 0 ? void 0 : areaConfig.assign) {
                         acc.push(...areaConfig.assign);
                     }
                     return acc;
@@ -63,25 +71,9 @@ class ApplyLabels extends Action_1.Action {
                     if (!debug) {
                         const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
                         await issue.addLabel('triage-needed');
-                        let i = 0;
-                        const randomSelection = available[i];
+                        const randomSelection = available[0];
                         (0, utils_1.safeLog)('assigning', randomSelection);
                         await issue.addAssignee(randomSelection);
-                        const staleIssues = github.query({
-                            q: `is:issue is:open label:triage-needed -label:stale -label:info-needed updated:<${(0, utils_1.daysAgoToHumanReadbleDate)(7)}`,
-                        });
-                        // Loop through assigning new people to issues which are over a week old and not triaged
-                        for await (const page of staleIssues) {
-                            for (const issue of page) {
-                                i += 1;
-                                if (i >= available.length) {
-                                    i = 0;
-                                }
-                                (0, utils_1.safeLog)('assigning to stale issue', available[i]);
-                                await issue.addAssignee(available[i]);
-                                await issue.addLabel('stale');
-                            }
-                        }
                     }
                 }
                 else {
