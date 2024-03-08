@@ -21,7 +21,7 @@ class FetchIssues extends Action {
 	id = 'Clasifier/Apply/FetchIssues';
 
 	async onTriggered(github: OctoKit) {
-		const query = `created:>${from} updated:<${until} is:open`;
+		const query = `created:>${from} updated:<${until} is:open type:issue`;
 
 		safeLog(`Querying for issues: ${query}`);
 
