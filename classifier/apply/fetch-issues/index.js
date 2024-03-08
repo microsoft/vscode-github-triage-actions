@@ -20,7 +20,7 @@ class FetchIssues extends Action_1.Action {
         this.id = 'Clasifier/Apply/FetchIssues';
     }
     async onTriggered(github) {
-        const query = `created:>${from} updated:<${until} is:open`;
+        const query = `created:>${from} updated:<${until} is:open type:issue`;
         (0, utils_1.safeLog)(`Querying for issues: ${query}`);
         const data = [];
         for await (const page of github.query({ q: query })) {
