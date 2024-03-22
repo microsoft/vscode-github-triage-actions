@@ -1,13 +1,14 @@
 import { ServiceClient } from '@azure/core-http';
-import { ClientSecretCredential } from '@azure/identity';
+import { AzureCliCredential } from '@azure/identity';
 import { TRIAGE_DUTY, type ITeamMember, Availability } from './vscodeToolsTypes';
 
 const API_URL = 'https://tools.code.visualstudio.com/api';
 
 export class VSCodeToolsAPIManager {
 	private readonly serviceClient: ServiceClient;
-	constructor(config: { tenantId: string; clientId: string; clientSecret: string; clientScope: string }) {
-		const credential = new ClientSecretCredential(config.tenantId, config.clientId, config.clientSecret);
+
+	constructor(config: { clientScope: string }) {
+		const credential = new AzureCliCredential();
 		this.serviceClient = new ServiceClient(credential, { credentialScopes: [config.clientScope] });
 	}
 

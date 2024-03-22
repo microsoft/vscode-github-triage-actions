@@ -7,7 +7,7 @@ const vscodeToolsTypes_1 = require("./vscodeToolsTypes");
 const API_URL = 'https://tools.code.visualstudio.com/api';
 class VSCodeToolsAPIManager {
     constructor(config) {
-        const credential = new identity_1.ClientSecretCredential(config.tenantId, config.clientId, config.clientSecret);
+        const credential = new identity_1.AzureCliCredential();
         this.serviceClient = new core_http_1.ServiceClient(credential, { credentialScopes: [config.clientScope] });
     }
     async getTeamMembers() {
