@@ -13,6 +13,9 @@ const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
 const vscodeTools_1 = require("../../../api/vscodeTools");
 const token = (0, utils_1.getRequiredInput)('token');
+const apiConfig = {
+    clientScope: (0, utils_1.getRequiredInput)('clientScope'),
+};
 const allowLabels = ((0, utils_1.getInput)('allowLabels') || '').split('|');
 const debug = !!(0, utils_1.getInput)('__debug');
 // Do not modify.
@@ -31,6 +34,10 @@ class ApplyLabels extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a;
+        const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager(apiConfig);
+        const members = await vscodeToolsAPI.getTeamMembers();
+        (0, utils_1.safeLog)('members: ', JSON.stringify(members.map((m) => m.id)));
+        (0, utils_1.safeLog)('scope: ', apiConfig.clientScope);
         const config = await github.readConfig((0, utils_1.getRequiredInput)('configPath'));
         const labelings = JSON.parse((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
         for (const labeling of labelings) {
@@ -115,7 +122,7 @@ class ApplyLabels extends Action_1.Action {
             if (!performedAssignment) {
                 (0, utils_1.safeLog)('could not find assignee, picking a random one...');
                 try {
-                    const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager();
+                    const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager(apiConfig);
                     const triagers = await vscodeToolsAPI.getTriagerGitHubIds();
                     (0, utils_1.safeLog)('Acquired list of available triagers');
                     const available = triagers;
