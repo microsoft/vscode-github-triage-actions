@@ -9,6 +9,7 @@ class VSCodeToolsAPIManager {
     constructor(config) {
         const credential = new identity_1.AzureCliCredential();
         console.log('I DONT EVEN', { credentialScopes: [config.clientScope] });
+        console.log('I DONT EVEN b64', Buffer.from(config.clientScope).toString('base64'));
         this.serviceClient = new core_http_1.ServiceClient(credential, { credentialScopes: [config.clientScope] });
     }
     async getTeamMembers() {

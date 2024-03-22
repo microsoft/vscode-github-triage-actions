@@ -10,6 +10,7 @@ export class VSCodeToolsAPIManager {
 	constructor(config: { clientScope: string }) {
 		const credential = new AzureCliCredential();
 		console.log('I DONT EVEN', { credentialScopes: [config.clientScope] });
+		console.log('I DONT EVEN b64', Buffer.from(config.clientScope).toString('base64'));
 		this.serviceClient = new ServiceClient(credential, { credentialScopes: [config.clientScope] });
 	}
 
