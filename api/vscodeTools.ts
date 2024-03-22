@@ -4,13 +4,19 @@ import { TRIAGE_DUTY, type ITeamMember, Availability } from './vscodeToolsTypes'
 
 const API_URL = 'https://tools.code.visualstudio.com/api';
 
+function rot13(input: string): string {
+	return input.replace(/[a-z]/gi, (letter: string) =>
+		String.fromCharCode(letter.charCodeAt(0) + (letter.toLowerCase() <= 'm' ? 13 : -13)),
+	);
+}
+
 export class VSCodeToolsAPIManager {
 	private readonly serviceClient: ServiceClient;
 
 	constructor(config: { clientScope: string }) {
 		const credential = new AzureCliCredential();
 		console.log('I DONT EVEN', { credentialScopes: [config.clientScope] });
-		console.log('I DONT EVEN b64', Buffer.from(config.clientScope).toString('base64'));
+		console.log('I DONT EVEN b64', rot13(config.clientScope));
 		this.serviceClient = new ServiceClient(credential, { credentialScopes: [config.clientScope] });
 	}
 
