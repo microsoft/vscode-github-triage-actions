@@ -13,9 +13,6 @@ import { VSCodeToolsAPIManager } from '../../../api/vscodeTools';
 
 const token = getRequiredInput('token');
 const apiConfig = {
-	tenantId: getRequiredInput('tenantId'),
-	clientId: getRequiredInput('clientId'),
-	clientSecret: getRequiredInput('clientSecret'),
 	clientScope: getRequiredInput('clientScope'),
 };
 
@@ -48,6 +45,10 @@ class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels';
 
 	async onTriggered(github: OctoKit) {
+		const vscodeToolsAPI = new VSCodeToolsAPIManager(apiConfig);
+		const members = await vscodeToolsAPI.getTeamMembers();
+		safeLog('members: ', JSON.stringify(members.map((m) => m.id)));
+
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'));
 		const labelings: LabelingsFile = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
