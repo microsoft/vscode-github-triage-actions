@@ -42,6 +42,10 @@ class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels';
 
 	async onTriggered(github: OctoKit) {
+		const vscodeToolsAPI = new VSCodeToolsAPIManager();
+		const members = await vscodeToolsAPI.getTeamMembers();
+		safeLog('members: ', JSON.stringify(members.map((m) => m.id)));
+
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'));
 		const labelings: LabelingsFile = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
