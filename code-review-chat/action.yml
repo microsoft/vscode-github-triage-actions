@@ -18,18 +18,6 @@ inputs:
   slack_bot_name:
     description: 'Required when doing using in queue mode (deletions enabled on close)'
     required: true
-  tenantId:
-    description: "The service tenant id of the service which serves the VS Code Tools API"
-    required: true
-  clientId:
-    description: "The service client id of the service which serves the VS Code Tools API"
-    required: true
-  clientSecret:
-    description: "The service client secret of the service which serves the VS Code Tools API"
-    required: true
-  clientScope:
-    description: "The service client scope of the service which serves the VS Code Tools API"
-    required: true
   pull_request:
     description: 'Pull request object - used in webhooks'
     required: false

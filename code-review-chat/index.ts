@@ -21,12 +21,6 @@ const slackToken = getRequiredInput('slack_token');
 const elevatedUserToken = getInput('slack_user_token');
 const auth = getRequiredInput('token');
 const channelId = getRequiredInput('notification_channel_id');
-const apiConfig = {
-	tenantId: getRequiredInput('tenantId'),
-	clientId: getRequiredInput('clientId'),
-	clientSecret: getRequiredInput('clientSecret'),
-	clientScope: getRequiredInput('clientScope'),
-};
 
 class CodeReviewChatAction extends Action {
 	id = 'CodeReviewChat';
@@ -77,7 +71,7 @@ class CodeReviewChatAction extends Action {
 		}
 		return new CodeReviewChat(
 			github,
-			new VSCodeToolsAPIManager(apiConfig),
+			new VSCodeToolsAPIManager(),
 			issue,
 			{
 				slackToken,
@@ -103,7 +97,7 @@ class CodeReviewChatAction extends Action {
 		if (!payload.pull_request || !payload.repository) {
 			throw Error('expected payload to contain pull request url');
 		}
-		const toolsAPI = new VSCodeToolsAPIManager(apiConfig);
+		const toolsAPI = new VSCodeToolsAPIManager();
 		const teamMembers = new Set((await toolsAPI.getTeamMembers()).map((t) => t.id));
 		const github = new Octokit({ auth });
 		const meetsThreshold = await meetsReviewThreshold(

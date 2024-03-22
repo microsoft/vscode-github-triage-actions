@@ -12,12 +12,6 @@ import { Action } from '../../../common/Action';
 import { VSCodeToolsAPIManager } from '../../../api/vscodeTools';
 
 const token = getRequiredInput('token');
-const apiConfig = {
-	tenantId: getRequiredInput('tenantId'),
-	clientId: getRequiredInput('clientId'),
-	clientSecret: getRequiredInput('clientSecret'),
-	clientScope: getRequiredInput('clientScope'),
-};
 
 const allowLabels = (getInput('allowLabels') || '').split('|');
 const debug = !!getInput('__debug');
@@ -159,7 +153,7 @@ class ApplyLabels extends Action {
 			if (!performedAssignment) {
 				safeLog('could not find assignee, picking a random one...');
 				try {
-					const vscodeToolsAPI = new VSCodeToolsAPIManager(apiConfig);
+					const vscodeToolsAPI = new VSCodeToolsAPIManager();
 					const triagers = await vscodeToolsAPI.getTriagerGitHubIds();
 					safeLog('Acquired list of available triagers');
 					const available = triagers;
