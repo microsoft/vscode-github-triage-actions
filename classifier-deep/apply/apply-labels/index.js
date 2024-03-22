@@ -31,6 +31,9 @@ class ApplyLabels extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a;
+        const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager();
+        const members = await vscodeToolsAPI.getTeamMembers();
+        (0, utils_1.safeLog)('members: ', JSON.stringify(members.map((m) => m.id)));
         const config = await github.readConfig((0, utils_1.getRequiredInput)('configPath'));
         const labelings = JSON.parse((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
         for (const labeling of labelings) {
