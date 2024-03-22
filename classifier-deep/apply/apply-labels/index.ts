@@ -48,6 +48,7 @@ class ApplyLabels extends Action {
 		const vscodeToolsAPI = new VSCodeToolsAPIManager(apiConfig);
 		const members = await vscodeToolsAPI.getTeamMembers();
 		safeLog('members: ', JSON.stringify(members.map((m) => m.id)));
+		safeLog('scope: ', apiConfig.clientScope);
 
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'));
 		const labelings: LabelingsFile = JSON.parse(
