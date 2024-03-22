@@ -3,7 +3,7 @@ import { AzureCliCredential } from '@azure/identity';
 import { TRIAGE_DUTY, type ITeamMember, Availability } from './vscodeToolsTypes';
 
 const API_URL = 'https://tools.code.visualstudio.com/api';
-const CREDENTIAL_SCOPES = ['api//da00f668-cd99-4c02-b617-3a036b7c79e4/.default'];
+const CREDENTIAL_SCOPES = ['api://da00f668-cd99-4c02-b617-3a036b7c79e4/.default'];
 
 export class VSCodeToolsAPIManager {
 	private readonly serviceClient: ServiceClient;
