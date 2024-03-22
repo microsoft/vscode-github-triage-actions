@@ -12,9 +12,6 @@ import { Action } from '../../../common/Action';
 import { VSCodeToolsAPIManager } from '../../../api/vscodeTools';
 
 const token = getRequiredInput('token');
-const apiConfig = {
-	clientScope: getRequiredInput('clientScope'),
-};
 
 const allowLabels = (getInput('allowLabels') || '').split('|');
 const debug = !!getInput('__debug');
@@ -45,10 +42,9 @@ class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels';
 
 	async onTriggered(github: OctoKit) {
-		const vscodeToolsAPI = new VSCodeToolsAPIManager(apiConfig);
+		const vscodeToolsAPI = new VSCodeToolsAPIManager();
 		const members = await vscodeToolsAPI.getTeamMembers();
 		safeLog('members: ', JSON.stringify(members.map((m) => m.id)));
-		safeLog('scope: ', apiConfig.clientScope);
 
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'));
 		const labelings: LabelingsFile = JSON.parse(
@@ -161,7 +157,7 @@ class ApplyLabels extends Action {
 			if (!performedAssignment) {
 				safeLog('could not find assignee, picking a random one...');
 				try {
-					const vscodeToolsAPI = new VSCodeToolsAPIManager(apiConfig);
+					const vscodeToolsAPI = new VSCodeToolsAPIManager();
 					const triagers = await vscodeToolsAPI.getTriagerGitHubIds();
 					safeLog('Acquired list of available triagers');
 					const available = triagers;

@@ -18,9 +18,6 @@ inputs:
   clientSecret:
     description: "The service client secret of the service which serves the VS Code Tools API"
     required: true
-  clientScope:
-    description: "The service client scope of the service which serves the VS Code Tools API"
-    required: true
 runs:
   using: 'node16'
   main: 'index.js'
