@@ -19,5 +19,5 @@ inputs:
     default: '["\\?", "please", "kindly", "let me know", "try", "can you", "could you", "would you", "may I", "provide", "let us know", "tell me", "give me", "send me", "what", "when", "where", "why", "how"]'
 
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'

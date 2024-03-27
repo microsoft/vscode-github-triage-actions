@@ -19,5 +19,5 @@ inputs:
   oldVersionMessage:
     description: comment to post when an issue version is not the latest version. The token "{currentVersion}" will be replaced with the latest release version
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'
