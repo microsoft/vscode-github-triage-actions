@@ -25,5 +25,5 @@ inputs:
     description: 'Which channel to send log messages to. Defaults to none.'
     required: false
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'

@@ -18,5 +18,5 @@ inputs:
     description: Comment to post to invalid test plan items
     required: true
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'

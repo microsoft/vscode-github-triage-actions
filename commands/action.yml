@@ -8,5 +8,5 @@ inputs:
     description: Name of .json file (no extension) in .github/ directory of repo holding configuration for this action
     required: true
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'

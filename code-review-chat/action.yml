@@ -34,5 +34,5 @@ inputs:
     description: 'Repository name - used in webhooks'
     required: false
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'

@@ -19,5 +19,5 @@ inputs:
     description: API key for the text translator cognitive service to use when detecting issue language and responding to the issue author in their language
     required: true
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'
