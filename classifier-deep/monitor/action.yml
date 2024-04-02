@@ -10,5 +10,5 @@ inputs:
   appInsightsKey:
     description: Key for Azure App Insights to monitor application health
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'

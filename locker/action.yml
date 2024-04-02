@@ -19,5 +19,5 @@ inputs:
   typeIs:
     description: either 'issue' or 'pr' to limit the query to only those types
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'

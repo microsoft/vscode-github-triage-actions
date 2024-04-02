@@ -13,5 +13,5 @@ inputs:
   label:
     description: Label to apply to isses that don't fit the criteria
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'
