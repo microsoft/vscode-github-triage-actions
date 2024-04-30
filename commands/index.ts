@@ -9,6 +9,7 @@ import { Commands } from './Commands';
 import { Action } from '../common/Action';
 import { context } from '@actions/github';
 import { Issue } from '../api/api';
+import { PayloadRepository } from '@actions/github/lib/interfaces';
 
 const hydrate = (comment: string, issue: Issue) => {
 	const baseQueryString = `https://github.com/${context.repo.owner}/${context.repo.repo}/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+`;
@@ -31,6 +32,38 @@ class CommandsRunner extends Action {
 	async onLabeled(issue: OctoKitIssue, label: string) {
 		const commands = await issue.readConfig(getRequiredInput('config-path'));
 		await new Commands(issue, commands, { label }, hydrate).run();
+	}
+
+	protected override async onTriggered() {
+		// This function is only called during a manual workspace dispatch event
+		// caused by a webhook, so we know to expect some inputs.
+		const auth = getRequiredInput('token');
+		const event = getRequiredInput('event');
+		const issue = JSON.parse(getRequiredInput('issue'));
+		const repository: PayloadRepository = JSON.parse(getRequiredInput('repository'));
+
+		const octokitIssue = new OctoKitIssue(
+			auth,
+			{ owner: repository.owner.login, repo: repository.name },
+			{ number: issue.number },
+		);
+
+		if (event === 'issue_comment') {
+			const commentObject = JSON.parse(getRequiredInput('comment'));
+			const comment = commentObject.body;
+			const actor = commentObject.user.login;
+			await this.onCommented(octokitIssue, comment, actor);
+		} else if (event === 'issues') {
+			const action = JSON.parse(getRequiredInput('action'));
+			switch (action) {
+				case 'labeled':
+					await this.onLabeled(octokitIssue, issue.label.name);
+					break;
+				default:
+					throw Error(`Unknown event: ${event}`);
+			}
+		}
+		return;
 	}
 }
 
