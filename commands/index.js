@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const octokit_1 = require("../api/octokit");
 const utils_1 = require("../common/utils");
 const Commands_1 = require("./Commands");
 const Action_1 = require("../common/Action");
@@ -27,6 +28,32 @@ class CommandsRunner extends Action_1.Action {
     async onLabeled(issue, label) {
         const commands = await issue.readConfig((0, utils_1.getRequiredInput)('config-path'));
         await new Commands_1.Commands(issue, commands, { label }, hydrate).run();
+    }
+    async onTriggered() {
+        // This function is only called during a manual workspace dispatch event
+        // caused by a webhook, so we know to expect some inputs.
+        const auth = (0, utils_1.getRequiredInput)('token');
+        const event = (0, utils_1.getRequiredInput)('event');
+        const issue = JSON.parse((0, utils_1.getRequiredInput)('issue'));
+        const repository = JSON.parse((0, utils_1.getRequiredInput)('repository'));
+        const octokitIssue = new octokit_1.OctoKitIssue(auth, { owner: repository.owner.login, repo: repository.name }, { number: issue.number });
+        if (event === 'issue_comment') {
+            const commentObject = JSON.parse((0, utils_1.getRequiredInput)('comment'));
+            const comment = commentObject.body;
+            const actor = commentObject.user.login;
+            await this.onCommented(octokitIssue, comment, actor);
+        }
+        else if (event === 'issues') {
+            const action = JSON.parse((0, utils_1.getRequiredInput)('action'));
+            switch (action) {
+                case 'labeled':
+                    await this.onLabeled(octokitIssue, issue.label.name);
+                    break;
+                default:
+                    throw Error(`Unknown event: ${event}`);
+            }
+        }
+        return;
     }
 }
 new CommandsRunner().run(); // eslint-disable-line
