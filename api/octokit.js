@@ -150,11 +150,15 @@ class OctoKit {
             throw err;
         }
     }
-    async readConfig(path) {
-        (0, utils_1.safeLog)('Reading config at ' + path);
-        const repoPath = `.github/${path}.json`;
+    async readConfig(configPath, configRepo) {
+        (0, utils_1.safeLog)('Reading config at ' + configPath);
+        const repoPath = `.github/${configPath}.json`;
         try {
-            const data = (await this.octokit.rest.repos.getContent({ ...this.params, path: repoPath })).data;
+            const data = (await this.octokit.rest.repos.getContent({
+                owner: this.params.owner,
+                repo: configRepo !== null && configRepo !== void 0 ? configRepo : this.params.repo,
+                path: repoPath,
+            })).data;
             if ('type' in data && data.type === 'file' && 'content' in data) {
                 if (data.encoding === 'base64' && data.content) {
                     return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));

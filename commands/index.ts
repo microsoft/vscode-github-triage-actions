@@ -52,14 +52,19 @@ class CommandsRunner extends Action {
 			const commentObject = JSON.parse(getRequiredInput('comment'));
 			const comment = commentObject.body;
 			const actor = commentObject.user.login;
-			await this.onCommented(octokitIssue, comment, actor);
+			const commands = await issue.readConfig(getRequiredInput('config-path'), 'vscode-engineering');
+			await new Commands(octokitIssue, commands, { comment, user: { name: actor } }, hydrate).run();
 		} else if (event === 'issues') {
 			const action = getRequiredInput('action');
 			switch (action) {
 				case 'labeled':
 					{
 						for (const label of issue.labels) {
-							await this.onLabeled(octokitIssue, label.name);
+							const commands = await issue.readConfig(
+								getRequiredInput('config-path'),
+								'vscode-engineering',
+							);
+							await new Commands(octokitIssue, commands, { label: label.name }, hydrate).run();
 						}
 					}
 					break;
@@ -71,4 +76,4 @@ class CommandsRunner extends Action {
 	}
 }
 
-new CommandsRunner().run() // eslint-disable-line
+new CommandsRunner().run(); // eslint-disable-line
