@@ -7,6 +7,23 @@ inputs:
   config-path:
     description: Name of .json file (no extension) in .github/ directory of repo holding configuration for this action
     required: true
+  appInsightsKey:
+    description: Key for Azure App Insights to monitor application health
+  repository:
+    description: Repository object for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
+  issue:
+    description: Issue object for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
+  event:
+    description: Event name for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
+  action:
+    description: Action name for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
+  comment:
+    description: Comment object for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
 runs:
   using: 'node20'
   main: 'index.js'
