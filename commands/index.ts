@@ -54,7 +54,7 @@ class CommandsRunner extends Action {
 			const actor = commentObject.user.login;
 			await this.onCommented(octokitIssue, comment, actor);
 		} else if (event === 'issues') {
-			const action = JSON.parse(getRequiredInput('action'));
+			const action = getRequiredInput('action');
 			switch (action) {
 				case 'labeled':
 					await this.onLabeled(octokitIssue, issue.label.name);
