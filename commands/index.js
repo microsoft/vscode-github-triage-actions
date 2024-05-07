@@ -47,7 +47,11 @@ class CommandsRunner extends Action_1.Action {
             const action = (0, utils_1.getRequiredInput)('action');
             switch (action) {
                 case 'labeled':
-                    await this.onLabeled(octokitIssue, issue.label.name);
+                    {
+                        for (const label of issue.labels) {
+                            await this.onLabeled(octokitIssue, label.name);
+                        }
+                    }
                     break;
                 default:
                     throw Error(`Unknown event: ${event}`);
