@@ -41,7 +41,8 @@ class CommandsRunner extends Action_1.Action {
             const commentObject = JSON.parse((0, utils_1.getRequiredInput)('comment'));
             const comment = commentObject.body;
             const actor = commentObject.user.login;
-            await this.onCommented(octokitIssue, comment, actor);
+            const commands = await issue.readConfig((0, utils_1.getRequiredInput)('config-path'), 'vscode-engineering');
+            await new Commands_1.Commands(octokitIssue, commands, { comment, user: { name: actor } }, hydrate).run();
         }
         else if (event === 'issues') {
             const action = (0, utils_1.getRequiredInput)('action');
@@ -49,7 +50,8 @@ class CommandsRunner extends Action_1.Action {
                 case 'labeled':
                     {
                         for (const label of issue.labels) {
-                            await this.onLabeled(octokitIssue, label.name);
+                            const commands = await issue.readConfig((0, utils_1.getRequiredInput)('config-path'), 'vscode-engineering');
+                            await new Commands_1.Commands(octokitIssue, commands, { label: label.name }, hydrate).run();
                         }
                     }
                     break;
