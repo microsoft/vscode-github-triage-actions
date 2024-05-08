@@ -41,7 +41,7 @@ class CommandsRunner extends Action_1.Action {
             const commentObject = JSON.parse((0, utils_1.getRequiredInput)('comment'));
             const comment = commentObject.body;
             const actor = commentObject.user.login;
-            const commands = await issue.readConfig((0, utils_1.getRequiredInput)('config-path'), 'vscode-engineering');
+            const commands = await octokitIssue.readConfig((0, utils_1.getRequiredInput)('config-path'), 'vscode-engineering');
             await new Commands_1.Commands(octokitIssue, commands, { comment, user: { name: actor } }, hydrate).run();
         }
         else if (event === 'issues') {
@@ -50,7 +50,7 @@ class CommandsRunner extends Action_1.Action {
                 case 'labeled':
                     {
                         for (const label of issue.labels) {
-                            const commands = await issue.readConfig((0, utils_1.getRequiredInput)('config-path'), 'vscode-engineering');
+                            const commands = await octokitIssue.readConfig((0, utils_1.getRequiredInput)('config-path'), 'vscode-engineering');
                             await new Commands_1.Commands(octokitIssue, commands, { label: label.name }, hydrate).run();
                         }
                     }
