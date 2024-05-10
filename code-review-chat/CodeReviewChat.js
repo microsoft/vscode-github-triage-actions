@@ -194,9 +194,13 @@ class CodeReviewChat extends Chatter {
             (0, utils_1.safeLog)('PR is from ignored repo, ignoring');
             return;
         }
+        const default_branch = (await this.octokit.repos.get({
+            owner: this.options.payload.owner,
+            repo: this.options.payload.repo,
+        })).data.default_branch;
         // TODO @lramos15 possibly make this configurable
-        if (pr.baseBranchName.startsWith('release')) {
-            (0, utils_1.safeLog)('PR is on a release branch, ignoring');
+        if (!pr.baseBranchName.startsWith(default_branch) || pr.baseBranchName.startsWith('release')) {
+            (0, utils_1.safeLog)('PR is on a non-main or release branch, ignoring');
             return;
         }
         // This is an external PR which already received one review and is just awaiting a second
