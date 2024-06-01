@@ -13,6 +13,7 @@ export class Locker {
 		private daysSinceUpdate: number,
 		private label?: string,
 		private ignoreLabelUntil?: string,
+		private ignoredMilestones?: string,
 		private labelUntil?: string,
 		private typeIs?: string,
 	) {}
@@ -20,10 +21,12 @@ export class Locker {
 	async run() {
 		const closedTimestamp = daysAgoToHumanReadbleDate(this.daysSinceClose);
 		const updatedTimestamp = daysAgoToHumanReadbleDate(this.daysSinceUpdate);
-
+		const milestones = this.ignoredMilestones ? this.ignoredMilestones.split(',') : [];
+		const milestonesQuery = milestones.map((milestone) => ` -milestone:"${milestone}"`).join('');
 		const query =
 			`closed:<${closedTimestamp} updated:<${updatedTimestamp} is:unlocked` +
 			(this.label ? ` -label:${this.label}` : '') +
+			(milestones.length > 0 ? milestonesQuery : '') +
 			(this.typeIs ? ` is:${this.typeIs}` : '');
 
 		for await (const page of this.github.query({ q: query })) {
@@ -37,7 +40,10 @@ export class Locker {
 						(!this.label || !hydrated.labels.includes(this.label)) &&
 						(!this.typeIs ||
 							(this.typeIs == 'issue' && !hydrated.isPr) ||
-							(this.typeIs == 'pr' && hydrated.isPr))
+							(this.typeIs == 'pr' && hydrated.isPr)) &&
+						(!this.ignoredMilestones ||
+							!hydrated.milestone ||
+							!milestones.includes(hydrated.milestone.title))
 						// TODO: Verify closed and updated timestamps
 					) {
 						const skipDueToIgnoreLabel =
