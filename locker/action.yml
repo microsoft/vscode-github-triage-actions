@@ -14,6 +14,8 @@ inputs:
     description: items with this label will not be automatically locked
   ignoreLabelUntil:
     description: items with this label will not be automatically locked, until they also have the until label
+  ignoredMilestones:
+    description: items in any of these milestones will not be automatically locked
   labelUntil:
     description: items with this will not automatically locked, even if they have the ignoreLabelUntil label
   typeIs:
