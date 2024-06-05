@@ -54,7 +54,13 @@ export class Locker {
 
 						if (!skipDueToIgnoreLabel) {
 							safeLog(`Locking issue ${hydrated.number}`);
-							await issue.lockIssue();
+							try {
+								await issue.lockIssue();
+							} catch (e) {
+								safeLog(`Failed to lock issue ${hydrated.number}`);
+								const err = e as Error;
+								safeLog(err?.stack || err?.message || String(e));
+							}
 						} else {
 							safeLog(`Not locking issue as it has ignoreLabelUntil but not labelUntil`);
 						}
