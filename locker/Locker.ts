@@ -29,7 +29,7 @@ export class Locker {
 			(milestones.length > 0 ? milestonesQuery : '') +
 			(this.typeIs ? ` is:${this.typeIs}` : '');
 
-		for await (const page of this.github.query({ q: query })) {
+		for await (const page of this.github.query({ q: query, per_page: 50 })) {
 			await Promise.all(
 				page.map(async (issue) => {
 					const hydrated = await issue.getIssue();
