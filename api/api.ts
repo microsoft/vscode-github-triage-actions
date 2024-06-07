@@ -119,4 +119,5 @@ export interface Query {
 	q: string;
 	sort?: SortVar;
 	order?: SortOrder;
+	per_page?: number;
 }
