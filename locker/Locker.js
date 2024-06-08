@@ -26,7 +26,7 @@ class Locker {
             (this.label ? ` -label:${this.label}` : '') +
             (milestones.length > 0 ? milestonesQuery : '') +
             (this.typeIs ? ` is:${this.typeIs}` : '');
-        for await (const page of this.github.query({ q: query })) {
+        for await (const page of this.github.query({ q: query, per_page: 50 })) {
             await Promise.all(page.map(async (issue) => {
                 const hydrated = await issue.getIssue();
                 if (!hydrated.locked &&
@@ -46,7 +46,14 @@ class Locker {
                         !hydrated.labels.includes(this.labelUntil);
                     if (!skipDueToIgnoreLabel) {
                         (0, utils_1.safeLog)(`Locking issue ${hydrated.number}`);
-                        await issue.lockIssue();
+                        try {
+                            await issue.lockIssue();
+                        }
+                        catch (e) {
+                            (0, utils_1.safeLog)(`Failed to lock issue ${hydrated.number}`);
+                            const err = e;
+                            (0, utils_1.safeLog)((err === null || err === void 0 ? void 0 : err.stack) || (err === null || err === void 0 ? void 0 : err.message) || String(e));
+                        }
                     }
                     else {
                         (0, utils_1.safeLog)(`Not locking issue as it has ignoreLabelUntil but not labelUntil`);
