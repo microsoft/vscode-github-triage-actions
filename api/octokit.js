@@ -32,11 +32,13 @@ class OctoKit {
     }
     // TODO: just iterate over the issues in a page here instead of making caller do it
     async *query(query) {
+        var _a;
         const q = query.q + ` repo:${this.params.owner}/${this.params.repo}`;
+        const per_page = (_a = query.per_page) !== null && _a !== void 0 ? _a : 100;
         const options = {
             ...query,
             q,
-            per_page: 100,
+            per_page,
             headers: { Accept: 'application/vnd.github.squirrel-girl-preview+json' },
         };
         let pageNum = 0;
