@@ -30,49 +30,47 @@ export class Locker {
 			(this.typeIs ? ` is:${this.typeIs}` : '');
 
 		for await (const page of this.github.query({ q: query, per_page: 50 })) {
-			await Promise.all(
-				page.map(async (issue) => {
-					const hydrated = await issue.getIssue();
+			page.map(async (issue) => {
+				const hydrated = await issue.getIssue();
 
-					if (
-						!hydrated.locked &&
-						hydrated.open === false &&
-						(!this.label || !hydrated.labels.includes(this.label)) &&
-						(!this.typeIs ||
-							(this.typeIs == 'issue' && !hydrated.isPr) ||
-							(this.typeIs == 'pr' && hydrated.isPr)) &&
-						(!this.ignoredMilestones ||
-							!hydrated.milestone ||
-							!milestones.includes(hydrated.milestone.title))
-						// TODO: Verify closed and updated timestamps
-					) {
-						const skipDueToIgnoreLabel =
-							this.ignoreLabelUntil &&
-							this.labelUntil &&
-							hydrated.labels.includes(this.ignoreLabelUntil) &&
-							!hydrated.labels.includes(this.labelUntil);
+				if (
+					!hydrated.locked &&
+					hydrated.open === false &&
+					(!this.label || !hydrated.labels.includes(this.label)) &&
+					(!this.typeIs ||
+						(this.typeIs == 'issue' && !hydrated.isPr) ||
+						(this.typeIs == 'pr' && hydrated.isPr)) &&
+					(!this.ignoredMilestones ||
+						!hydrated.milestone ||
+						!milestones.includes(hydrated.milestone.title))
+					// TODO: Verify closed and updated timestamps
+				) {
+					const skipDueToIgnoreLabel =
+						this.ignoreLabelUntil &&
+						this.labelUntil &&
+						hydrated.labels.includes(this.ignoreLabelUntil) &&
+						!hydrated.labels.includes(this.labelUntil);
 
-						if (!skipDueToIgnoreLabel) {
-							safeLog(`Locking issue ${hydrated.number}`);
-							try {
-								await issue.lockIssue();
-							} catch (e) {
-								safeLog(`Failed to lock issue ${hydrated.number}`);
-								const err = e as Error;
-								safeLog(err?.stack || err?.message || String(e));
-							}
-						} else {
-							safeLog(`Not locking issue as it has ignoreLabelUntil but not labelUntil`);
+					if (!skipDueToIgnoreLabel) {
+						safeLog(`Locking issue ${hydrated.number}`);
+						try {
+							await issue.lockIssue();
+						} catch (e) {
+							safeLog(`Failed to lock issue ${hydrated.number}`);
+							const err = e as Error;
+							safeLog(err?.stack || err?.message || String(e));
 						}
 					} else {
-						if (hydrated.locked) {
-							safeLog(`Issue ${hydrated.number} is already locked. Ignoring`);
-						} else {
-							safeLog('Query returned an invalid issue:' + hydrated.number);
-						}
+						safeLog(`Not locking issue as it has ignoreLabelUntil but not labelUntil`);
 					}
-				}),
-			);
+				} else {
+					if (hydrated.locked) {
+						safeLog(`Issue ${hydrated.number} is already locked. Ignoring`);
+					} else {
+						safeLog('Query returned an invalid issue:' + hydrated.number);
+					}
+				}
+			});
 		}
 	}
 }

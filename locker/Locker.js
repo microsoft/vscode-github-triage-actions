@@ -27,7 +27,7 @@ class Locker {
             (milestones.length > 0 ? milestonesQuery : '') +
             (this.typeIs ? ` is:${this.typeIs}` : '');
         for await (const page of this.github.query({ q: query, per_page: 50 })) {
-            await Promise.all(page.map(async (issue) => {
+            page.map(async (issue) => {
                 const hydrated = await issue.getIssue();
                 if (!hydrated.locked &&
                     hydrated.open === false &&
@@ -67,7 +67,7 @@ class Locker {
                         (0, utils_1.safeLog)('Query returned an invalid issue:' + hydrated.number);
                     }
                 }
-            }));
+            });
         }
     }
 }
