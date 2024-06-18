@@ -6,7 +6,21 @@
 import { GitHubIssue } from '../api/api';
 import { safeLog } from '../common/utils';
 
-const keywords = ['money', 'xbox', 'tiktok', 'tik-tok'];
+const keywords = [
+	'money',
+	'xbox',
+	'tiktok',
+	'tik-tok',
+	'leak',
+	'leaks',
+	'nintendo',
+	'eshop',
+	'discount codes',
+	'v bucks',
+	'v-bucks',
+	'gift card',
+	'giftcard',
+];
 export class ValidtyChecker {
 	constructor(private github: GitHubIssue) {}
 

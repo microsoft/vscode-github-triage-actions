@@ -6,7 +6,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValidtyChecker = void 0;
 const utils_1 = require("../common/utils");
-const keywords = ['money', 'xbox', 'tiktok', 'tik-tok'];
+const keywords = [
+    'money',
+    'xbox',
+    'tiktok',
+    'tik-tok',
+    'leak',
+    'leaks',
+    'nintendo',
+    'eshop',
+    'discount codes',
+    'v bucks',
+    'v-bucks',
+    'gift card',
+    'giftcard',
+];
 class ValidtyChecker {
     constructor(github) {
         this.github = github;
