@@ -30,10 +30,12 @@ export class ValidtyChecker {
 		const hasKeyword = keywords.some(
 			(keyword) => issue.title.includes(keyword) || issue.body.includes(keyword),
 		);
-		if (hasKeyword) {
+		const isBadAuthor = issue.author.name === 'gmemarket2024';
+		if (hasKeyword || isBadAuthor) {
 			safeLog(`Issue #${issue.number} is not a valid issue, closing...`);
 			try {
 				await this.github.closeIssue('not_planned');
+				await this.github.lockIssue();
 			} catch (e) {
 				safeLog(`Failed to close issue #${issue.number}: ${e}`);
 			}
