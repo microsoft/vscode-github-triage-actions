@@ -34,6 +34,21 @@ class FetchIssues extends Action_1.Action {
         for await (const page of github.query({ q: query })) {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
+                // This issue made it through the initial filter, but is still potentially spam
+                // if the account is deleted ('ghost').
+                // close the issue and lock it to prevent further spam.
+                // filtering it out here will prevent it from being added to the training data.
+                if (issueData.author.name === 'ghost') {
+                    (0, utils_1.safeLog)(`Issue #${issueData.number} is not a valid issue, closing...`);
+                    try {
+                        await issue.closeIssue('not_planned');
+                        await issue.lockIssue();
+                    }
+                    catch (e) {
+                        (0, utils_1.safeLog)(`Failed to close issue #${issueData.number}: ${e}`);
+                    }
+                    continue;
+                }
                 let performedPRAssignment = false;
                 let additionalInfo = '';
                 if (issueData.isPr) {

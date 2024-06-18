@@ -37,6 +37,21 @@ class FetchIssues extends Action {
 			for (const issue of page) {
 				const issueData = await issue.getIssue();
 
+				// This issue made it through the initial filter, but is still potentially spam
+				// if the account is deleted ('ghost').
+				// close the issue and lock it to prevent further spam.
+				// filtering it out here will prevent it from being added to the training data.
+				if (issueData.author.name === 'ghost') {
+					safeLog(`Issue #${issueData.number} is not a valid issue, closing...`);
+					try {
+						await issue.closeIssue('not_planned');
+						await issue.lockIssue();
+					} catch (e) {
+						safeLog(`Failed to close issue #${issueData.number}: ${e}`);
+					}
+					continue;
+				}
+
 				let performedPRAssignment = false;
 				let additionalInfo = '';
 				if (issueData.isPr) {
