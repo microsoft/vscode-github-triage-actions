@@ -14,6 +14,9 @@ class ValidtyCheckerAction extends Action_1.Action {
     async onOpened(issue) {
         await new ValidtyChecker_1.ValidtyChecker(issue).run();
     }
+    async onReopened(issue) {
+        await new ValidtyChecker_1.ValidtyChecker(issue).run();
+    }
 }
 new ValidtyCheckerAction().run(); // eslint-disable-line
 //# sourceMappingURL=index.js.map

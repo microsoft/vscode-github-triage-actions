@@ -13,6 +13,10 @@ class ValidtyCheckerAction extends Action {
 	async onOpened(issue: OctoKitIssue) {
 		await new ValidtyChecker(issue).run();
 	}
+
+	async onReopened(issue: OctoKitIssue): Promise<void> {
+		await new ValidtyChecker(issue).run();
+	}
 }
 
 new ValidtyCheckerAction().run() // eslint-disable-line
