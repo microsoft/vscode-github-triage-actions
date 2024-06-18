@@ -1,5 +1,6 @@
 name: Checks for Valid Issues and PRs
 description: Checks for valid issues and PRs in the destination repo
+inputs:
   token:
     description: GitHub token with issue read/write permissions to both repos
     default: ${{ github.token }}
