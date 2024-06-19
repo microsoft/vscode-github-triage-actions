@@ -11,8 +11,6 @@ const keywords = [
     'xbox',
     'tiktok',
     'tik-tok',
-    'leak',
-    'leaks',
     'nintendo',
     'eshop',
     'discount codes',
