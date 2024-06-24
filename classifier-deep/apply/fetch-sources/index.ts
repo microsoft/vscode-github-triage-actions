@@ -42,8 +42,10 @@ class FetchIssues extends Action {
 					safeLog(`Tagging issue  #${issueData.number} as invalid`);
 					try {
 						await issue.addLabel('invalid');
+						await issue.closeIssue('not_planned');
+						await issue.lockIssue();
 					} catch (e) {
-						safeLog(`Failed to add 'invalid' label to issue #${issueData.number}: ${e}`);
+						safeLog(`Failed to triage invalid issue #${issueData.number}: ${e}`);
 					}
 					continue;
 				}
