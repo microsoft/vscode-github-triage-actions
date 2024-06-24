@@ -33,6 +33,7 @@ export class ValidtyChecker {
 		if (hasKeyword || isBadAuthor) {
 			safeLog(`Issue #${issue.number} is not a valid issue, closing...`);
 			try {
+				await this.github.addLabel('invalid');
 				await this.github.closeIssue('not_planned');
 				await this.github.lockIssue();
 			} catch (e) {
