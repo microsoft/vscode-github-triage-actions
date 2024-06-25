@@ -18,7 +18,12 @@ const keywords = [
 	'v-bucks',
 	'gift card',
 	'giftcard',
+	'movie',
+	'viral',
+	'cinema',
+	'watch now',
 ];
+
 export class ValidtyChecker {
 	constructor(private github: GitHubIssue) {}
 
@@ -29,7 +34,7 @@ export class ValidtyChecker {
 			(keyword) => issue.title.includes(keyword) || issue.body.includes(keyword),
 		);
 
-		const isBadAuthor = issue.author.name === 'gmemarket2024' || issue.author.name === 'ghost';
+		const isBadAuthor = issue.author.name === 'ghost';
 		if (hasKeyword || isBadAuthor) {
 			safeLog(`Issue #${issue.number} is not a valid issue, closing...`);
 			try {
