@@ -9,6 +9,11 @@ import { safeLog } from '../common/utils';
 const keywords = [
 	'money',
 	'xbox',
+	'temu',
+	'instagram',
+	'coupon',
+	'fullclip',
+	'fortnite',
 	'tiktok',
 	'tik-tok',
 	'nintendo',
