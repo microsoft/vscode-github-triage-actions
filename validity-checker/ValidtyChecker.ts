@@ -10,6 +10,7 @@ const keywords = [
 	'money',
 	'xbox',
 	'temu',
+	'test-change',
 	'instagram',
 	'coupon',
 	'fullclip',
