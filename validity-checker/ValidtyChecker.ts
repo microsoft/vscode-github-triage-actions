@@ -18,7 +18,12 @@ const keywords = [
 	'v-bucks',
 	'gift card',
 	'giftcard',
+	'movie',
+	'viral',
+	'cinema',
+	'watch now',
 ];
+
 export class ValidtyChecker {
 	constructor(private github: GitHubIssue) {}
 
