@@ -40,7 +40,8 @@ export class ValidtyChecker {
 			(keyword) => issue.title.includes(keyword) || issue.body.includes(keyword),
 		);
 
-		const isBadAuthor = issue.author.name === 'ghost';
+		const badAuthors = ['ghost', 'spammyuser', 'fakeuser'];
+		const isBadAuthor = badAuthors.includes(issue.author.name);
 		if (hasKeyword || isBadAuthor) {
 			safeLog(`Issue #${issue.number} is not a valid issue, closing...`);
 			try {
