@@ -129,6 +129,7 @@ class CodeReviewChatDeleter extends Chatter {
     }
 }
 exports.CodeReviewChatDeleter = CodeReviewChatDeleter;
+// test change
 class CodeReviewChat extends Chatter {
     constructor(octokit, toolsAPI, issue, options, pullRequestNumber, _externalContributorPR) {
         super(options.slackToken, options.codereviewChannelId);
