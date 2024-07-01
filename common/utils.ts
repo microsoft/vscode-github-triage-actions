@@ -64,6 +64,9 @@ export interface Release {
 export const loadLatestRelease = async (quality: 'stable' | 'insider'): Promise<Release | undefined> =>
 	(await axios.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`)).data;
 
+export const isInsiderFrozen = async (): Promise<boolean | undefined> =>
+	(await axios.get(`https://update.code.visualstudio.com/api/quality/insider/`)).data?.frozen;
+
 export const daysAgoToTimestamp = (days: number): number =>
 	+new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 

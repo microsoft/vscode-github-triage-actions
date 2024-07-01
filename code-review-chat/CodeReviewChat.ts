@@ -7,7 +7,7 @@ import { Octokit } from '@octokit/rest';
 import { WebClient } from '@slack/web-api';
 import { GitHubIssue } from '../api/api';
 import { OctoKitIssue } from '../api/octokit';
-import { safeLog } from '../common/utils';
+import { isInsiderFrozen, safeLog } from '../common/utils';
 import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 
 interface PR {
@@ -278,11 +278,12 @@ export class CodeReviewChat extends Chatter {
 			return;
 		}
 
+		const isEndGame = (await isInsiderFrozen()) ?? false;
 		// This is an external PR which already received one review and is just awaiting a second
 		const data = await this.issue.getIssue();
 		if (this._externalContributorPR) {
 			const externalTasks = [];
-			const currentMilestone = await this.issue.getCurrentRepoMilestone();
+			const currentMilestone = await this.issue.getCurrentRepoMilestone(isEndGame);
 			if (!data.milestone && currentMilestone) {
 				externalTasks.push(this.issue.setMilestone(currentMilestone));
 			}
@@ -306,7 +307,7 @@ export class CodeReviewChat extends Chatter {
 
 		tasks.push(
 			(async () => {
-				const currentMilestone = await this.issue.getCurrentRepoMilestone();
+				const currentMilestone = await this.issue.getCurrentRepoMilestone(isEndGame);
 				if (!data.milestone && currentMilestone) {
 					await this.issue.setMilestone(currentMilestone);
 				}
