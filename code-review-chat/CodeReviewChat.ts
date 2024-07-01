@@ -7,8 +7,8 @@ import { Octokit } from '@octokit/rest';
 import { WebClient } from '@slack/web-api';
 import { GitHubIssue } from '../api/api';
 import { OctoKitIssue } from '../api/octokit';
-import { isInsiderFrozen, safeLog } from '../common/utils';
 import { VSCodeToolsAPIManager } from '../api/vscodeTools';
+import { isInsiderFrozen, safeLog } from '../common/utils';
 
 interface PR {
 	number: number;
@@ -28,6 +28,8 @@ interface PR {
 	 */
 	headBranchName: string;
 	title: string;
+	headLabel: string;
+	fork: boolean;
 }
 
 // Some slack typings since the API isn't the best in terms of typings
@@ -72,6 +74,8 @@ export function createPRObject(pullRequestFromApi: any): PR {
 		baseBranchName: pullRequestFromApi.base.ref ?? '',
 		headBranchName: pullRequestFromApi.head.ref ?? '',
 		title: pullRequestFromApi.title,
+		headLabel: pullRequestFromApi.head.repo?.full_name || '',
+		fork: pullRequestFromApi.head.repo?.fork || false,
 	};
 	return pr;
 }
@@ -238,7 +242,8 @@ export class CodeReviewChat extends Chatter {
 		const vscodeDevUrl = pr.url.replace('https://', 'https://insiders.vscode.dev/');
 
 		const externalPrefix = this._externalContributorPR ? 'External PR: ' : '';
-		const message = `${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+		const forkPrefix = pr.fork ? `(From Fork: ${pr.headLabel}) ` : '';
+		const message = `${forkPrefix}${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
 		return message;
 	}
 
