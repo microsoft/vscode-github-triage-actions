@@ -194,7 +194,7 @@ class OctoKit {
             }
         }));
     }
-    async getCurrentRepoMilestone() {
+    async getCurrentRepoMilestone(isEndGame) {
         (0, utils_1.safeLog)(`Getting repo milestone for ${this.params.owner}/${this.params.repo}`);
         // Fetch all milestones open for this repo
         const allMilestones = (await this.octokit.rest.issues.listMilestones({
@@ -212,6 +212,10 @@ class OctoKit {
             .sort((a, b) => { var _a, _b; return +new Date((_a = a.due_on) !== null && _a !== void 0 ? _a : currentDate) - +new Date((_b = b.due_on) !== null && _b !== void 0 ? _b : currentDate); });
         if (possibleMilestones.length === 0) {
             return undefined;
+        }
+        if (isEndGame && possibleMilestones.length > 1) {
+            // If we are in endgame, return the next milestone.
+            return possibleMilestones[1].number;
         }
         return possibleMilestones[0].number;
     }

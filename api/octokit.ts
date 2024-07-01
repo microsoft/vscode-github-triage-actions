@@ -215,7 +215,7 @@ export class OctoKit implements GitHub {
 		);
 	}
 
-	async getCurrentRepoMilestone(): Promise<number | undefined> {
+	async getCurrentRepoMilestone(isEndGame?: boolean): Promise<number | undefined> {
 		safeLog(`Getting repo milestone for ${this.params.owner}/${this.params.repo}`);
 		// Fetch all milestones open for this repo
 		const allMilestones = (
@@ -239,6 +239,12 @@ export class OctoKit implements GitHub {
 		if (possibleMilestones.length === 0) {
 			return undefined;
 		}
+
+		if (isEndGame && possibleMilestones.length > 1) {
+			// If we are in endgame, return the next milestone.
+			return possibleMilestones[1].number;
+		}
+
 		return possibleMilestones[0].number;
 	}
 

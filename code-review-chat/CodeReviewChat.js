@@ -176,6 +176,7 @@ class CodeReviewChat extends Chatter {
         return message;
     }
     async run() {
+        var _a;
         // Must request the PR again from the octokit api as it may have changed since creation
         const prFromApi = (await this.octokit.pulls.get({
             pull_number: this.pullRequestNumber,
@@ -203,11 +204,12 @@ class CodeReviewChat extends Chatter {
             (0, utils_1.safeLog)('PR is on a non-main or release branch, ignoring');
             return;
         }
+        const isEndGame = (_a = (await (0, utils_1.isInsiderFrozen)())) !== null && _a !== void 0 ? _a : false;
         // This is an external PR which already received one review and is just awaiting a second
         const data = await this.issue.getIssue();
         if (this._externalContributorPR) {
             const externalTasks = [];
-            const currentMilestone = await this.issue.getCurrentRepoMilestone();
+            const currentMilestone = await this.issue.getCurrentRepoMilestone(isEndGame);
             if (!data.milestone && currentMilestone) {
                 externalTasks.push(this.issue.setMilestone(currentMilestone));
             }
@@ -227,7 +229,7 @@ class CodeReviewChat extends Chatter {
             tasks.push(this.issue.addAssignee(author.name));
         }
         tasks.push((async () => {
-            const currentMilestone = await this.issue.getCurrentRepoMilestone();
+            const currentMilestone = await this.issue.getCurrentRepoMilestone(isEndGame);
             if (!data.milestone && currentMilestone) {
                 await this.issue.setMilestone(currentMilestone);
             }

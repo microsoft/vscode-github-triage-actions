@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.readAccountsFromBlobStorage = exports.safeLog = exports.logErrorToIssue = exports.errorLoggingIssue = exports.getRateLimit = exports.daysAgoToHumanReadbleDate = exports.daysAgoToTimestamp = exports.loadLatestRelease = exports.normalizeIssue = exports.getRequiredInput = exports.getInput = void 0;
+exports.readAccountsFromBlobStorage = exports.safeLog = exports.logErrorToIssue = exports.errorLoggingIssue = exports.getRateLimit = exports.daysAgoToHumanReadbleDate = exports.daysAgoToTimestamp = exports.isInsiderFrozen = exports.loadLatestRelease = exports.normalizeIssue = exports.getRequiredInput = exports.getInput = void 0;
 const core = require("@actions/core");
 const github_1 = require("@actions/github");
 const storage_blob_1 = require("@azure/storage-blob");
@@ -49,6 +49,8 @@ const normalizeIssue = (issue) => {
 exports.normalizeIssue = normalizeIssue;
 const loadLatestRelease = async (quality) => (await axios_1.default.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`)).data;
 exports.loadLatestRelease = loadLatestRelease;
+const isInsiderFrozen = async () => { var _a; return (_a = (await axios_1.default.get(`https://update.code.visualstudio.com/api/quality/insider/`)).data) === null || _a === void 0 ? void 0 : _a.frozen; };
+exports.isInsiderFrozen = isInsiderFrozen;
 const daysAgoToTimestamp = (days) => +new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 exports.daysAgoToTimestamp = daysAgoToTimestamp;
 const daysAgoToHumanReadbleDate = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}\w$/, '');
