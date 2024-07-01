@@ -8,7 +8,7 @@ exports.meetsReviewThreshold = exports.getTeamMemberReviews = exports.CodeReview
 const web_api_1 = require("@slack/web-api");
 const utils_1 = require("../common/utils");
 function createPRObject(pullRequestFromApi) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     const pr = {
         number: pullRequestFromApi.number,
         body: pullRequestFromApi.body || '',
@@ -21,6 +21,8 @@ function createPRObject(pullRequestFromApi) {
         baseBranchName: (_a = pullRequestFromApi.base.ref) !== null && _a !== void 0 ? _a : '',
         headBranchName: (_b = pullRequestFromApi.head.ref) !== null && _b !== void 0 ? _b : '',
         title: pullRequestFromApi.title,
+        headLabel: ((_c = pullRequestFromApi.head.repo) === null || _c === void 0 ? void 0 : _c.full_name) || '',
+        fork: ((_d = pullRequestFromApi.head.repo) === null || _d === void 0 ? void 0 : _d.fork) || false,
     };
     return pr;
 }
@@ -172,7 +174,8 @@ class CodeReviewChat extends Chatter {
         const githubUrl = `${pr.url}/files`;
         const vscodeDevUrl = pr.url.replace('https://', 'https://insiders.vscode.dev/');
         const externalPrefix = this._externalContributorPR ? 'External PR: ' : '';
-        const message = `${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+        const forkPrefix = pr.fork ? `(From Fork: ${pr.headLabel}) ` : '';
+        const message = `${forkPrefix}${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
         return message;
     }
     async run() {
