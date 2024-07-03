@@ -13,14 +13,9 @@ inputs:
   blobContainerName:
     description: Name of Azure Storage container
     required: true
-  blobStorageKey:
-    description: Access string for blob storage account
-    required: true
   configPath:
     description: The PATH of a .github/PATH.json in the repo that describes what should be done per feature area
     required: true
-  appInsightsKey:
-    description: Key for Azure App Insights to monitor application health
 runs:
   using: 'node20'
   main: 'index.js'

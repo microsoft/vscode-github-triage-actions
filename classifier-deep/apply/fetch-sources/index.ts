@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { getInput, setFailed } from '@actions/core';
+import { execSync } from 'child_process';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { OctoKit } from '../../../api/octokit';
-import { getRequiredInput, daysAgoToHumanReadbleDate, normalizeIssue, safeLog } from '../../../common/utils';
 import { Action } from '../../../common/Action';
-import { execSync } from 'child_process';
-import { getInput, setFailed } from '@actions/core';
+import { daysAgoToHumanReadbleDate, getRequiredInput, normalizeIssue, safeLog } from '../../../common/utils';
 import { downloadBlobFile } from '../../blobStorage';
 
 const minToDay = 0.0007;
@@ -24,7 +24,6 @@ const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay);
 const createdQuery = `created:` + (from ? `${from}..${until}` : `<${until}`);
 
 const blobContainer = getRequiredInput('blobContainerName');
-const blobStorageKey = getRequiredInput('blobStorageKey');
 
 class FetchIssues extends Action {
 	id = 'Clasifier-Deep/Apply/FetchIssues';
@@ -101,9 +100,9 @@ class FetchIssues extends Action {
 		writeFileSync(join(__dirname, '../configuration.json'), JSON.stringify(config));
 
 		safeLog('dowloading area model');
-		await downloadBlobFile('area_model.zip', blobContainer, blobStorageKey);
+		await downloadBlobFile('area_model.zip', blobContainer);
 		safeLog('dowloading assignee model');
-		await downloadBlobFile('assignee_model.zip', blobContainer, blobStorageKey);
+		await downloadBlobFile('assignee_model.zip', blobContainer);
 
 		const classifierDeepRoot = join(__dirname, '..', '..');
 		const blobStorage = join(classifierDeepRoot, 'blobStorage');

@@ -5,17 +5,16 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const github_1 = require("@actions/github");
-const utils_1 = require("../../../common/utils");
+const child_process_1 = require("child_process");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const Action_1 = require("../../../common/Action");
-const child_process_1 = require("child_process");
+const utils_1 = require("../../../common/utils");
 const blobStorage_1 = require("../../blobStorage");
 const download_1 = require("./download");
 const token = (0, utils_1.getRequiredInput)('token');
 const endCursor = (0, utils_1.getInput)('cursor');
 const blobContainer = (0, utils_1.getRequiredInput)('blobContainerName');
-const blobStorageKey = (0, utils_1.getRequiredInput)('blobStorageKey');
 class FetchIssues extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -35,7 +34,7 @@ class FetchIssues extends Action_1.Action {
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
         (0, child_process_1.execSync)(`zip -q ${(0, path_1.join)(__dirname, '..', '..', 'blobStorage', 'issues.json.zip')} ${(0, path_1.join)(__dirname, 'issues.json')}`);
-        await (0, blobStorage_1.uploadBlobFile)('issues.json.zip', blobContainer, blobStorageKey);
+        await (0, blobStorage_1.uploadBlobFile)('issues.json.zip', blobContainer);
     }
 }
 new FetchIssues().run(); // eslint-disable-line
