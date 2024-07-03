@@ -7,8 +7,6 @@ inputs:
   botName:
     description: The login of the bot
     required: true
-  appInsightsKey:
-    description: Key for Azure App Insights to monitor application health
 runs:
   using: 'node20'
   main: 'index.js'

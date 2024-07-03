@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { context } from '@actions/github';
-import { getRequiredInput, getInput } from '../../../common/utils';
+import { execSync } from 'child_process';
 import { statSync } from 'fs';
 import { join } from 'path';
 import { Action } from '../../../common/Action';
-import { execSync } from 'child_process';
+import { getInput, getRequiredInput } from '../../../common/utils';
 import { uploadBlobFile } from '../../blobStorage';
 import { download } from './download';
 
@@ -16,7 +16,6 @@ const token = getRequiredInput('token');
 const endCursor = getInput('cursor');
 
 const blobContainer = getRequiredInput('blobContainerName');
-const blobStorageKey = getRequiredInput('blobStorageKey');
 
 class FetchIssues extends Action {
 	id = 'Classifier/Train/FetchIssues';
@@ -39,7 +38,7 @@ class FetchIssues extends Action {
 			)}`,
 		);
 
-		await uploadBlobFile('issues.json.zip', blobContainer, blobStorageKey);
+		await uploadBlobFile('issues.json.zip', blobContainer);
 	}
 }
 
