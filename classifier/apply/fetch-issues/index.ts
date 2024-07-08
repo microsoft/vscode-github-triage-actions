@@ -6,16 +6,15 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { OctoKit } from '../../../api/octokit';
-import { getRequiredInput, daysAgoToHumanReadbleDate, normalizeIssue, safeLog } from '../../../common/utils';
-import { downloadBlobFile } from '../../blobStorage';
 import { Action } from '../../../common/Action';
+import { daysAgoToHumanReadbleDate, getRequiredInput, normalizeIssue, safeLog } from '../../../common/utils';
+import { downloadBlobFile } from '../../blobStorage';
 
 const minToDay = 0.0007;
 const from = daysAgoToHumanReadbleDate(+getRequiredInput('from') * minToDay);
 const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay);
 
 const blobContainer = getRequiredInput('blobContainerName');
-const blobStorageKey = getRequiredInput('blobStorageKey');
 
 class FetchIssues extends Action {
 	id = 'Clasifier/Apply/FetchIssues';
@@ -36,11 +35,11 @@ class FetchIssues extends Action {
 
 		writeFileSync(join(__dirname, '../issue_data.json'), JSON.stringify(data));
 
-		await downloadBlobFile('area-model.pickle', blobContainer, blobStorageKey);
-		await downloadBlobFile('area-model-config.json', blobContainer, blobStorageKey);
+		await downloadBlobFile('area-model.pickle', blobContainer);
+		await downloadBlobFile('area-model-config.json', blobContainer);
 
-		await downloadBlobFile('assignee-model.pickle', blobContainer, blobStorageKey);
-		await downloadBlobFile('assignee-model-config.json', blobContainer, blobStorageKey);
+		await downloadBlobFile('assignee-model.pickle', blobContainer);
+		await downloadBlobFile('assignee-model-config.json', blobContainer);
 	}
 }
 

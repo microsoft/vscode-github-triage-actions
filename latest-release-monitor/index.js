@@ -5,12 +5,11 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const github_1 = require("@actions/github");
-const utils_1 = require("../common/utils");
-const blobStorage_1 = require("../classifier/blobStorage");
 const octokit_1 = require("../api/octokit");
+const blobStorage_1 = require("../classifier/blobStorage");
 const Action_1 = require("../common/Action");
+const utils_1 = require("../common/utils");
 const token = (0, utils_1.getRequiredInput)('token');
-const storageKey = (0, utils_1.getRequiredInput)('storageKey');
 class LatestReleaseMonitor extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -20,7 +19,7 @@ class LatestReleaseMonitor extends Action_1.Action {
         var _a;
         let lastKnown = undefined;
         try {
-            lastKnown = await (0, blobStorage_1.downloadBlobText)('latest-' + quality, 'latest-releases', storageKey);
+            lastKnown = await (0, blobStorage_1.downloadBlobText)('latest-' + quality, 'latest-releases');
         }
         catch {
             // pass
@@ -28,7 +27,7 @@ class LatestReleaseMonitor extends Action_1.Action {
         const latest = (_a = (await (0, utils_1.loadLatestRelease)(quality))) === null || _a === void 0 ? void 0 : _a.version;
         if (latest && latest !== lastKnown) {
             (0, utils_1.safeLog)('found a new release of', quality);
-            await (0, blobStorage_1.uploadBlobText)('latest-' + quality, latest, 'latest-releases', storageKey);
+            await (0, blobStorage_1.uploadBlobText)('latest-' + quality, latest, 'latest-releases');
             await new octokit_1.OctoKit(token, github_1.context.repo).dispatch('released-' + quality);
         }
     }

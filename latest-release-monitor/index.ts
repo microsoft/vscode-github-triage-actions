@@ -4,13 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { context } from '@actions/github';
-import { getRequiredInput, loadLatestRelease, safeLog } from '../common/utils';
-import { uploadBlobText, downloadBlobText } from '../classifier/blobStorage';
 import { OctoKit } from '../api/octokit';
+import { downloadBlobText, uploadBlobText } from '../classifier/blobStorage';
 import { Action } from '../common/Action';
+import { getRequiredInput, loadLatestRelease, safeLog } from '../common/utils';
 
 const token = getRequiredInput('token');
-const storageKey = getRequiredInput('storageKey');
 
 class LatestReleaseMonitor extends Action {
 	id = 'LatestReleaseMonitor';
@@ -18,7 +17,7 @@ class LatestReleaseMonitor extends Action {
 	private async update(quality: 'stable' | 'insider') {
 		let lastKnown: undefined | string = undefined;
 		try {
-			lastKnown = await downloadBlobText('latest-' + quality, 'latest-releases', storageKey);
+			lastKnown = await downloadBlobText('latest-' + quality, 'latest-releases');
 		} catch {
 			// pass
 		}
@@ -26,7 +25,7 @@ class LatestReleaseMonitor extends Action {
 		const latest = (await loadLatestRelease(quality))?.version;
 		if (latest && latest !== lastKnown) {
 			safeLog('found a new release of', quality);
-			await uploadBlobText('latest-' + quality, latest, 'latest-releases', storageKey);
+			await uploadBlobText('latest-' + quality, latest, 'latest-releases');
 			await new OctoKit(token, context.repo).dispatch('released-' + quality);
 		}
 	}
