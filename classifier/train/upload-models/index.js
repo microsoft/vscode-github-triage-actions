@@ -4,11 +4,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const Action_1 = require("../../../common/Action");
 const utils_1 = require("../../../common/utils");
 const blobStorage_1 = require("../../blobStorage");
-const Action_1 = require("../../../common/Action");
 const blobContainer = (0, utils_1.getRequiredInput)('blobContainerName');
-const blobStorageKey = (0, utils_1.getRequiredInput)('blobStoragekey');
 class UploadModels extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -16,16 +15,16 @@ class UploadModels extends Action_1.Action {
     }
     async onTriggered() {
         (0, utils_1.safeLog)('uploading area-model.pickle');
-        await (0, blobStorage_1.uploadBlobFile)('area-model.pickle', blobContainer, blobStorageKey);
+        await (0, blobStorage_1.uploadBlobFile)('area-model.pickle', blobContainer);
         (0, utils_1.safeLog)('done');
         (0, utils_1.safeLog)('uploading area-model-config.json');
-        await (0, blobStorage_1.uploadBlobFile)('area-model-config.json', blobContainer, blobStorageKey);
+        await (0, blobStorage_1.uploadBlobFile)('area-model-config.json', blobContainer);
         (0, utils_1.safeLog)('done');
         (0, utils_1.safeLog)('uploading assignee-model.pickle');
-        await (0, blobStorage_1.uploadBlobFile)('assignee-model.pickle', blobContainer, blobStorageKey);
+        await (0, blobStorage_1.uploadBlobFile)('assignee-model.pickle', blobContainer);
         (0, utils_1.safeLog)('done');
         (0, utils_1.safeLog)('uploading assignee-model-config.json');
-        await (0, blobStorage_1.uploadBlobFile)('assignee-model-config.json', blobContainer, blobStorageKey);
+        await (0, blobStorage_1.uploadBlobFile)('assignee-model-config.json', blobContainer);
         (0, utils_1.safeLog)('done');
     }
 }

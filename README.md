@@ -105,9 +105,6 @@ inputs:
   blobContainerName:
     description: Name of Azure Storage container
     required: true
-  blobStorageKey:
-    description: Access string for blob storage account
-    required: true
 ```
 
 #### Apply
@@ -130,9 +127,6 @@ inputs:
     required: true
   blobContainerName:
     description: Name of Azure Storage container
-    required: true
-  blobStorageKey:
-    description: Access string for blob storage account
     required: true
 ```
 
