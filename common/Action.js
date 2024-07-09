@@ -5,18 +5,32 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Action = void 0;
-const octokit_1 = require("../api/octokit");
-const github_1 = require("@actions/github");
-const utils_1 = require("./utils");
 const core_1 = require("@actions/core");
+const github_1 = require("@actions/github");
+const auth_app_1 = require("@octokit/auth-app");
 const uuid_1 = require("uuid");
+const octokit_1 = require("../api/octokit");
+const utils_1 = require("./utils");
 class Action {
     constructor() {
-        this.token = (0, utils_1.getRequiredInput)('token');
         console.log('::stop-commands::' + (0, uuid_1.v4)());
-        this.username = (0, github_1.getOctokit)(this.token)
-            .rest.users.getAuthenticated()
-            .then((v) => { var _a; return (_a = v.data.name) !== null && _a !== void 0 ? _a : 'unknown'; }, () => 'unknown');
+    }
+    async getToken() {
+        // Temporary workaround until all workflows have been updated to authenticating with a GitHub App
+        let token = (0, core_1.getInput)('token');
+        if (!token) {
+            const appId = (0, core_1.getInput)('app_id');
+            const installationId = (0, core_1.getInput)('app_installation_id');
+            const privateKey = (0, core_1.getInput)('app_private_key');
+            if (appId && installationId && privateKey) {
+                const appAuth = (0, auth_app_1.createAppAuth)({ appId, installationId, privateKey });
+                token = (await appAuth({ type: 'installation' })).token;
+            }
+            else {
+                throw Error('Input required: token or app_id, app_installation_id, app_private_key');
+            }
+        }
+        return token;
     }
     async run() {
         var _a, _b, _c, _d, _e, _f;
@@ -29,7 +43,7 @@ class Action {
             }
         }
         try {
-            const token = (0, utils_1.getRequiredInput)('token');
+            const token = await this.getToken();
             const readonly = !!(0, core_1.getInput)('readonly');
             const issue = (_b = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _b === void 0 ? void 0 : _b.number;
             if (issue) {
@@ -95,10 +109,14 @@ class Action {
     }
     async error(error) {
         var _a;
+        const token = await this.getToken();
+        const username = (0, github_1.getOctokit)(token)
+            .rest.users.getAuthenticated()
+            .then((v) => { var _a; return (_a = v.data.name) !== null && _a !== void 0 ? _a : 'unknown'; }, () => 'unknown');
         const details = {
             message: `${error.message}\n${error.stack}`,
             id: this.id,
-            user: await this.username,
+            user: await username,
         };
         if ((_a = github_1.context.issue) === null || _a === void 0 ? void 0 : _a.number)
             details.issue = github_1.context.issue.number;
@@ -109,7 +127,7 @@ Actor: ${details.user}
 
 ID: ${details.id}
 `;
-        await (0, utils_1.logErrorToIssue)(rendered, true, this.token);
+        await (0, utils_1.logErrorToIssue)(rendered, true, token);
         (0, core_1.setFailed)(error.message);
     }
     async onTriggered(_octokit) {
