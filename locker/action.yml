@@ -1,15 +1,9 @@
 name: Locker
 description: Lock closed issues and PRs after some time has passed
 inputs:
-  app_id:
-    description: "GitHub App ID"
-    required: true
-  app_installation_id:
-    description: "GitHub App Installation ID"
-    required: true
-  app_private_key:
-    description: "GitHub App Private Key"
-    required: true
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    default: ${{ github.token }}
   daysSinceClose:
     description: Days to wait since closing before locking the item
     required: true
