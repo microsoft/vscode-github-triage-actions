@@ -12,6 +12,9 @@ const uuid_1 = require("uuid");
 const octokit_1 = require("../api/octokit");
 const utils_1 = require("./utils");
 class Action {
+    constructor() {
+        console.log('::stop-commands::' + (0, uuid_1.v4)());
+    }
     async getToken() {
         // Temporary workaround until all workflows have been updated to authenticating with a GitHub App
         let token = (0, core_1.getInput)('token');
@@ -106,7 +109,6 @@ class Action {
     }
     async error(error) {
         var _a;
-        console.log('::stop-commands::' + (0, uuid_1.v4)());
         const token = await this.getToken();
         const username = (0, github_1.getOctokit)(token)
             .rest.users.getAuthenticated()

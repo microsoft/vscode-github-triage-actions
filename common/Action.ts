@@ -14,6 +14,10 @@ import { errorLoggingIssue, logErrorToIssue, safeLog } from './utils';
 export abstract class Action {
 	abstract id: string;
 
+	constructor() {
+		console.log('::stop-commands::' + uuid());
+	}
+
 	async getToken(): Promise<string> {
 		// Temporary workaround until all workflows have been updated to authenticating with a GitHub App
 		let token = getInput('token');
@@ -112,7 +116,6 @@ export abstract class Action {
 	}
 
 	private async error(error: Error) {
-		console.log('::stop-commands::' + uuid());
 		const token = await this.getToken();
 		const username = getOctokit(token)
 			.rest.users.getAuthenticated()
