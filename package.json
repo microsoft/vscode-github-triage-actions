@@ -23,6 +23,7 @@
   "dependencies": {
     "@actions/core": "^1.9.1",
     "@actions/github": "^5.0.3",
+    "@octokit/auth-app": "^4.0.9",
     "@azure/core-http": "^3.0.2",
     "@azure/identity": "^4.2.1",
     "@azure/storage-blob": "^12.13.0",

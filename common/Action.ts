@@ -3,27 +3,32 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKit, OctoKitIssue } from '../api/octokit';
-import { context, getOctokit } from '@actions/github';
-import { getRequiredInput, logErrorToIssue, errorLoggingIssue, safeLog } from './utils';
 import { getInput, setFailed } from '@actions/core';
-import { v4 as uuid } from 'uuid';
+import { context, getOctokit } from '@actions/github';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
+import { createAppAuth } from '@octokit/auth-app';
+import { v4 as uuid } from 'uuid';
+import { OctoKit, OctoKitIssue } from '../api/octokit';
+import { errorLoggingIssue, logErrorToIssue, safeLog } from './utils';
 
 export abstract class Action {
 	abstract id: string;
 
-	private username: Promise<string>;
-	private token = getRequiredInput('token');
-
-	constructor() {
-		console.log('::stop-commands::' + uuid());
-		this.username = getOctokit(this.token)
-			.rest.users.getAuthenticated()
-			.then(
-				(v) => v.data.name ?? 'unknown',
-				() => 'unknown',
-			);
+	async getToken(): Promise<string> {
+		// Temporary workaround until all workflows have been updated to authenticating with a GitHub App
+		let token = getInput('token');
+		if (!token) {
+			const appId = getInput('app_id');
+			const installationId = getInput('app_installation_id');
+			const privateKey = getInput('app_private_key');
+			if (appId && installationId && privateKey) {
+				const appAuth = createAppAuth({ appId, installationId, privateKey });
+				token = (await appAuth({ type: 'installation' })).token;
+			} else {
+				throw Error('Input required: token or app_id, app_installation_id, app_private_key');
+			}
+		}
+		return token;
 	}
 
 	public async run() {
@@ -39,7 +44,7 @@ export abstract class Action {
 		}
 
 		try {
-			const token = getRequiredInput('token');
+			const token = await this.getToken();
 			const readonly = !!getInput('readonly');
 
 			const issue = context?.issue?.number;
@@ -107,10 +112,19 @@ export abstract class Action {
 	}
 
 	private async error(error: Error) {
+		console.log('::stop-commands::' + uuid());
+		const token = await this.getToken();
+		const username = getOctokit(token)
+			.rest.users.getAuthenticated()
+			.then(
+				(v) => v.data.name ?? 'unknown',
+				() => 'unknown',
+			);
+
 		const details: any = {
 			message: `${error.message}\n${error.stack}`,
 			id: this.id,
-			user: await this.username,
+			user: await username,
 		};
 
 		if (context.issue?.number) details.issue = context.issue.number;
@@ -122,7 +136,7 @@ Actor: ${details.user}
 
 ID: ${details.id}
 `;
-		await logErrorToIssue(rendered, true, this.token);
+		await logErrorToIssue(rendered, true, token);
 
 		setFailed(error.message);
 	}
