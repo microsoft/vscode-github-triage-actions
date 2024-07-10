@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getInput, setFailed } from '@actions/core';
+import { setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { createAppAuth } from '@octokit/auth-app';
 import { v4 as uuid } from 'uuid';
 import { OctoKit, OctoKitIssue } from '../api/octokit';
+import { getInput } from '../common/utils';
 import { errorLoggingIssue, logErrorToIssue, safeLog } from './utils';
 
 export abstract class Action {
@@ -50,7 +51,7 @@ export abstract class Action {
 	}
 
 	getIssueNumber() {
-		const issueNumber = +getInput('issue');
+		const issueNumber = +(getInput('issue') ?? 0);
 		return (
 			(issueNumber > 0 ? issueNumber : undefined) ??
 			context.issue?.number ??
