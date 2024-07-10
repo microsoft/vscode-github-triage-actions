@@ -10,7 +10,8 @@ const github_1 = require("@actions/github");
 const auth_app_1 = require("@octokit/auth-app");
 const uuid_1 = require("uuid");
 const octokit_1 = require("../api/octokit");
-const utils_1 = require("./utils");
+const utils_1 = require("../common/utils");
+const utils_2 = require("./utils");
 class Action {
     constructor() {
         console.log('::stop-commands::' + (0, uuid_1.v4)());
@@ -20,11 +21,11 @@ class Action {
     }
     async getToken() {
         // Temporary workaround until all workflows have been updated to authenticating with a GitHub App
-        let token = (0, core_1.getInput)('token');
+        let token = (0, utils_1.getInput)('token');
         if (!token) {
-            const appId = (0, core_1.getInput)('app_id');
-            const installationId = (0, core_1.getInput)('app_installation_id');
-            const privateKey = (0, core_1.getInput)('app_private_key');
+            const appId = (0, utils_1.getInput)('app_id');
+            const installationId = (0, utils_1.getInput)('app_installation_id');
+            const privateKey = (0, utils_1.getInput)('app_private_key');
             if (appId && installationId && privateKey) {
                 const appAuth = (0, auth_app_1.createAppAuth)({ appId, installationId, privateKey });
                 token = (await appAuth({ type: 'installation' })).token;
@@ -37,30 +38,30 @@ class Action {
     }
     getRepoName() {
         var _a;
-        return (_a = (0, core_1.getInput)('repo')) !== null && _a !== void 0 ? _a : github_1.context.repo.repo;
+        return (_a = (0, utils_1.getInput)('repo')) !== null && _a !== void 0 ? _a : github_1.context.repo.repo;
     }
     getRepoOwner() {
         var _a;
-        return (_a = (0, core_1.getInput)('owner')) !== null && _a !== void 0 ? _a : github_1.context.repo.owner;
+        return (_a = (0, utils_1.getInput)('owner')) !== null && _a !== void 0 ? _a : github_1.context.repo.owner;
     }
     getIssueNumber() {
-        var _a, _b, _c, _d;
-        const issueNumber = +(0, core_1.getInput)('issue');
-        return ((_c = (_a = (issueNumber > 0 ? issueNumber : undefined)) !== null && _a !== void 0 ? _a : (_b = github_1.context.issue) === null || _b === void 0 ? void 0 : _b.number) !== null && _c !== void 0 ? _c : (_d = github_1.context.payload.issue) === null || _d === void 0 ? void 0 : _d.number);
+        var _a, _b, _c, _d, _e;
+        const issueNumber = +((_a = (0, utils_1.getInput)('issue')) !== null && _a !== void 0 ? _a : 0);
+        return ((_d = (_b = (issueNumber > 0 ? issueNumber : undefined)) !== null && _b !== void 0 ? _b : (_c = github_1.context.issue) === null || _c === void 0 ? void 0 : _c.number) !== null && _d !== void 0 ? _d : (_e = github_1.context.payload.issue) === null || _e === void 0 ? void 0 : _e.number);
     }
     async run() {
         var _a, _b, _c, _d;
-        if (utils_1.errorLoggingIssue) {
-            const errorIssue = (0, utils_1.errorLoggingIssue)(this.repoName, this.repoOwner);
+        if (utils_2.errorLoggingIssue) {
+            const errorIssue = (0, utils_2.errorLoggingIssue)(this.repoName, this.repoOwner);
             if (this.repoName === (errorIssue === null || errorIssue === void 0 ? void 0 : errorIssue.repo) &&
                 this.repoOwner === errorIssue.owner &&
                 this.issue === errorIssue.issue) {
-                return (0, utils_1.safeLog)('refusing to run on error logging issue to prevent cascading errors');
+                return (0, utils_2.safeLog)('refusing to run on error logging issue to prevent cascading errors');
             }
         }
         try {
             const token = await this.getToken();
-            const readonly = !!(0, core_1.getInput)('readonly');
+            const readonly = !!(0, utils_1.getInput)('readonly');
             if (this.issue) {
                 const octokit = new octokit_1.OctoKitIssue(token, { repo: this.repoName, owner: this.repoOwner }, { number: this.issue }, { readonly });
                 if (github_1.context.eventName === 'issue_comment') {
@@ -112,7 +113,7 @@ class Action {
         }
         catch (e) {
             const err = e;
-            (0, utils_1.safeLog)((err === null || err === void 0 ? void 0 : err.stack) || (err === null || err === void 0 ? void 0 : err.message) || String(e));
+            (0, utils_2.safeLog)((err === null || err === void 0 ? void 0 : err.stack) || (err === null || err === void 0 ? void 0 : err.message) || String(e));
             try {
                 await this.error(err);
             }
@@ -142,7 +143,7 @@ Actor: ${details.user}
 
 ID: ${details.id}
 `;
-        await (0, utils_1.logErrorToIssue)(rendered, true, token, this.repoName, this.repoOwner);
+        await (0, utils_2.logErrorToIssue)(rendered, true, token, this.repoName, this.repoOwner);
         (0, core_1.setFailed)(error.message);
     }
     async onTriggered(_octokit) {
