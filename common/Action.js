@@ -45,7 +45,8 @@ class Action {
     }
     getIssueNumber() {
         var _a, _b, _c, _d;
-        return (_c = (_a = +(0, core_1.getInput)('issue')) !== null && _a !== void 0 ? _a : (_b = github_1.context.issue) === null || _b === void 0 ? void 0 : _b.number) !== null && _c !== void 0 ? _c : (_d = github_1.context.payload.issue) === null || _d === void 0 ? void 0 : _d.number;
+        const issueNumber = +(0, core_1.getInput)('issue');
+        return ((_c = (_a = (issueNumber > 0 ? issueNumber : undefined)) !== null && _a !== void 0 ? _a : (_b = github_1.context.issue) === null || _b === void 0 ? void 0 : _b.number) !== null && _c !== void 0 ? _c : (_d = github_1.context.payload.issue) === null || _d === void 0 ? void 0 : _d.number);
     }
     async run() {
         var _a, _b, _c, _d;
