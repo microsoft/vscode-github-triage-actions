@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OctoKit } from '../api/octokit';
+import { Action } from '../common/Action';
 import { getInput, getRequiredInput } from '../common/utils';
 import { Locker } from './Locker';
-import { Action } from '../common/Action';
 
 class LockerAction extends Action {
 	id = 'Locker';
@@ -14,6 +14,7 @@ class LockerAction extends Action {
 	async onTriggered(github: OctoKit) {
 		await new Locker(
 			github,
+			getRequiredInput('repoName'),
 			+getRequiredInput('daysSinceClose'),
 			+getRequiredInput('daysSinceUpdate'),
 			getInput('ignoredLabel') || undefined,
