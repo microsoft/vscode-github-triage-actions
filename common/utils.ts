@@ -84,15 +84,15 @@ export const getRateLimit = async (token: string) => {
 	return usage;
 };
 
-export const errorLoggingIssue = (() => {
+export const errorLoggingIssue = (repoName: string, repoOwner: string) => {
 	try {
-		const repo = context.repo.owner.toLowerCase() + '/' + context.repo.repo.toLowerCase();
+		const repo = repoOwner.toLowerCase() + '/' + repoName.toLowerCase();
 		if (repo === 'microsoft/vscode' || repo === 'microsoft/vscode-remote-release') {
 			return { repo: 'vscode', owner: 'Microsoft', issue: 93814 };
 		} else if (/microsoft\//.test(repo)) {
 			return { repo: 'vscode-internalbacklog', owner: 'Microsoft', issue: 974 };
 		} else if (getInput('errorLogIssueNumber')) {
-			return { ...context.repo, issue: +getRequiredInput('errorLogIssueNumber') };
+			return { repo: repoName, owner: repoOwner, issue: +getRequiredInput('errorLogIssueNumber') };
 		} else {
 			return undefined;
 		}
@@ -100,12 +100,18 @@ export const errorLoggingIssue = (() => {
 		console.error(e);
 		return undefined;
 	}
-})();
+};
 
-export const logErrorToIssue = async (message: string, ping: boolean, token: string): Promise<void> => {
+export const logErrorToIssue = async (
+	message: string,
+	ping: boolean,
+	token: string,
+	repoName: string,
+	repoOwner: string,
+): Promise<void> => {
 	// Attempt to wait out abuse detection timeout if present
 	await new Promise((resolve) => setTimeout(resolve, 10000));
-	const dest = errorLoggingIssue;
+	const dest = errorLoggingIssue(repoName, repoOwner);
 	if (!dest) return console.log('no error logging repo defined. swallowing error.');
 
 	return new OctoKitIssue(token, { owner: dest.owner, repo: dest.repo }, { number: dest.issue })

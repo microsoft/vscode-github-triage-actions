@@ -13,9 +13,15 @@ import { errorLoggingIssue, logErrorToIssue, safeLog } from './utils';
 
 export abstract class Action {
 	abstract id: string;
+	repoName: string;
+	repoOwner: string;
+	issue: number | undefined;
 
 	constructor() {
 		console.log('::stop-commands::' + uuid());
+		this.repoName = this.getRepoName();
+		this.repoOwner = this.getRepoOwner();
+		this.issue = this.getIssueNumber();
 	}
 
 	async getToken(): Promise<string> {
@@ -35,13 +41,25 @@ export abstract class Action {
 		return token;
 	}
 
+	getRepoName() {
+		return getInput('repo') ?? context.repo.repo;
+	}
+
+	getRepoOwner() {
+		return getInput('owner') ?? context.repo.owner;
+	}
+
+	getIssueNumber() {
+		return +getInput('issue') ?? context.issue?.number ?? context.payload.issue?.number;
+	}
+
 	public async run() {
 		if (errorLoggingIssue) {
-			const { repo, issue, owner } = errorLoggingIssue;
+			const errorIssue = errorLoggingIssue(this.repoName, this.repoOwner);
 			if (
-				context.repo.repo === repo &&
-				context.repo.owner === owner &&
-				context.payload.issue?.number === issue
+				this.repoName === errorIssue?.repo &&
+				this.repoOwner === errorIssue.owner &&
+				this.issue === errorIssue.issue
 			) {
 				return safeLog('refusing to run on error logging issue to prevent cascading errors');
 			}
@@ -51,9 +69,13 @@ export abstract class Action {
 			const token = await this.getToken();
 			const readonly = !!getInput('readonly');
 
-			const issue = context?.issue?.number;
-			if (issue) {
-				const octokit = new OctoKitIssue(token, context.repo, { number: issue }, { readonly });
+			if (this.issue) {
+				const octokit = new OctoKitIssue(
+					token,
+					{ repo: this.repoName, owner: this.repoOwner },
+					{ number: this.issue },
+					{ readonly },
+				);
 				if (context.eventName === 'issue_comment') {
 					await this.onCommented(octokit, context.payload.comment?.body, context.actor);
 				} else if (
@@ -96,12 +118,14 @@ export abstract class Action {
 				}
 			} else if (context.eventName === 'create') {
 				await this.onCreated(
-					new OctoKit(token, context.repo, { readonly }),
+					new OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }),
 					context?.payload?.ref,
 					context?.payload?.sender?.login,
 				);
 			} else {
-				await this.onTriggered(new OctoKit(token, context.repo, { readonly }));
+				await this.onTriggered(
+					new OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }),
+				);
 			}
 		} catch (e) {
 			const err = e as Error;
@@ -130,7 +154,9 @@ export abstract class Action {
 			user: await username,
 		};
 
-		if (context.issue?.number) details.issue = context.issue.number;
+		if (this.issue) {
+			details.issue = this.issue;
+		}
 
 		const rendered = `
 Message: ${details.message}
@@ -139,7 +165,7 @@ Actor: ${details.user}
 
 ID: ${details.id}
 `;
-		await logErrorToIssue(rendered, true, token);
+		await logErrorToIssue(rendered, true, token, this.repoName, this.repoOwner);
 
 		setFailed(error.message);
 	}
