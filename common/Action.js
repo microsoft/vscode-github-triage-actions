@@ -14,6 +14,9 @@ const utils_1 = require("./utils");
 class Action {
     constructor() {
         console.log('::stop-commands::' + (0, uuid_1.v4)());
+        this.repoName = this.getRepoName();
+        this.repoOwner = this.getRepoOwner();
+        this.issue = this.getIssueNumber();
     }
     async getToken() {
         // Temporary workaround until all workflows have been updated to authenticating with a GitHub App
@@ -32,24 +35,35 @@ class Action {
         }
         return token;
     }
+    getRepoName() {
+        var _a;
+        return (_a = (0, core_1.getInput)('repo')) !== null && _a !== void 0 ? _a : github_1.context.repo.repo;
+    }
+    getRepoOwner() {
+        var _a;
+        return (_a = (0, core_1.getInput)('owner')) !== null && _a !== void 0 ? _a : github_1.context.repo.owner;
+    }
+    getIssueNumber() {
+        var _a, _b, _c, _d;
+        return (_c = (_a = +(0, core_1.getInput)('issue')) !== null && _a !== void 0 ? _a : (_b = github_1.context.issue) === null || _b === void 0 ? void 0 : _b.number) !== null && _c !== void 0 ? _c : (_d = github_1.context.payload.issue) === null || _d === void 0 ? void 0 : _d.number;
+    }
     async run() {
-        var _a, _b, _c, _d, _e, _f;
+        var _a, _b, _c, _d;
         if (utils_1.errorLoggingIssue) {
-            const { repo, issue, owner } = utils_1.errorLoggingIssue;
-            if (github_1.context.repo.repo === repo &&
-                github_1.context.repo.owner === owner &&
-                ((_a = github_1.context.payload.issue) === null || _a === void 0 ? void 0 : _a.number) === issue) {
+            const errorIssue = (0, utils_1.errorLoggingIssue)(this.repoName, this.repoOwner);
+            if (this.repoName === (errorIssue === null || errorIssue === void 0 ? void 0 : errorIssue.repo) &&
+                this.repoOwner === errorIssue.owner &&
+                this.issue === errorIssue.issue) {
                 return (0, utils_1.safeLog)('refusing to run on error logging issue to prevent cascading errors');
             }
         }
         try {
             const token = await this.getToken();
             const readonly = !!(0, core_1.getInput)('readonly');
-            const issue = (_b = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.issue) === null || _b === void 0 ? void 0 : _b.number;
-            if (issue) {
-                const octokit = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: issue }, { readonly });
+            if (this.issue) {
+                const octokit = new octokit_1.OctoKitIssue(token, { repo: this.repoName, owner: this.repoOwner }, { number: this.issue }, { readonly });
                 if (github_1.context.eventName === 'issue_comment') {
-                    await this.onCommented(octokit, (_c = github_1.context.payload.comment) === null || _c === void 0 ? void 0 : _c.body, github_1.context.actor);
+                    await this.onCommented(octokit, (_a = github_1.context.payload.comment) === null || _a === void 0 ? void 0 : _a.body, github_1.context.actor);
                 }
                 else if (github_1.context.eventName === 'issues' ||
                     github_1.context.eventName === 'pull_request' ||
@@ -89,10 +103,10 @@ class Action {
                 }
             }
             else if (github_1.context.eventName === 'create') {
-                await this.onCreated(new octokit_1.OctoKit(token, github_1.context.repo, { readonly }), (_d = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _d === void 0 ? void 0 : _d.ref, (_f = (_e = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _e === void 0 ? void 0 : _e.sender) === null || _f === void 0 ? void 0 : _f.login);
+                await this.onCreated(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }), (_b = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _b === void 0 ? void 0 : _b.ref, (_d = (_c = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _c === void 0 ? void 0 : _c.sender) === null || _d === void 0 ? void 0 : _d.login);
             }
             else {
-                await this.onTriggered(new octokit_1.OctoKit(token, github_1.context.repo, { readonly }));
+                await this.onTriggered(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }));
             }
         }
         catch (e) {
@@ -108,7 +122,6 @@ class Action {
         }
     }
     async error(error) {
-        var _a;
         const token = await this.getToken();
         const username = (0, github_1.getOctokit)(token)
             .rest.users.getAuthenticated()
@@ -118,8 +131,9 @@ class Action {
             id: this.id,
             user: await username,
         };
-        if ((_a = github_1.context.issue) === null || _a === void 0 ? void 0 : _a.number)
-            details.issue = github_1.context.issue.number;
+        if (this.issue) {
+            details.issue = this.issue;
+        }
         const rendered = `
 Message: ${details.message}
 
@@ -127,7 +141,7 @@ Actor: ${details.user}
 
 ID: ${details.id}
 `;
-        await (0, utils_1.logErrorToIssue)(rendered, true, token);
+        await (0, utils_1.logErrorToIssue)(rendered, true, token, this.repoName, this.repoOwner);
         (0, core_1.setFailed)(error.message);
     }
     async onTriggered(_octokit) {
