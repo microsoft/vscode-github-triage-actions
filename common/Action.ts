@@ -50,7 +50,12 @@ export abstract class Action {
 	}
 
 	getIssueNumber() {
-		return +getInput('issue') ?? context.issue?.number ?? context.payload.issue?.number;
+		const issueNumber = +getInput('issue');
+		return (
+			(issueNumber > 0 ? issueNumber : undefined) ??
+			context.issue?.number ??
+			context.payload.issue?.number
+		);
 	}
 
 	public async run() {
