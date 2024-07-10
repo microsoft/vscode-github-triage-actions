@@ -4,10 +4,10 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions to both repos
     default: ${{ github.token }}
-  owner:
+  destinationOwner:
     description: account/organization that owns the destination repo (the microsoft part of microsoft/vscode)
     required: true
-  repo:
+  destinationRepo:
     description: name of the destination repo (the vscode part of microsoft/vscode)
     required: true
 runs:
