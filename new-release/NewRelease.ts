@@ -23,13 +23,15 @@ export class NewRelease {
 
 		const issue = await this.github.getIssue();
 		const cleansed = issue.body.replace(/<!-- .* -->/g, '');
-
+		const productVersion = release.productVersion.endsWith('.0')
+			? release.productVersion.replace(/\.0$/, '')
+			: release.productVersion;
 		if (
 			this.oldVersionMessage &&
 			!/insider/i.test(cleansed) &&
 			!/\.dev/i.test(cleansed) &&
 			/VS ?Code Version:.*\d/i.test(cleansed) &&
-			!cleansed.includes(release.productVersion)
+			!cleansed.includes(productVersion)
 		) {
 			await this.github.postComment(
 				this.oldVersionMessage.replace('{currentVersion}', release.productVersion),
@@ -46,7 +48,7 @@ export class NewRelease {
 		if (
 			!/VS ?Code Version:.*Insider/i.test(cleansed) &&
 			new RegExp(
-				`VS ?Code Version:(.*[^\\d])?${release.productVersion.replace('.', '\\.')}([^\\d]|$)`,
+				`VS ?Code Version:(.*[^\\d])?${productVersion.replace('.', '\\.')}([^\\d]|$)`,
 				'i',
 			).test(cleansed)
 		) {

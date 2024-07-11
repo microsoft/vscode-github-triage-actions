@@ -22,11 +22,14 @@ class NewRelease {
         const daysSinceRelease = (Date.now() - release.timestamp) / (24 * 60 * 60 * 1000);
         const issue = await this.github.getIssue();
         const cleansed = issue.body.replace(/<!-- .* -->/g, '');
+        const productVersion = release.productVersion.endsWith('.0')
+            ? release.productVersion.replace(/\.0$/, '')
+            : release.productVersion;
         if (this.oldVersionMessage &&
             !/insider/i.test(cleansed) &&
             !/\.dev/i.test(cleansed) &&
             /VS ?Code Version:.*\d/i.test(cleansed) &&
-            !cleansed.includes(release.productVersion)) {
+            !cleansed.includes(productVersion)) {
             await this.github.postComment(this.oldVersionMessage.replace('{currentVersion}', release.productVersion));
             return;
         }
@@ -36,7 +39,7 @@ class NewRelease {
             return this.github.deleteLabel(this.label);
         }
         if (!/VS ?Code Version:.*Insider/i.test(cleansed) &&
-            new RegExp(`VS ?Code Version:(.*[^\\d])?${release.productVersion.replace('.', '\\.')}([^\\d]|$)`, 'i').test(cleansed)) {
+            new RegExp(`VS ?Code Version:(.*[^\\d])?${productVersion.replace('.', '\\.')}([^\\d]|$)`, 'i').test(cleansed)) {
             if (!(await this.github.repoHasLabel(this.label))) {
                 (0, utils_1.safeLog)('First release issue found. Globally creating label ' + this.label);
                 await this.github.createLabel(this.label, this.labelColor, this.labelDescription);
