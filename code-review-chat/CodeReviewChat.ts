@@ -242,8 +242,7 @@ export class CodeReviewChat extends Chatter {
 		const vscodeDevUrl = pr.url.replace('https://', 'https://insiders.vscode.dev/');
 
 		const externalPrefix = this._externalContributorPR ? '⚠️[EXTERNAL]⚠️ ' : '';
-		const forkPrefix = pr.fork ? `(From Fork: ${pr.headLabel}) ` : '';
-		const message = `${externalPrefix}${forkPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
+		const message = `${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
 		return message;
 	}
 
