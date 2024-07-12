@@ -51,7 +51,7 @@ export abstract class Action {
 	}
 
 	getIssueNumber() {
-		const issueNumber = +(getInput('issue') ?? 0);
+		const issueNumber = +(getInput('issue_number') ?? 0);
 		return (
 			(issueNumber > 0 ? issueNumber : undefined) ??
 			context.issue?.number ??
