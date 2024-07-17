@@ -22,7 +22,7 @@ class Locker {
         const updatedTimestamp = (0, utils_1.daysAgoToHumanReadbleDate)(this.daysSinceUpdate);
         const milestones = this.ignoredMilestones ? this.ignoredMilestones.split(',') : [];
         const milestonesQuery = milestones.map((milestone) => ` -milestone:"${milestone}"`).join('');
-        const query = `closed:<${closedTimestamp} updated:<${updatedTimestamp} is:unlocked` +
+        const query = `repo:${this.github.repoOwner}/${this.github.repoName} closed:<${closedTimestamp} updated:<${updatedTimestamp} is:unlocked` +
             (this.label ? ` -label:${this.label}` : '') +
             (milestones.length > 0 ? milestonesQuery : '') +
             (this.typeIs ? ` is:${this.typeIs}` : '');
