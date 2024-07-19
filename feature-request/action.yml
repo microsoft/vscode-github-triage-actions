@@ -4,6 +4,21 @@ inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
     default: ${{ github.token }}
+  app_id:
+    description: GitHub App ID
+    required: false
+  app_installation_id:
+    description: GitHub App Installation ID
+    required: false
+  app_private_key:
+    description: GitHub App Private Key
+    required: false
+  owner:
+    description: Repository owner
+    required: true
+  repo:
+    description: Repository name
+    required: true
   candidateMilestoneID:
     description: Numeric ID of the candidate issues milestone
     required: true

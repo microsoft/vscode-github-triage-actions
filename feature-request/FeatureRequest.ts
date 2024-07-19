@@ -25,7 +25,7 @@ export class FeatureRequestQueryer {
 	constructor(private github: GitHub, private config: FeatureRequestConfig) {}
 
 	async run(): Promise<void> {
-		let query = `is:open is:issue milestone:"${this.config.milestones.candidateName}" label:"${this.config.featureRequestLabel}"`;
+		let query = `repo:${this.github.repoOwner}/${this.github.repoName} is:open is:issue milestone:"${this.config.milestones.candidateName}" label:"${this.config.featureRequestLabel}"`;
 		query += this.config.labelsToExclude.map((l) => `-label:"${l}"`).join(' ');
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
