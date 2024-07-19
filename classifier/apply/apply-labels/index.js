@@ -4,12 +4,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const auth_app_1 = require("@octokit/auth-app");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const octokit_1 = require("../../../api/octokit");
 const Action_1 = require("../../../common/Action");
 const utils_1 = require("../../../common/utils");
-const token = (0, utils_1.getRequiredInput)('token');
 const debug = !!(0, utils_1.getInput)('__debug');
 const owner = (0, utils_1.getRequiredInput)('owner');
 const repo = (0, utils_1.getRequiredInput)('repo');
@@ -20,6 +20,17 @@ class ApplyLabels extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a, _b;
+        let token;
+        const appId = (0, utils_1.getInput)('app_id');
+        const installationId = (0, utils_1.getInput)('app_installation_id');
+        const privateKey = (0, utils_1.getInput)('app_private_key');
+        if (appId && installationId && privateKey) {
+            const appAuth = (0, auth_app_1.createAppAuth)({ appId, installationId, privateKey });
+            token = (await appAuth({ type: 'installation' })).token;
+        }
+        else {
+            throw Error('Input required: app_id, app_installation_id, app_private_key');
+        }
         const config = await github.readConfig((0, utils_1.getRequiredInput)('config-path'));
         const labelings = JSON.parse((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
         for (const labeling of labelings) {
