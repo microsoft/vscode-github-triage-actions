@@ -5,10 +5,23 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.download = void 0;
+const auth_app_1 = require("@octokit/auth-app");
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
-const download = async (token, repo, endCursor) => {
+const utils_1 = require("../../../common/utils");
+const download = async (repo, endCursor) => {
+    const appId = (0, utils_1.getRequiredInput)('app_id');
+    const installationId = (0, utils_1.getRequiredInput)('app_installation_id');
+    const privateKey = (0, utils_1.getRequiredInput)('app_private_key');
+    let token;
+    if (appId && installationId && privateKey) {
+        const appAuth = (0, auth_app_1.createAppAuth)({ appId, installationId, privateKey });
+        token = (await appAuth({ type: 'installation' })).token;
+    }
+    else {
+        throw Error('Input required: app_id, app_installation_id, app_private_key');
+    }
     const data = await axios_1.default
         .post('https://api.github.com/graphql', JSON.stringify({
         query: `{
@@ -110,7 +123,7 @@ const download = async (token, repo, endCursor) => {
     if (pageInfo.hasNextPage) {
         return new Promise((resolve) => {
             setTimeout(async () => {
-                await (0, exports.download)(token, repo, endCursor);
+                await (0, exports.download)(repo, endCursor);
                 resolve();
             }, 1000);
         });

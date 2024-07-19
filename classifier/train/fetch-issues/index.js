@@ -4,15 +4,15 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const github_1 = require("@actions/github");
-const utils_1 = require("../../../common/utils");
-const download_1 = require("./download");
-const createDataDir_1 = require("./createDataDir");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const Action_1 = require("../../../common/Action");
-const token = (0, utils_1.getRequiredInput)('token');
+const utils_1 = require("../../../common/utils");
+const createDataDir_1 = require("./createDataDir");
+const download_1 = require("./download");
 const endCursor = (0, utils_1.getInput)('cursor');
+const owner = (0, utils_1.getRequiredInput)('owner');
+const repo = (0, utils_1.getRequiredInput)('repo');
 const areas = (0, utils_1.getRequiredInput)('areas').split('|');
 const assignees = (0, utils_1.getRequiredInput)('assignees').split('|');
 class FetchIssues extends Action_1.Action {
@@ -22,14 +22,14 @@ class FetchIssues extends Action_1.Action {
     }
     async onTriggered() {
         if (endCursor) {
-            await (0, download_1.download)(token, github_1.context.repo, endCursor);
+            await (0, download_1.download)({ owner, repo }, endCursor);
         }
         else {
             try {
                 (0, fs_1.statSync)((0, path_1.join)(__dirname, 'issues.json')).isFile();
             }
             catch {
-                await (0, download_1.download)(token, github_1.context.repo);
+                await (0, download_1.download)({ owner, repo });
             }
         }
         await new Promise((resolve) => setTimeout(resolve, 1000));
