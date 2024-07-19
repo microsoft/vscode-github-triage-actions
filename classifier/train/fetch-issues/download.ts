@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createAppAuth } from '@octokit/auth-app';
 import axios from 'axios';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { getRequiredInput } from '../../../common/utils';
+import { getAuthenticationToken } from '../../../common/Action';
 
 type Response = {
 	rateLimit: RateLimitResponse;
@@ -76,17 +75,7 @@ export type RemovedLabelEvent = {
 };
 
 export const download = async (repo: { owner: string; repo: string }, endCursor?: string) => {
-	const appId = getRequiredInput('app_id');
-	const installationId = getRequiredInput('app_installation_id');
-	const privateKey = getRequiredInput('app_private_key');
-	let token: string;
-	if (appId && installationId && privateKey) {
-		const appAuth = createAppAuth({ appId, installationId, privateKey });
-		token = (await appAuth({ type: 'installation' })).token;
-	} else {
-		throw Error('Input required: app_id, app_installation_id, app_private_key');
-	}
-
+	const token = await getAuthenticationToken();
 	const data = await axios
 		.post(
 			'https://api.github.com/graphql',

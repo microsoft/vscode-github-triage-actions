@@ -27,18 +27,7 @@ export abstract class Action {
 
 	async getToken(): Promise<string> {
 		// Temporary workaround until all workflows have been updated to authenticating with a GitHub App
-		let token = getInput('token');
-		if (!token) {
-			const appId = getInput('app_id');
-			const installationId = getInput('app_installation_id');
-			const privateKey = getInput('app_private_key');
-			if (appId && installationId && privateKey) {
-				const appAuth = createAppAuth({ appId, installationId, privateKey });
-				token = (await appAuth({ type: 'installation' })).token;
-			} else {
-				throw Error('Input required: token or app_id, app_installation_id, app_private_key');
-			}
-		}
+		const token = getInput('token') ?? (await getAuthenticationToken());
 		return token;
 	}
 
@@ -211,5 +200,17 @@ ID: ${details.id}
 	}
 	protected async onCommented(_issue: OctoKitIssue, _comment: string, _actor: string): Promise<void> {
 		throw Error('not implemented');
+	}
+}
+
+export async function getAuthenticationToken(): Promise<string> {
+	const appId = getInput('app_id');
+	const installationId = getInput('app_installation_id');
+	const privateKey = getInput('app_private_key');
+	if (appId && installationId && privateKey) {
+		const appAuth = createAppAuth({ appId, installationId, privateKey });
+		return (await appAuth({ type: 'installation' })).token;
+	} else {
+		throw Error('Input required: app_id, app_installation_id, app_private_key');
 	}
 }

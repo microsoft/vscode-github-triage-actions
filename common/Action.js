@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Action = void 0;
+exports.getAuthenticationToken = exports.Action = void 0;
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const auth_app_1 = require("@octokit/auth-app");
@@ -20,20 +20,9 @@ class Action {
         this.issue = this.getIssueNumber();
     }
     async getToken() {
+        var _a;
         // Temporary workaround until all workflows have been updated to authenticating with a GitHub App
-        let token = (0, utils_1.getInput)('token');
-        if (!token) {
-            const appId = (0, utils_1.getInput)('app_id');
-            const installationId = (0, utils_1.getInput)('app_installation_id');
-            const privateKey = (0, utils_1.getInput)('app_private_key');
-            if (appId && installationId && privateKey) {
-                const appAuth = (0, auth_app_1.createAppAuth)({ appId, installationId, privateKey });
-                token = (await appAuth({ type: 'installation' })).token;
-            }
-            else {
-                throw Error('Input required: token or app_id, app_installation_id, app_private_key');
-            }
-        }
+        const token = (_a = (0, utils_1.getInput)('token')) !== null && _a !== void 0 ? _a : (await getAuthenticationToken());
         return token;
     }
     getRepoName() {
@@ -184,4 +173,17 @@ ID: ${details.id}
     }
 }
 exports.Action = Action;
+async function getAuthenticationToken() {
+    const appId = (0, utils_1.getInput)('app_id');
+    const installationId = (0, utils_1.getInput)('app_installation_id');
+    const privateKey = (0, utils_1.getInput)('app_private_key');
+    if (appId && installationId && privateKey) {
+        const appAuth = (0, auth_app_1.createAppAuth)({ appId, installationId, privateKey });
+        return (await appAuth({ type: 'installation' })).token;
+    }
+    else {
+        throw Error('Input required: app_id, app_installation_id, app_private_key');
+    }
+}
+exports.getAuthenticationToken = getAuthenticationToken;
 //# sourceMappingURL=Action.js.map

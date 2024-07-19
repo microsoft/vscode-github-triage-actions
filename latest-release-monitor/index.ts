@@ -3,13 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { context } from '@actions/github';
 import { OctoKit } from '../api/octokit';
 import { downloadBlobText, uploadBlobText } from '../classifier/blobStorage';
-import { Action } from '../common/Action';
+import { Action, getAuthenticationToken } from '../common/Action';
 import { getRequiredInput, loadLatestRelease, safeLog } from '../common/utils';
-
-const token = getRequiredInput('token');
 
 class LatestReleaseMonitor extends Action {
 	id = 'LatestReleaseMonitor';
@@ -25,8 +22,11 @@ class LatestReleaseMonitor extends Action {
 		const latest = (await loadLatestRelease(quality))?.version;
 		if (latest && latest !== lastKnown) {
 			safeLog('found a new release of', quality);
+			const owner = getRequiredInput('owner');
+			const repo = getRequiredInput('repo');
+			const token = await getAuthenticationToken();
 			await uploadBlobText('latest-' + quality, latest, 'latest-releases');
-			await new OctoKit(token, context.repo).dispatch('released-' + quality);
+			await new OctoKit(token, { owner, repo }).dispatch('released-' + quality);
 		}
 	}
 

@@ -3,11 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createAppAuth } from '@octokit/auth-app';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { OctoKit, OctoKitIssue } from '../../../api/octokit';
-import { Action } from '../../../common/Action';
+import { Action, getAuthenticationToken } from '../../../common/Action';
 import { getInput, getRequiredInput, safeLog } from '../../../common/utils';
 
 const debug = !!getInput('__debug');
@@ -28,17 +27,7 @@ class ApplyLabels extends Action {
 	id = 'Classifier/Apply/ApplyLabels';
 
 	async onTriggered(github: OctoKit) {
-		let token: string;
-		const appId = getInput('app_id');
-		const installationId = getInput('app_installation_id');
-		const privateKey = getInput('app_private_key');
-		if (appId && installationId && privateKey) {
-			const appAuth = createAppAuth({ appId, installationId, privateKey });
-			token = (await appAuth({ type: 'installation' })).token;
-		} else {
-			throw Error('Input required: app_id, app_installation_id, app_private_key');
-		}
-
+		const token = await getAuthenticationToken();
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('config-path'));
 		const labelings: { number: number; area: string; assignee: string }[] = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
