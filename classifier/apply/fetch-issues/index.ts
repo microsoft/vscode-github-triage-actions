@@ -13,14 +13,15 @@ import { downloadBlobFile } from '../../blobStorage';
 const minToDay = 0.0007;
 const from = daysAgoToHumanReadbleDate(+getRequiredInput('from') * minToDay);
 const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay);
-
+const owner = getRequiredInput('owner');
+const repo = getRequiredInput('repo');
 const blobContainer = getRequiredInput('blobContainerName');
 
 class FetchIssues extends Action {
 	id = 'Clasifier/Apply/FetchIssues';
 
 	async onTriggered(github: OctoKit) {
-		const query = `created:>${from} updated:<${until} is:open type:issue`;
+		const query = `repo:${owner}/${repo} created:>${from} updated:<${until} is:open type:issue`;
 
 		safeLog(`Querying for issues: ${query}`);
 

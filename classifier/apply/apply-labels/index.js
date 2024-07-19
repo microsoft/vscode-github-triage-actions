@@ -6,12 +6,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const path_1 = require("path");
-const github_1 = require("@actions/github");
 const octokit_1 = require("../../../api/octokit");
-const utils_1 = require("../../../common/utils");
 const Action_1 = require("../../../common/Action");
+const utils_1 = require("../../../common/utils");
 const token = (0, utils_1.getRequiredInput)('token');
 const debug = !!(0, utils_1.getInput)('__debug');
+const owner = (0, utils_1.getRequiredInput)('owner');
+const repo = (0, utils_1.getRequiredInput)('repo');
 class ApplyLabels extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -22,7 +23,7 @@ class ApplyLabels extends Action_1.Action {
         const config = await github.readConfig((0, utils_1.getRequiredInput)('config-path'));
         const labelings = JSON.parse((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
         for (const labeling of labelings) {
-            const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
+            const issue = new octokit_1.OctoKitIssue(token, { owner, repo }, { number: labeling.number });
             const issueData = await issue.getIssue();
             if (!debug && issueData.assignee) {
                 (0, utils_1.safeLog)('skipping, already assigned to: ', issueData.assignee);
@@ -69,7 +70,7 @@ class ApplyLabels extends Action_1.Action {
                         [available[i], available[j]] = [available[j], available[i]];
                     }
                     if (!debug) {
-                        const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
+                        const issue = new octokit_1.OctoKitIssue(token, { owner, repo }, { number: labeling.number });
                         await issue.addLabel('triage-needed');
                         const randomSelection = available[0];
                         (0, utils_1.safeLog)('assigning', randomSelection);
