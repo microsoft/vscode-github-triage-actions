@@ -20,7 +20,7 @@ class NeedsMoreInfoCloser {
         var _a;
         const updatedTimestamp = (0, utils_1.daysAgoToHumanReadbleDate)(this.closeDays);
         const pingTimestamp = (0, utils_1.daysAgoToTimestamp)(this.pingDays);
-        const query = `updated:<${updatedTimestamp} label:"${this.label}" is:open is:unlocked`;
+        const query = `repo:${this.github.repoOwner}/${this.github.repoName} updated:<${updatedTimestamp} label:"${this.label}" is:open is:unlocked`;
         for await (const page of this.github.query({ q: query })) {
             for (const issue of page) {
                 const hydrated = await issue.getIssue();
