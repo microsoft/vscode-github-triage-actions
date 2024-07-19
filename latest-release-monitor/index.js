@@ -4,12 +4,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const github_1 = require("@actions/github");
 const octokit_1 = require("../api/octokit");
 const blobStorage_1 = require("../classifier/blobStorage");
 const Action_1 = require("../common/Action");
 const utils_1 = require("../common/utils");
-const token = (0, utils_1.getRequiredInput)('token');
 class LatestReleaseMonitor extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -27,8 +25,11 @@ class LatestReleaseMonitor extends Action_1.Action {
         const latest = (_a = (await (0, utils_1.loadLatestRelease)(quality))) === null || _a === void 0 ? void 0 : _a.version;
         if (latest && latest !== lastKnown) {
             (0, utils_1.safeLog)('found a new release of', quality);
+            const owner = (0, utils_1.getRequiredInput)('owner');
+            const repo = (0, utils_1.getRequiredInput)('repo');
+            const token = await (0, Action_1.getAuthenticationToken)();
             await (0, blobStorage_1.uploadBlobText)('latest-' + quality, latest, 'latest-releases');
-            await new octokit_1.OctoKit(token, github_1.context.repo).dispatch('released-' + quality);
+            await new octokit_1.OctoKit(token, { owner, repo }).dispatch('released-' + quality);
         }
     }
     async onTriggered() {
