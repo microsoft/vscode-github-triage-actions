@@ -5,13 +5,14 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { context } from '@actions/github';
 import { OctoKit, OctoKitIssue } from '../../../api/octokit';
-import { getRequiredInput, getInput, safeLog } from '../../../common/utils';
 import { Action } from '../../../common/Action';
+import { getInput, getRequiredInput, safeLog } from '../../../common/utils';
 
 const token = getRequiredInput('token');
 const debug = !!getInput('__debug');
+const owner = getRequiredInput('owner');
+const repo = getRequiredInput('repo');
 
 type ClassifierConfig = {
 	labels?: {
@@ -33,7 +34,7 @@ class ApplyLabels extends Action {
 		);
 
 		for (const labeling of labelings) {
-			const issue = new OctoKitIssue(token, context.repo, { number: labeling.number });
+			const issue = new OctoKitIssue(token, { owner, repo }, { number: labeling.number });
 			const issueData = await issue.getIssue();
 
 			if (!debug && issueData.assignee) {
@@ -82,7 +83,7 @@ class ApplyLabels extends Action {
 						[available[i], available[j]] = [available[j], available[i]];
 					}
 					if (!debug) {
-						const issue = new OctoKitIssue(token, context.repo, { number: labeling.number });
+						const issue = new OctoKitIssue(token, { owner, repo }, { number: labeling.number });
 
 						await issue.addLabel('triage-needed');
 						const randomSelection = available[0];

@@ -12,6 +12,8 @@ const blobStorage_1 = require("../../blobStorage");
 const minToDay = 0.0007;
 const from = (0, utils_1.daysAgoToHumanReadbleDate)(+(0, utils_1.getRequiredInput)('from') * minToDay);
 const until = (0, utils_1.daysAgoToHumanReadbleDate)(+(0, utils_1.getRequiredInput)('until') * minToDay);
+const owner = (0, utils_1.getRequiredInput)('owner');
+const repo = (0, utils_1.getRequiredInput)('repo');
 const blobContainer = (0, utils_1.getRequiredInput)('blobContainerName');
 class FetchIssues extends Action_1.Action {
     constructor() {
@@ -19,7 +21,7 @@ class FetchIssues extends Action_1.Action {
         this.id = 'Clasifier/Apply/FetchIssues';
     }
     async onTriggered(github) {
-        const query = `created:>${from} updated:<${until} is:open type:issue`;
+        const query = `repo:${owner}/${repo} created:>${from} updated:<${until} is:open type:issue`;
         (0, utils_1.safeLog)(`Querying for issues: ${query}`);
         const data = [];
         for await (const page of github.query({ q: query })) {
