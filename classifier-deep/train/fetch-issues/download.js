@@ -8,9 +8,11 @@ exports.download = void 0;
 const axios_1 = require("axios");
 const fs_1 = require("fs");
 const path_1 = require("path");
+const Action_1 = require("../../../common/Action");
 const utils_1 = require("../../../common/utils");
-const download = async (token, repo, startCursor, isRetry = false) => {
+const download = async (repo, startCursor, isRetry = false) => {
     var _a, _b;
+    const token = await (0, Action_1.getAuthenticationToken)();
     const data = await axios_1.default
         .post('https://api.github.com/graphql', {
         query: `{
@@ -90,7 +92,7 @@ const download = async (token, repo, startCursor, isRetry = false) => {
         }
         return new Promise((resolve) => {
             setTimeout(async () => {
-                await (0, exports.download)(token, repo, startCursor, true);
+                await (0, exports.download)(repo, startCursor, true);
                 resolve();
             }, 60000);
         });
@@ -123,7 +125,7 @@ const download = async (token, repo, startCursor, isRetry = false) => {
     if (pageInfo.hasPreviousPage) {
         return new Promise((resolve) => {
             setTimeout(async () => {
-                await (0, exports.download)(token, repo, startCursor);
+                await (0, exports.download)(repo, startCursor);
                 resolve();
             }, 5000);
         });
