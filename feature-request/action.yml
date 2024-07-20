@@ -3,7 +3,7 @@ description: Manage feature requests according to the VS Code feature request sp
 inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
-    default: ${{ github.token }}
+    required: false
   app_id:
     description: GitHub App ID
     required: false
