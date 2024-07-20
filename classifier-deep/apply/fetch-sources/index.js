@@ -21,6 +21,8 @@ const from = fromInput ? (0, utils_1.daysAgoToHumanReadbleDate)(+fromInput * min
 const until = (0, utils_1.daysAgoToHumanReadbleDate)(+(0, utils_1.getRequiredInput)('until') * minToDay);
 const createdQuery = `created:` + (from ? `${from}..${until}` : `<${until}`);
 const blobContainer = (0, utils_1.getRequiredInput)('blobContainerName');
+const repo = (0, utils_1.getRequiredInput)('repo');
+const owner = (0, utils_1.getRequiredInput)('owner');
 class FetchIssues extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -28,7 +30,7 @@ class FetchIssues extends Action_1.Action {
     }
     async onTriggered(github) {
         var _a;
-        const query = `${createdQuery} is:open no:assignee ${excludeLabels}`;
+        const query = `repo:${owner}/${repo} ${createdQuery} is:open no:assignee ${excludeLabels}`;
         const data = [];
         for await (const page of github.query({ q: query })) {
             for (const issue of page) {
