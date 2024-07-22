@@ -5,16 +5,15 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { context } from '@actions/github';
 import { OctoKit, OctoKitIssue } from '../../../api/octokit';
-import { getRequiredInput, getInput, safeLog, daysAgoToHumanReadbleDate } from '../../../common/utils';
-import { Action } from '../../../common/Action';
 import { VSCodeToolsAPIManager } from '../../../api/vscodeTools';
-
-const token = getRequiredInput('token');
+import { Action, getAuthenticationToken } from '../../../common/Action';
+import { daysAgoToHumanReadbleDate, getInput, getRequiredInput, safeLog } from '../../../common/utils';
 
 const allowLabels = (getInput('allowLabels') || '').split('|');
 const debug = !!getInput('__debug');
+const repo = getRequiredInput('repo');
+const owner = getRequiredInput('owner');
 
 type ClassifierConfig = {
 	vacation?: string[];
@@ -43,12 +42,13 @@ class ApplyLabels extends Action {
 
 	async onTriggered(github: OctoKit) {
 		const config: ClassifierConfig = await github.readConfig(getRequiredInput('configPath'));
+		const token = await getAuthenticationToken();
 		const labelings: LabelingsFile = JSON.parse(
 			readFileSync(join(__dirname, '../issue_labels.json'), { encoding: 'utf8' }),
 		);
 
 		for (const labeling of labelings) {
-			const issue = new OctoKitIssue(token, context.repo, { number: labeling.number });
+			const issue = new OctoKitIssue(token, { owner, repo }, { number: labeling.number });
 
 			const potentialAssignees: string[] = [];
 			const addAssignee = async (assignee: string) => {

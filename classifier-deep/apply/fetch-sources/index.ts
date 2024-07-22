@@ -24,12 +24,13 @@ const until = daysAgoToHumanReadbleDate(+getRequiredInput('until') * minToDay);
 const createdQuery = `created:` + (from ? `${from}..${until}` : `<${until}`);
 
 const blobContainer = getRequiredInput('blobContainerName');
-
+const repo = getRequiredInput('repo');
+const owner = getRequiredInput('owner');
 class FetchIssues extends Action {
 	id = 'Clasifier-Deep/Apply/FetchIssues';
 
 	async onTriggered(github: OctoKit) {
-		const query = `${createdQuery} is:open no:assignee ${excludeLabels}`;
+		const query = `repo:${owner}/${repo} ${createdQuery} is:open no:assignee ${excludeLabels}`;
 
 		const data: { number: number; contents: string }[] = [];
 		for await (const page of github.query({ q: query })) {

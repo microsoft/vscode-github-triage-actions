@@ -7,14 +7,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Availability = void 0;
 const fs_1 = require("fs");
 const path_1 = require("path");
-const github_1 = require("@actions/github");
 const octokit_1 = require("../../../api/octokit");
-const utils_1 = require("../../../common/utils");
-const Action_1 = require("../../../common/Action");
 const vscodeTools_1 = require("../../../api/vscodeTools");
-const token = (0, utils_1.getRequiredInput)('token');
+const Action_1 = require("../../../common/Action");
+const utils_1 = require("../../../common/utils");
 const allowLabels = ((0, utils_1.getInput)('allowLabels') || '').split('|');
 const debug = !!(0, utils_1.getInput)('__debug');
+const repo = (0, utils_1.getRequiredInput)('repo');
+const owner = (0, utils_1.getRequiredInput)('owner');
 // Do not modify.
 // Copied from https://github.com/microsoft/vscode-tools/blob/91715fe00caab042b4aab5ed41d0402b0ae2393b/src/common/endgame.ts#L11-L16
 var Availability;
@@ -32,9 +32,10 @@ class ApplyLabels extends Action_1.Action {
     async onTriggered(github) {
         var _a;
         const config = await github.readConfig((0, utils_1.getRequiredInput)('configPath'));
+        const token = await (0, Action_1.getAuthenticationToken)();
         const labelings = JSON.parse((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
         for (const labeling of labelings) {
-            const issue = new octokit_1.OctoKitIssue(token, github_1.context.repo, { number: labeling.number });
+            const issue = new octokit_1.OctoKitIssue(token, { owner, repo }, { number: labeling.number });
             const potentialAssignees = [];
             const addAssignee = async (assignee) => {
                 var _a;
