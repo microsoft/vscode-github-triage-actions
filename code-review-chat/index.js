@@ -5,11 +5,11 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const rest_1 = require("@octokit/rest");
-const utils_1 = require("../common/utils");
-const CodeReviewChat_1 = require("./CodeReviewChat");
-const Action_1 = require("../common/Action");
 const octokit_1 = require("../api/octokit");
 const vscodeTools_1 = require("../api/vscodeTools");
+const Action_1 = require("../common/Action");
+const utils_1 = require("../common/utils");
+const CodeReviewChat_1 = require("./CodeReviewChat");
 const slackToken = (0, utils_1.getRequiredInput)('slack_token');
 const elevatedUserToken = (0, utils_1.getInput)('slack_user_token');
 const auth = (0, utils_1.getRequiredInput)('token');
@@ -98,6 +98,11 @@ class CodeReviewChatAction extends Action_1.Action {
         // caused by a webhook, so we know to expect some inputs.
         const action = (0, utils_1.getRequiredInput)('action');
         const pull_request = JSON.parse((0, utils_1.getRequiredInput)('pull_request'));
+        const draft = pull_request.draft || false;
+        if (draft) {
+            (0, utils_1.safeLog)('PR is draft, ignoring');
+            return;
+        }
         const repository = JSON.parse((0, utils_1.getRequiredInput)('repository'));
         const pr_number = parseInt((0, utils_1.getRequiredInput)('pr_number'));
         const octokitIssue = new octokit_1.OctoKitIssue(auth, { owner: repository.owner.login, repo: repository.name }, { number: pr_number });
