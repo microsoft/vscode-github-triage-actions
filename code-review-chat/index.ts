@@ -53,6 +53,7 @@ class CodeReviewChatAction extends Action {
 			throw Error('expected payload to contain pull request and repository');
 		}
 
+		// new commit
 		const github = new Octokit({ auth });
 		// make wait time longer if it was created as a draft
 		await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
