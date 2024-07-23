@@ -3,8 +3,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
 import { Octokit } from '@octokit/rest';
-import { getRequiredInput, getInput, safeLog } from '../common/utils';
+import { OctoKitIssue } from '../api/octokit';
+import { VSCodeToolsAPIManager } from '../api/vscodeTools';
+import { Action } from '../common/Action';
+import { getInput, getRequiredInput, safeLog } from '../common/utils';
 import {
 	CodeReviewChat,
 	CodeReviewChatDeleter,
@@ -12,10 +16,6 @@ import {
 	getTeamMemberReviews,
 	meetsReviewThreshold,
 } from './CodeReviewChat';
-import { Action } from '../common/Action';
-import { OctoKitIssue } from '../api/octokit';
-import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
-import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 
 const slackToken = getRequiredInput('slack_token');
 const elevatedUserToken = getInput('slack_user_token');
@@ -54,7 +54,7 @@ class CodeReviewChatAction extends Action {
 		}
 
 		const github = new Octokit({ auth });
-
+		// make wait time longer if it was created as a draft
 		await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
 
 		await this.executeCodeReviewChat(github, issue, payload, false);
