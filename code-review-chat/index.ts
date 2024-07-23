@@ -48,6 +48,7 @@ class CodeReviewChatAction extends Action {
 		await this.closedOrDraftHandler(_issue, payload);
 	}
 
+	// more commit
 	protected override async onOpened(issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
 		if (!payload.pull_request || !payload.repository) {
 			throw Error('expected payload to contain pull request and repository');
