@@ -3,8 +3,12 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
 import { Octokit } from '@octokit/rest';
-import { getRequiredInput, getInput, safeLog } from '../common/utils';
+import { OctoKitIssue } from '../api/octokit';
+import { VSCodeToolsAPIManager } from '../api/vscodeTools';
+import { Action } from '../common/Action';
+import { getInput, getRequiredInput, safeLog } from '../common/utils';
 import {
 	CodeReviewChat,
 	CodeReviewChatDeleter,
@@ -12,10 +16,6 @@ import {
 	getTeamMemberReviews,
 	meetsReviewThreshold,
 } from './CodeReviewChat';
-import { Action } from '../common/Action';
-import { OctoKitIssue } from '../api/octokit';
-import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
-import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 
 const slackToken = getRequiredInput('slack_token');
 const elevatedUserToken = getInput('slack_user_token');
@@ -146,6 +146,12 @@ class CodeReviewChatAction extends Action {
 		// caused by a webhook, so we know to expect some inputs.
 		const action = getRequiredInput('action');
 		const pull_request = JSON.parse(getRequiredInput('pull_request'));
+		const draft = pull_request.draft || false;
+		if (draft) {
+			safeLog('PR is draft, ignoring');
+			return;
+		}
+
 		const repository: PayloadRepository = JSON.parse(getRequiredInput('repository'));
 		const pr_number: number = parseInt(getRequiredInput('pr_number'));
 

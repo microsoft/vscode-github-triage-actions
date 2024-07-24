@@ -186,10 +186,6 @@ class CodeReviewChat extends Chatter {
             repo: this.options.payload.repo,
         })).data;
         const pr = createPRObject(prFromApi);
-        if (pr.draft) {
-            (0, utils_1.safeLog)('PR is draft, ignoring');
-            return;
-        }
         // A small set of repos which we don't want to be posted
         const ignoredRepos = ['vscode-extensions-loc', 'vscode-loc-drop'];
         // Ignore PRs from ignored repos
