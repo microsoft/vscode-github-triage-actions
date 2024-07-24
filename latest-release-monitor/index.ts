@@ -5,8 +5,8 @@
 
 import { OctoKit } from '../api/octokit';
 import { downloadBlobText, uploadBlobText } from '../classifier/blobStorage';
-import { Action, getAuthenticationToken } from '../common/Action';
-import { getRequiredInput, loadLatestRelease, safeLog } from '../common/utils';
+import { Action } from '../common/Action';
+import { loadLatestRelease, safeLog } from '../common/utils';
 
 class LatestReleaseMonitor extends Action {
 	id = 'LatestReleaseMonitor';
@@ -22,9 +22,9 @@ class LatestReleaseMonitor extends Action {
 		const latest = (await loadLatestRelease(quality))?.version;
 		if (latest && latest !== lastKnown) {
 			safeLog('found a new release of', quality);
-			const owner = getRequiredInput('owner');
-			const repo = getRequiredInput('repo');
-			const token = await getAuthenticationToken();
+			const owner = this.repoOwner;
+			const repo = this.repoName;
+			const token = await this.getToken();
 			await uploadBlobText('latest-' + quality, latest, 'latest-releases');
 			await new OctoKit(token, { owner, repo }).dispatch('released-' + quality);
 		}
