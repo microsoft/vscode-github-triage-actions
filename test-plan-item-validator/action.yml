@@ -3,7 +3,6 @@ description: Tag issues that don't contain important info
 inputs:
   token:
     description: 'GitHub token with issue, comment, and label read/write permissions'
-    default: ${{ github.token }}
   app_id:
     description: GitHub App ID
     required: false
