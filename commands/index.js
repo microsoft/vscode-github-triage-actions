@@ -4,11 +4,11 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const github_1 = require("@actions/github");
 const octokit_1 = require("../api/octokit");
+const Action_1 = require("../common/Action");
 const utils_1 = require("../common/utils");
 const Commands_1 = require("./Commands");
-const Action_1 = require("../common/Action");
-const github_1 = require("@actions/github");
 const hydrate = (comment, issue) => {
     const baseQueryString = `https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+`;
     const importantLabels = issue.labels.filter((label) => label !== '*duplicate');
@@ -55,6 +55,9 @@ class CommandsRunner extends Action_1.Action {
                         }
                     }
                     break;
+                case 'edited':
+                    console.log('Performing a no-op operation for edited event');
+                    return;
                 default:
                     throw Error(`Unknown event: ${event}`);
             }
