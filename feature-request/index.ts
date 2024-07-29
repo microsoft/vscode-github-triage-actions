@@ -4,14 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { OctoKit, OctoKitIssue } from '../api/octokit';
-import { getInput, getRequiredInput } from '../common/utils';
-import {
-	FeatureRequestConfig,
-	FeatureRequestOnLabel,
-	FeatureRequestQueryer,
-	FeatureRequestOnMilestone,
-} from './FeatureRequest';
 import { Action } from '../common/Action';
+import { getInput, getRequiredInput } from '../common/utils';
+import { FeatureRequestConfig, FeatureRequestOnLabel, FeatureRequestOnMilestone } from './FeatureRequest';
 
 const config: FeatureRequestConfig = {
 	milestones: {
@@ -39,8 +34,20 @@ const config: FeatureRequestConfig = {
 class FeatureRequest extends Action {
 	id = 'FeatureRequest';
 
-	async onTriggered(github: OctoKit) {
-		await new FeatureRequestQueryer(github, config).run();
+	async onTriggered(_github: OctoKit) {
+		// This function is only called during a manual workspace dispatch event
+		// caused by a webhook, so we know to expect some inputs.
+		const auth = await this.getToken();
+		const repo = getRequiredInput('repo');
+		const owner = getRequiredInput('owner');
+		const issue = JSON.parse(getRequiredInput('issue_number'));
+
+		const octokitIssue = new OctoKitIssue(auth, { owner, repo }, { number: issue.number });
+		await new FeatureRequestOnMilestone(
+			octokitIssue,
+			config.comments.init!,
+			config.milestones.candidateID,
+		).run();
 	}
 
 	async onLabeled(github: OctoKitIssue, label: string) {
