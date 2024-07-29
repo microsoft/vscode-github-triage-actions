@@ -19,6 +19,9 @@ inputs:
   repo:
     description: Repository name
     required: true
+  issue_number:
+    description: Issue number
+    required: false
   candidateMilestoneID:
     description: Numeric ID of the candidate issues milestone
     required: true
