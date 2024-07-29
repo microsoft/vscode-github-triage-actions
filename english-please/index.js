@@ -33,8 +33,8 @@ class EnglishPlease extends Action_1.Action {
         const auth = await this.getToken();
         const repo = (0, utils_1.getRequiredInput)('repo');
         const owner = (0, utils_1.getRequiredInput)('owner');
-        const issue = JSON.parse((0, utils_1.getRequiredInput)('issue_number'));
-        const octokitIssue = new octokit_1.OctoKitIssue(auth, { owner, repo }, { number: issue.number });
+        const issueNumber = +(0, utils_1.getRequiredInput)('issue_number');
+        const octokitIssue = new octokit_1.OctoKitIssue(auth, { owner, repo }, { number: issueNumber });
         await this.doLanguageSpecific(octokitIssue);
     }
 }

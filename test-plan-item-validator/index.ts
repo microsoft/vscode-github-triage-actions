@@ -40,9 +40,9 @@ class TestPlanItemValidatorAction extends Action {
 		const auth = await this.getToken();
 		const repo = getRequiredInput('repo');
 		const owner = getRequiredInput('owner');
-		const issue = JSON.parse(getRequiredInput('issue_number'));
+		const issueNumber = +getRequiredInput('issue_number');
 
-		const octokitIssue = new OctoKitIssue(auth, { owner, repo }, { number: issue.number });
+		const octokitIssue = new OctoKitIssue(auth, { owner, repo }, { number: issueNumber });
 		await this.runValidation(octokitIssue, auth);
 	}
 }
