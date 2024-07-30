@@ -95,7 +95,7 @@ class Action {
                     }
                 }
             }
-            else if (github_1.context.eventName === 'create') {
+            else if (event === 'create') {
                 await this.onCreated(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }), (_d = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _d === void 0 ? void 0 : _d.ref, (_f = (_e = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _e === void 0 ? void 0 : _e.sender) === null || _f === void 0 ? void 0 : _f.login);
             }
             else {

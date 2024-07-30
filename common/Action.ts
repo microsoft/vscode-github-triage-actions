@@ -112,7 +112,7 @@ export abstract class Action {
 							throw Error('Unexpected action: ' + context.payload.action);
 					}
 				}
-			} else if (context.eventName === 'create') {
+			} else if (event === 'create') {
 				await this.onCreated(
 					new OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }),
 					context?.payload?.ref,
