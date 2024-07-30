@@ -109,7 +109,7 @@ export abstract class Action {
 							await this.onConvertedToDraft(octokit, context.payload);
 							break;
 						default:
-							throw Error('Unexpected action: ' + context.payload.action);
+							throw Error('Unexpected action: ' + action);
 					}
 				}
 			} else if (event === 'create') {

@@ -91,7 +91,7 @@ class Action {
                             await this.onConvertedToDraft(octokit, github_1.context.payload);
                             break;
                         default:
-                            throw Error('Unexpected action: ' + github_1.context.payload.action);
+                            throw Error('Unexpected action: ' + action);
                     }
                 }
             }
