@@ -7,7 +7,6 @@ import { setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { createAppAuth } from '@octokit/auth-app';
-import { v4 as uuid } from 'uuid';
 import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { getInput } from '../common/utils';
 import { errorLoggingIssue, logErrorToIssue, safeLog } from './utils';
@@ -19,7 +18,7 @@ export abstract class Action {
 	issue: number | undefined;
 
 	constructor() {
-		console.log('::stop-commands::' + uuid());
+		// console.log('::stop-commands::' + uuid());
 		this.repoName = this.getRepoName();
 		this.repoOwner = this.getRepoOwner();
 		this.issue = this.getIssueNumber();

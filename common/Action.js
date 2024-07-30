@@ -8,13 +8,12 @@ exports.getAuthenticationToken = exports.Action = void 0;
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const auth_app_1 = require("@octokit/auth-app");
-const uuid_1 = require("uuid");
 const octokit_1 = require("../api/octokit");
 const utils_1 = require("../common/utils");
 const utils_2 = require("./utils");
 class Action {
     constructor() {
-        console.log('::stop-commands::' + (0, uuid_1.v4)());
+        // console.log('::stop-commands::' + uuid());
         this.repoName = this.getRepoName();
         this.repoOwner = this.getRepoOwner();
         this.issue = this.getIssueNumber();
