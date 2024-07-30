@@ -4,9 +4,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const octokit_1 = require("../api/octokit");
+const Action_1 = require("../common/Action");
 const utils_1 = require("../common/utils");
 const FeatureRequest_1 = require("./FeatureRequest");
-const Action_1 = require("../common/Action");
 const config = {
     milestones: {
         candidateID: +(0, utils_1.getRequiredInput)('candidateMilestoneID'),
@@ -34,8 +35,15 @@ class FeatureRequest extends Action_1.Action {
         super(...arguments);
         this.id = 'FeatureRequest';
     }
-    async onTriggered(github) {
-        await new FeatureRequest_1.FeatureRequestQueryer(github, config).run();
+    async onTriggered(_github) {
+        // This function is only called during a manual workspace dispatch event
+        // caused by a webhook, so we know to expect some inputs.
+        const auth = await this.getToken();
+        const repo = (0, utils_1.getRequiredInput)('repo');
+        const owner = (0, utils_1.getRequiredInput)('owner');
+        const issue = JSON.parse((0, utils_1.getRequiredInput)('issue_number'));
+        const octokitIssue = new octokit_1.OctoKitIssue(auth, { owner, repo }, { number: issue.number });
+        await new FeatureRequest_1.FeatureRequestOnMilestone(octokitIssue, config.comments.init, config.milestones.candidateID).run();
     }
     async onLabeled(github, label) {
         if (label === config.featureRequestLabel) {
