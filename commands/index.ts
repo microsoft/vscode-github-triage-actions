@@ -59,24 +59,16 @@ class CommandsRunner extends Action {
 			await new Commands(octokitIssue, commands, { comment, user: { name: actor } }, hydrate).run();
 		} else if (event === 'issues') {
 			const action = getRequiredInput('action');
-			switch (action) {
-				case 'labeled':
-					{
-						for (const label of issue.labels) {
-							const commands = await octokitIssue.readConfig(
-								getRequiredInput('config-path'),
-								'vscode-engineering',
-							);
-							await new Commands(octokitIssue, commands, { label: label.name }, hydrate).run();
-						}
-					}
-					break;
-				case 'edited':
-				case 'milestoned':
-					console.log('Performing a no-op operation for edited event');
-					return;
-				default:
-					throw Error(`Unknown event: ${event}`);
+			if (action !== 'labeled') {
+				return;
+			}
+
+			for (const label of issue.labels) {
+				const commands = await octokitIssue.readConfig(
+					getRequiredInput('config-path'),
+					'vscode-engineering',
+				);
+				await new Commands(octokitIssue, commands, { label: label.name }, hydrate).run();
 			}
 		}
 		return;
