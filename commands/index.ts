@@ -72,6 +72,7 @@ class CommandsRunner extends Action {
 					}
 					break;
 				case 'edited':
+				case 'milestoned':
 					console.log('Performing a no-op operation for edited event');
 					return;
 				default:

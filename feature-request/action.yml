@@ -22,6 +22,12 @@ inputs:
   issue_number:
     description: Issue number
     required: false
+  event:
+    description: Event name for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
+  action:
+    description: Action name for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
   candidateMilestoneID:
     description: Numeric ID of the candidate issues milestone
     required: true
