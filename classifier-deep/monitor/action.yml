@@ -3,7 +3,33 @@ description: Alerts when assignees added by the bot are unassigned
 inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
-    default: ${{ github.token }}
+  app_id:
+    description: GitHub App ID
+    required: false
+  app_installation_id:
+    description: GitHub App Installation ID
+    required: false
+  app_private_key:
+    description: GitHub App Private Key
+    required: false
+  owner:
+    description: Repository owner
+    required: false
+  repo:
+    description: Repository name
+    required: false
+  issue_number:
+    description: Issue number
+    required: false
+  event:
+    description: Event name for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
+  action:
+    description: Action name for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
+  payload:
+    description: Payload object for the github action
+    required: true
   botName:
     description: The login of the bot
     required: true
