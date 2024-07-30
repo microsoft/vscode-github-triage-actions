@@ -48,6 +48,17 @@ export abstract class Action {
 		);
 	}
 
+	getAssignee(): string {
+		const payload = getInput('payload');
+		let assignee = '';
+		if (payload) {
+			assignee = JSON.parse(payload).assignee;
+		} else {
+			assignee = context.payload.assignee.login;
+		}
+		return assignee;
+	}
+
 	public async run() {
 		if (errorLoggingIssue) {
 			const errorIssue = errorLoggingIssue(this.repoName, this.repoOwner);
@@ -94,10 +105,10 @@ export abstract class Action {
 							await this.onLabeled(octokit, context.payload?.label?.name ?? '');
 							break;
 						case 'assigned':
-							await this.onAssigned(octokit, context.payload.assignee.login);
+							await this.onAssigned(octokit, this.getAssignee());
 							break;
 						case 'unassigned':
-							await this.onUnassigned(octokit, context.payload.assignee.login);
+							await this.onUnassigned(octokit, this.getAssignee());
 							break;
 						case 'edited':
 							await this.onEdited(octokit);

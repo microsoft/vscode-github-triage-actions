@@ -38,6 +38,17 @@ class Action {
         const issueNumber = +((_a = (0, utils_1.getInput)('issue_number')) !== null && _a !== void 0 ? _a : 0);
         return ((_d = (_b = (issueNumber > 0 ? issueNumber : undefined)) !== null && _b !== void 0 ? _b : (_c = github_1.context.issue) === null || _c === void 0 ? void 0 : _c.number) !== null && _d !== void 0 ? _d : (_e = github_1.context.payload.issue) === null || _e === void 0 ? void 0 : _e.number);
     }
+    getAssignee() {
+        const payload = (0, utils_1.getInput)('payload');
+        let assignee = '';
+        if (payload) {
+            assignee = JSON.parse(payload).assignee;
+        }
+        else {
+            assignee = github_1.context.payload.assignee.login;
+        }
+        return assignee;
+    }
     async run() {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         if (utils_2.errorLoggingIssue) {
@@ -76,10 +87,10 @@ class Action {
                             await this.onLabeled(octokit, (_f = (_e = (_d = github_1.context.payload) === null || _d === void 0 ? void 0 : _d.label) === null || _e === void 0 ? void 0 : _e.name) !== null && _f !== void 0 ? _f : '');
                             break;
                         case 'assigned':
-                            await this.onAssigned(octokit, github_1.context.payload.assignee.login);
+                            await this.onAssigned(octokit, this.getAssignee());
                             break;
                         case 'unassigned':
-                            await this.onUnassigned(octokit, github_1.context.payload.assignee.login);
+                            await this.onUnassigned(octokit, this.getAssignee());
                             break;
                         case 'edited':
                             await this.onEdited(octokit);
