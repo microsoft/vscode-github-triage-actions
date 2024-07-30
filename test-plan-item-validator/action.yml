@@ -21,6 +21,12 @@ inputs:
   issue_number:
     description: Issue number
     required: false
+  event:
+    description: Event name for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
+  action:
+    description: Action name for a triggered action. Otherwise, this is obtained from the github context.
+    required: false
   label:
     description: The label that signifies an item is a testplan item and should be checked
     required: true

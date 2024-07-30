@@ -7,6 +7,7 @@ import { setFailed } from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { WebhookPayload } from '@actions/github/lib/interfaces';
 import { createAppAuth } from '@octokit/auth-app';
+import { v4 as uuid } from 'uuid';
 import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { getInput } from '../common/utils';
 import { errorLoggingIssue, logErrorToIssue, safeLog } from './utils';
@@ -18,7 +19,7 @@ export abstract class Action {
 	issue: number | undefined;
 
 	constructor() {
-		// console.log('::stop-commands::' + uuid());
+		console.log('::stop-commands::' + uuid());
 		this.repoName = this.getRepoName();
 		this.repoOwner = this.getRepoOwner();
 		this.issue = this.getIssueNumber();
@@ -62,7 +63,7 @@ export abstract class Action {
 		try {
 			const token = await this.getToken();
 			const readonly = !!getInput('readonly');
-
+			const event = getInput('event') ?? context.eventName;
 			if (this.issue) {
 				const octokit = new OctoKitIssue(
 					token,
@@ -70,14 +71,15 @@ export abstract class Action {
 					{ number: this.issue },
 					{ readonly },
 				);
-				if (context.eventName === 'issue_comment') {
+				if (event === 'issue_comment') {
 					await this.onCommented(octokit, context.payload.comment?.body, context.actor);
 				} else if (
-					context.eventName === 'issues' ||
-					context.eventName === 'pull_request' ||
-					context.eventName === 'pull_request_target'
+					event === 'issues' ||
+					event === 'pull_request' ||
+					event === 'pull_request_target'
 				) {
-					switch (context.payload.action) {
+					const action = getInput('action') ?? context.payload.action;
+					switch (action) {
 						case 'opened':
 						case 'ready_for_review':
 							await this.onOpened(octokit, context.payload);
