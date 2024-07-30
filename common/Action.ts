@@ -91,7 +91,7 @@ export abstract class Action {
 							await this.onClosed(octokit, context.payload);
 							break;
 						case 'labeled':
-							await this.onLabeled(octokit, context.payload.label.name);
+							await this.onLabeled(octokit, context.payload?.label?.name ?? '');
 							break;
 						case 'assigned':
 							await this.onAssigned(octokit, context.payload.assignee.login);
