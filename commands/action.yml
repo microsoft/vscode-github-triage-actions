@@ -3,12 +3,27 @@ description: Respond to commands given in the form of either labels or comments 
 inputs:
   token:
     description: GitHub token with issue, comment, and label read/write permissions
-    default: ${{ github.token }}
+  app_id:
+    description: GitHub App ID
+    required: false
+  app_installation_id:
+    description: GitHub App Installation ID
+    required: false
+  app_private_key:
+    description: GitHub App Private Key
+    required: false
+  owner:
+    description: Repository owner
+    required: false
+  repo:
+    description: Repository name
+    required: false
+  issue_number:
+    description: Issue number
+    required: false
   config-path:
     description: Name of .json file (no extension) in .github/ directory of repo holding configuration for this action
     required: true
-  appInsightsKey:
-    description: Key for Azure App Insights to monitor application health
   repository:
     description: Repository object for a triggered action. Otherwise, this is obtained from the github context.
     required: false
