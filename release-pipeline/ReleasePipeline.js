@@ -30,8 +30,8 @@ class ReleasePipeline {
             }
         }
     }
-    async commentUnableToFindCommitMessage(issue, location) {
-        const key = `<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE ${location} -->`;
+    async commentUnableToFindCommitMessage(issue) {
+        const key = `<!-- UNABLE_TO_LOCATE_COMMIT_MESSAGE -->`;
         for await (const page of issue.getComments()) {
             for (const comment of page) {
                 if (comment.body.includes(key)) {
@@ -39,21 +39,15 @@ class ReleasePipeline {
                 }
             }
         }
-        if (location === 'repo') {
-            await issue.postComment(`${key}
-Issue marked as unreleased but unable to locate closing commit in repo history. If this was closed in a separate repo you can add the \`${this.insidersReleasedLabel}\` label directly, or comment \`\\closedWith someShaThatWillbeReleasedWhenThisIsRelesed\`.`);
-        }
-        else {
-            await issue.postComment(`${key}
-Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, or directly add the \`${this.insidersReleasedLabel}\` label if you know this has already been releaased`);
-        }
+        await issue.postComment(`${key}
+			Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, or directly add the \`${this.insidersReleasedLabel}\` label if you know this has already been releaased`);
     }
     async update(issue, latestRelease) {
         var _a;
         const closingHash = (_a = (await issue.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
         if (!closingHash) {
             await issue.removeLabel(this.notYetReleasedLabel);
-            await this.commentUnableToFindCommitMessage(issue, 'issue');
+            await this.commentUnableToFindCommitMessage(issue);
             return;
         }
         const releaseContainsCommit = await issue
@@ -69,7 +63,7 @@ Issue marked as unreleased but unable to locate closing commit in issue timeline
         }
         else if ((await issue.getIssue()).labels.includes(this.notYetReleasedLabel)) {
             await issue.removeLabel(this.notYetReleasedLabel);
-            await this.commentUnableToFindCommitMessage(issue, 'repo');
+            await this.commentUnableToFindCommitMessage(issue);
         }
     }
 }
