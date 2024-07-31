@@ -87,7 +87,7 @@ export abstract class Action {
 		if (payload) {
 			label = JSON.parse(payload).label;
 		} else {
-			label = context.payload.label?.name ?? '';
+			label = context.payload.label?.name;
 		}
 		return label;
 	}
