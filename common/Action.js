@@ -74,14 +74,14 @@ class Action {
         return author;
     }
     getLabel() {
-        var _a, _b;
+        var _a;
         const payload = (0, utils_1.getInput)('payload');
         let label = '';
         if (payload) {
             label = JSON.parse(payload).label;
         }
         else {
-            label = (_b = (_a = github_1.context.payload.label) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : '';
+            label = (_a = github_1.context.payload.label) === null || _a === void 0 ? void 0 : _a.name;
         }
         return label;
     }
