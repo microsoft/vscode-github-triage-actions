@@ -32,7 +32,7 @@ class CommandsRunner extends Action_1.Action {
     async onTriggered() {
         // This function is only called during a manual workspace dispatch event
         // caused by a webhook, so we know to expect some inputs.
-        const auth = (0, utils_1.getRequiredInput)('token');
+        const auth = await this.getToken();
         const event = (0, utils_1.getRequiredInput)('event');
         const issue = JSON.parse((0, utils_1.getRequiredInput)('issue'));
         const repository = JSON.parse((0, utils_1.getRequiredInput)('repository'));
