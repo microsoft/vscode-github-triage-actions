@@ -25,8 +25,8 @@ class LatestReleaseMonitor extends Action_1.Action {
         const latest = (_a = (await (0, utils_1.loadLatestRelease)(quality))) === null || _a === void 0 ? void 0 : _a.version;
         if (latest && latest !== lastKnown) {
             (0, utils_1.safeLog)('found a new release of', quality);
-            const owner = this.repoOwner;
-            const repo = this.repoName;
+            const owner = 'microsoft';
+            const repo = 'vscode-engineering';
             const token = await this.getToken();
             await (0, blobStorage_1.uploadBlobText)('latest-' + quality, latest, 'latest-releases');
             await new octokit_1.OctoKit(token, { owner, repo }).dispatch('released-' + quality);
