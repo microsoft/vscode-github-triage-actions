@@ -59,6 +59,28 @@ export abstract class Action {
 		return assignee;
 	}
 
+	getComment() {
+		const payload = getInput('comment');
+		let comment = '';
+		if (payload) {
+			comment = JSON.parse(payload)?.body;
+		} else {
+			comment = context.payload.comment?.body;
+		}
+		return comment;
+	}
+
+	getCommentAuthor() {
+		const payload = getInput('comment');
+		let comment = '';
+		if (payload) {
+			comment = JSON.parse(payload).user?.login;
+		} else {
+			comment = context.payload.comment?.user?.login;
+		}
+		return comment;
+	}
+
 	public async run() {
 		if (errorLoggingIssue) {
 			const errorIssue = errorLoggingIssue(this.repoName, this.repoOwner);
@@ -83,7 +105,7 @@ export abstract class Action {
 					{ readonly },
 				);
 				if (event === 'issue_comment') {
-					await this.onCommented(octokit, context.payload.comment?.body, context.actor);
+					await this.onCommented(octokit, this.getComment(), this.getCommentAuthor());
 				} else if (
 					event === 'issues' ||
 					event === 'pull_request' ||
