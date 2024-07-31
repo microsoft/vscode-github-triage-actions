@@ -73,8 +73,20 @@ class Action {
         }
         return author;
     }
+    getLabel() {
+        var _a;
+        const payload = (0, utils_1.getInput)('payload');
+        let label = '';
+        if (payload) {
+            label = JSON.parse(payload).label;
+        }
+        else {
+            label = (_a = github_1.context.payload.label) === null || _a === void 0 ? void 0 : _a.name;
+        }
+        return label;
+    }
     async run() {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e;
         if (utils_2.errorLoggingIssue) {
             const errorIssue = (0, utils_2.errorLoggingIssue)(this.repoName, this.repoOwner);
             if (this.repoName === (errorIssue === null || errorIssue === void 0 ? void 0 : errorIssue.repo) &&
@@ -108,7 +120,7 @@ class Action {
                             await this.onClosed(octokit, github_1.context.payload);
                             break;
                         case 'labeled':
-                            await this.onLabeled(octokit, (_e = (_d = (_c = github_1.context.payload) === null || _c === void 0 ? void 0 : _c.label) === null || _d === void 0 ? void 0 : _d.name) !== null && _e !== void 0 ? _e : '');
+                            await this.onLabeled(octokit, this.getLabel());
                             break;
                         case 'assigned':
                             await this.onAssigned(octokit, this.getAssignee());
@@ -131,7 +143,7 @@ class Action {
                 }
             }
             else if (event === 'create') {
-                await this.onCreated(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }), (_f = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _f === void 0 ? void 0 : _f.ref, (_h = (_g = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _g === void 0 ? void 0 : _g.sender) === null || _h === void 0 ? void 0 : _h.login);
+                await this.onCreated(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }), (_c = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _c === void 0 ? void 0 : _c.ref, (_e = (_d = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _d === void 0 ? void 0 : _d.sender) === null || _e === void 0 ? void 0 : _e.login);
             }
             else {
                 await this.onTriggered(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }));
