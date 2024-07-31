@@ -49,8 +49,32 @@ class Action {
         }
         return assignee;
     }
+    getComment() {
+        var _a, _b;
+        const payload = (0, utils_1.getInput)('comment');
+        let comment = '';
+        if (payload) {
+            comment = (_a = JSON.parse(payload)) === null || _a === void 0 ? void 0 : _a.body;
+        }
+        else {
+            comment = (_b = github_1.context.payload.comment) === null || _b === void 0 ? void 0 : _b.body;
+        }
+        return comment;
+    }
+    getCommentAuthor() {
+        var _a, _b, _c;
+        const payload = (0, utils_1.getInput)('comment');
+        let comment = '';
+        if (payload) {
+            comment = (_a = JSON.parse(payload).user) === null || _a === void 0 ? void 0 : _a.login;
+        }
+        else {
+            comment = (_c = (_b = github_1.context.payload.comment) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.login;
+        }
+        return comment;
+    }
     async run() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        var _a, _b, _c, _d, _e, _f, _g, _h;
         if (utils_2.errorLoggingIssue) {
             const errorIssue = (0, utils_2.errorLoggingIssue)(this.repoName, this.repoOwner);
             if (this.repoName === (errorIssue === null || errorIssue === void 0 ? void 0 : errorIssue.repo) &&
@@ -66,12 +90,12 @@ class Action {
             if (this.issue) {
                 const octokit = new octokit_1.OctoKitIssue(token, { repo: this.repoName, owner: this.repoOwner }, { number: this.issue }, { readonly });
                 if (event === 'issue_comment') {
-                    await this.onCommented(octokit, (_b = github_1.context.payload.comment) === null || _b === void 0 ? void 0 : _b.body, github_1.context.actor);
+                    await this.onCommented(octokit, this.getComment(), this.getCommentAuthor());
                 }
                 else if (event === 'issues' ||
                     event === 'pull_request' ||
                     event === 'pull_request_target') {
-                    const action = (_c = (0, utils_1.getInput)('action')) !== null && _c !== void 0 ? _c : github_1.context.payload.action;
+                    const action = (_b = (0, utils_1.getInput)('action')) !== null && _b !== void 0 ? _b : github_1.context.payload.action;
                     switch (action) {
                         case 'opened':
                         case 'ready_for_review':
@@ -84,7 +108,7 @@ class Action {
                             await this.onClosed(octokit, github_1.context.payload);
                             break;
                         case 'labeled':
-                            await this.onLabeled(octokit, (_f = (_e = (_d = github_1.context.payload) === null || _d === void 0 ? void 0 : _d.label) === null || _e === void 0 ? void 0 : _e.name) !== null && _f !== void 0 ? _f : '');
+                            await this.onLabeled(octokit, (_e = (_d = (_c = github_1.context.payload) === null || _c === void 0 ? void 0 : _c.label) === null || _d === void 0 ? void 0 : _d.name) !== null && _e !== void 0 ? _e : '');
                             break;
                         case 'assigned':
                             await this.onAssigned(octokit, this.getAssignee());
@@ -107,7 +131,7 @@ class Action {
                 }
             }
             else if (event === 'create') {
-                await this.onCreated(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }), (_g = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _g === void 0 ? void 0 : _g.ref, (_j = (_h = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _h === void 0 ? void 0 : _h.sender) === null || _j === void 0 ? void 0 : _j.login);
+                await this.onCreated(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }), (_f = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _f === void 0 ? void 0 : _f.ref, (_h = (_g = github_1.context === null || github_1.context === void 0 ? void 0 : github_1.context.payload) === null || _g === void 0 ? void 0 : _g.sender) === null || _h === void 0 ? void 0 : _h.login);
             }
             else {
                 await this.onTriggered(new octokit_1.OctoKit(token, { repo: this.repoName, owner: this.repoOwner }, { readonly }));
