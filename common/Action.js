@@ -64,14 +64,14 @@ class Action {
     getCommentAuthor() {
         var _a, _b, _c;
         const payload = (0, utils_1.getInput)('comment');
-        let comment = '';
+        let author = '';
         if (payload) {
-            comment = (_a = JSON.parse(payload).user) === null || _a === void 0 ? void 0 : _a.login;
+            author = (_a = JSON.parse(payload).user) === null || _a === void 0 ? void 0 : _a.login;
         }
         else {
-            comment = (_c = (_b = github_1.context.payload.comment) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.login;
+            author = (_c = (_b = github_1.context.payload.comment) === null || _b === void 0 ? void 0 : _b.user) === null || _c === void 0 ? void 0 : _c.login;
         }
-        return comment;
+        return author;
     }
     async run() {
         var _a, _b, _c, _d, _e, _f, _g, _h;

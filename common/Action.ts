@@ -72,13 +72,13 @@ export abstract class Action {
 
 	getCommentAuthor() {
 		const payload = getInput('comment');
-		let comment = '';
+		let author = '';
 		if (payload) {
-			comment = JSON.parse(payload).user?.login;
+			author = JSON.parse(payload).user?.login;
 		} else {
-			comment = context.payload.comment?.user?.login;
+			author = context.payload.comment?.user?.login;
 		}
-		return comment;
+		return author;
 	}
 
 	public async run() {
