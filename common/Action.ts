@@ -81,6 +81,17 @@ export abstract class Action {
 		return author;
 	}
 
+	getLabel() {
+		const payload = getInput('payload');
+		let label = '';
+		if (payload) {
+			label = JSON.parse(payload).label;
+		} else {
+			label = context.payload.label?.name ?? '';
+		}
+		return label;
+	}
+
 	public async run() {
 		if (errorLoggingIssue) {
 			const errorIssue = errorLoggingIssue(this.repoName, this.repoOwner);
@@ -124,7 +135,7 @@ export abstract class Action {
 							await this.onClosed(octokit, context.payload);
 							break;
 						case 'labeled':
-							await this.onLabeled(octokit, context.payload?.label?.name ?? '');
+							await this.onLabeled(octokit, this.getLabel());
 							break;
 						case 'assigned':
 							await this.onAssigned(octokit, this.getAssignee());
