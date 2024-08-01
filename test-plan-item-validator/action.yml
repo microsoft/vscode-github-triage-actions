@@ -1,15 +1,17 @@
 name: 'Test Plan Item Validator'
 description: Tag issues that don't contain important info
 inputs:
+  token:
+    description: 'GitHub token with issue, comment, and label read/write permissions'
   app_id:
     description: GitHub App ID
-    required: true
+    required: false
   app_installation_id:
     description: GitHub App Installation ID
-    required: true
+    required: false
   app_private_key:
     description: GitHub App Private Key
-    required: true
+    required: false
   owner:
     description: Repository owner
     required: false

@@ -15,7 +15,7 @@ class TestPlanItemValidatorAction extends Action {
 		const auth = await this.getToken();
 		await new TestPlanItemValidator(
 			issue,
-			auth,
+			auth ?? getRequiredInput('token'),
 			getRequiredInput('refLabel'),
 			getRequiredInput('label'),
 			getRequiredInput('invalidLabel'),
