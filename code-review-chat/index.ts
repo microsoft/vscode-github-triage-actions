@@ -19,7 +19,6 @@ import {
 
 const slackToken = getRequiredInput('slack_token');
 const elevatedUserToken = getInput('slack_user_token');
-const auth = getRequiredInput('token');
 const channelId = getRequiredInput('notification_channel_id');
 
 class CodeReviewChatAction extends Action {
@@ -53,6 +52,7 @@ class CodeReviewChatAction extends Action {
 			throw Error('expected payload to contain pull request and repository');
 		}
 
+		const auth = await this.getToken();
 		const github = new Octokit({ auth });
 
 		await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
@@ -99,6 +99,7 @@ class CodeReviewChatAction extends Action {
 		}
 		const toolsAPI = new VSCodeToolsAPIManager();
 		const teamMembers = new Set((await toolsAPI.getTeamMembers()).map((t) => t.id));
+		const auth = await this.getToken();
 		const github = new Octokit({ auth });
 		const meetsThreshold = await meetsReviewThreshold(
 			github,
@@ -154,7 +155,7 @@ class CodeReviewChatAction extends Action {
 
 		const repository: PayloadRepository = JSON.parse(getRequiredInput('repository'));
 		const pr_number: number = parseInt(getRequiredInput('pr_number'));
-
+		const auth = await this.getToken();
 		const octokitIssue = new OctoKitIssue(
 			auth,
 			{ owner: repository.owner.login, repo: repository.name },
