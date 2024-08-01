@@ -5,8 +5,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { JSONOutputLine } from './download';
 import { normalizeIssue, safeLog } from '../../../common/utils';
+import { JSONOutputLine } from './download';
 
 interface Classification {
 	name: string;
@@ -86,9 +86,14 @@ export const createDataDirectories = async (areas: string[], assignees: string[]
 				(event) =>
 					event.type === 'added' &&
 					event.label === category &&
-					!['vscodebot', 'github-actions', 'vscode-triage-bot', 'VSCodeTriageBot'].includes(
-						event.actor,
-					),
+					![
+						'vscodebot',
+						'github-actions',
+						'vscode-triage-bot',
+						'VSCodeTriageBot',
+						'vs-code-engineering[bot]',
+						'vs-code-engineering',
+					].includes(event.actor),
 			);
 
 			if (
