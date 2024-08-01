@@ -13,10 +13,10 @@ class DeepClassifierMonitor extends Action {
 	protected async onAssigned(issue: OctoKitIssue, assignee: string): Promise<void> {
 		safeLog(`Assigned to ${assignee}`);
 		const assigner = await issue.getAssigner(assignee);
-		safeLog(`Assigner is  + ${assigner}`);
 		if (assigner !== getRequiredInput('botName')) {
-			// await issue.removeLabel('triage-needed');
-			// await issue.removeLabel('stale');
+			safeLog(`Assigner: ${assigner}`);
+			await issue.removeLabel('triage-needed');
+			await issue.removeLabel('stale');
 		}
 	}
 
