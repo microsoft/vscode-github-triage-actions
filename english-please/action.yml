@@ -1,17 +1,15 @@
 name: English Please
 description: Identify and request translations for issues in languages besides english
 inputs:
-  token:
-    description: GitHub token with issue, comment, and label read/write permissions
   app_id:
     description: GitHub App ID
-    required: false
+    required: true
   app_installation_id:
     description: GitHub App Installation ID
-    required: false
+    required: true
   app_private_key:
     description: GitHub App Private Key
-    required: false
+    required: true
   owner:
     description: Repository owner
     required: false
@@ -23,10 +21,10 @@ inputs:
     required: false
   event:
     description: Event name for a triggered action. Otherwise, this is obtained from the github context.
-    required: false
+    required: true
   action:
     description: Action name for a triggered action. Otherwise, this is obtained from the github context.
-    required: false
+    required: true
   nonEnglishLabel:
     description: Label to add when issues are not written in english
     required: true
