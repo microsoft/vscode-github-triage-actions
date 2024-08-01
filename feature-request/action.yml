@@ -1,18 +1,15 @@
 name: Feature request
 description: Manage feature requests according to the VS Code feature request specification
 inputs:
-  token:
-    description: GitHub token with issue, comment, and label read/write permissions
-    required: false
   app_id:
     description: GitHub App ID
-    required: false
+    required: true
   app_installation_id:
     description: GitHub App Installation ID
-    required: false
+    required: true
   app_private_key:
     description: GitHub App Private Key
-    required: false
+    required: true
   owner:
     description: Repository owner
     required: true

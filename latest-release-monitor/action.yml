@@ -1,8 +1,6 @@
 name: Latest Release Monitor
 description: Keep track of the latest releases of insiders and stable and trigger webhook events when they change
 inputs:
-  token:
-    description: GitHub Token
   app_id:
     description: GitHub App ID
   app_installation_id:
