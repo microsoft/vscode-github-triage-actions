@@ -62,8 +62,9 @@ class ReviewReminder {
         const it = octokit.paginate.iterator(octokit.rest.apps.listReposAccessibleToInstallation, {
             per_page: 100,
         });
-        for await (const { data: repositories } of it) {
-            for (const repository of repositories.repositories) {
+        for await (const response of it) {
+            console.log(`Processing GitHubApp installation ${response.data}`);
+            for (const repository of response.data.repositories) {
                 if (repository.archived) {
                     continue;
                 }
