@@ -4,13 +4,13 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-const github_1 = require("@actions/github");
 const octokit_1 = require("../api/octokit");
 const Action_1 = require("../common/Action");
 const utils_1 = require("../common/utils");
 const Commands_1 = require("./Commands");
+const repository = JSON.parse((0, utils_1.getRequiredInput)('repository'));
 const hydrate = (comment, issue) => {
-    const baseQueryString = `https://github.com/${github_1.context.repo.owner}/${github_1.context.repo.repo}/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+`;
+    const baseQueryString = `https://github.com/${repository.owner.login}/${repository.name}/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+`;
     const importantLabels = issue.labels.filter((label) => label !== '*duplicate');
     const labelsQueryString = encodeURIComponent(importantLabels.map((label) => `label:"${label}"`).join(' '));
     const url = baseQueryString + labelsQueryString;
@@ -35,7 +35,6 @@ class CommandsRunner extends Action_1.Action {
         const auth = await this.getToken();
         const event = (0, utils_1.getRequiredInput)('event');
         const issue = JSON.parse((0, utils_1.getRequiredInput)('issue'));
-        const repository = JSON.parse((0, utils_1.getRequiredInput)('repository'));
         const octokitIssue = new octokit_1.OctoKitIssue(auth, { owner: repository.owner.login, repo: repository.name }, { number: issue.number });
         if (event === 'issue_comment') {
             const commentObject = JSON.parse((0, utils_1.getRequiredInput)('comment'));
