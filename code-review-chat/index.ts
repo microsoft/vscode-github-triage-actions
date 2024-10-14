@@ -142,6 +142,31 @@ class CodeReviewChatAction extends Action {
 		}
 	}
 
+	// Handles the event when a review is assigned to a pull request
+	private async onAssignedReview(issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
+		// Ensure the payload contains pull request and repository information
+		if (!payload.pull_request || !payload.repository) {
+			throw Error('expected payload to contain pull request url');
+		}
+
+		// Get the issue data
+		const issueData = await issue.getIssue();
+
+		// If there are multiple assignees and the issue has the 'triage-needed' label
+		if (issueData.assignees.length > 1 && issueData.labels.includes('triage-needed')) {
+			// Get the username of the assigner of the first assignee
+			const assigner = await issue.getAssigner(issueData.assignees[0]);
+
+			// If the assigner is not the bot itself
+			if (assigner !== getRequiredInput('botName')) {
+				// Log the assigner and remove the 'triage-needed' label
+				safeLog(`Assigner: ${assigner}`);
+				await issue.removeLabel('triage-needed');
+				return;
+			}
+		}
+	}
+
 	protected override async onTriggered() {
 		// This function is only called during a manual workspace dispatch event
 		// caused by a webhook, so we know to expect some inputs.
@@ -181,6 +206,9 @@ class CodeReviewChatAction extends Action {
 			case 'dismissed':
 			case 'synchronize':
 			case 'reopened':
+				break;
+			case 'assigned':
+				await this.onAssignedReview(octokitIssue, payload);
 				break;
 			default:
 				throw Error(`Unknown action: ${action}`);
