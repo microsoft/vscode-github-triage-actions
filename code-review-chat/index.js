@@ -65,6 +65,11 @@ class CodeReviewChatAction extends Action_1.Action {
         if (!payload.pull_request || !payload.repository) {
             throw Error('expected payload to contain pull request url');
         }
+        if (payload.pull_request.state === 'closed') {
+            // PR was merged and a review was submitted after merge. Skip posting message
+            (0, utils_1.safeLog)(`PR was already merged. Skipping posting message`);
+            return;
+        }
         const toolsAPI = new vscodeTools_1.VSCodeToolsAPIManager();
         const teamMembers = new Set((await toolsAPI.getTeamMembers()).map((t) => t.id));
         const auth = await this.getToken();
