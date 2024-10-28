@@ -43,8 +43,9 @@ export class ReleasePipeline {
 			}
 		}
 
-		await issue.postComment(`${key}
-			Issue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, or directly add the \`${this.insidersReleasedLabel}\` label if you know this has already been releaased`);
+		await issue.postComment(
+			`${key}\nIssue marked as unreleased but unable to locate closing commit in issue timeline. You can manually reference a commit by commenting \`\\closedWith someCommitSha\`, or directly add the \`${this.insidersReleasedLabel}\` label if you know this has already been released`,
+		);
 	}
 
 	private async update(issue: GitHubIssue, latestRelease: Release) {
