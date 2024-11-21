@@ -360,6 +360,7 @@ export async function getTeamMemberReviews(
 	repo: string,
 	owner: string,
 	ghIssue: GitHubIssue | OctoKitIssue,
+	isExternalPR?: boolean,
 ) {
 	const reviews = await octokit.pulls.listReviews({
 		pull_number: prNumber,
@@ -401,6 +402,13 @@ export async function getTeamMemberReviews(
 		if (reviewTimestamp < lastCommitUnixTimestamp) {
 			continue;
 		}
+
+		// Check that the team member review occurred in the last 24 hours for external PRs
+		const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+		if (isExternalPR && reviewTimestamp < twentyFourHoursAgo) {
+			continue;
+		}
+
 		const existingReview = latestReviews.get(review.user.login);
 		if (!existingReview || reviewTimestamp > new Date(existingReview.submitted_at).getTime()) {
 			latestReviews.set(review.user.login, review);

@@ -260,7 +260,7 @@ class CodeReviewChat extends Chatter {
     }
 }
 exports.CodeReviewChat = CodeReviewChat;
-async function getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner, ghIssue) {
+async function getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner, ghIssue, isExternalPR) {
     var _a, _b, _c;
     const reviews = await octokit.pulls.listReviews({
         pull_number: prNumber,
@@ -296,6 +296,11 @@ async function getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner,
         const reviewTimestamp = review.submitted_at ? new Date(review.submitted_at).getTime() : 0;
         // Check that the review occured after the last commit
         if (reviewTimestamp < lastCommitUnixTimestamp) {
+            continue;
+        }
+        // Check that the team member review occurred in the last 24 hours for external PRs
+        const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+        if (isExternalPR && reviewTimestamp < twentyFourHoursAgo) {
             continue;
         }
         const existingReview = latestReviews.get(review.user.login);
