@@ -112,7 +112,7 @@ export class LanguageSpecificLabeler {
 
 		const language = (await this.detectLanguage(translationChunk))?.toLowerCase();
 		safeLog('Detected language:', language ?? 'undefined');
-		if (!language || language === 'en') {
+		if (!language) {
 			const languagelabel = issue.labels.find((label) =>
 				label.startsWith(this.translatorRequestedLabelPrefix),
 			);
@@ -120,21 +120,6 @@ export class LanguageSpecificLabeler {
 			await this.issue.removeLabel(this.englishPleaseLabel);
 			await this.issue.removeLabel(this.needsMoreInfoLabel);
 		} else if (language) {
-			const label = this.translatorRequestedLabelPrefix + commonNames[language];
-			if (!(await this.issue.repoHasLabel(label))) {
-				safeLog('Globally creating label ' + label);
-				await this.issue.createLabel(label, this.translatorRequestedLabelColor, '');
-			}
-			await this.issue.addLabel(label);
-			if (this.needsMoreInfoLabel) await this.issue.addLabel(this.needsMoreInfoLabel);
-
-			const targetLanguageComment =
-				knownTranslations[language] ??
-				(await this.translate(baseString, language)) ??
-				'ERR_TRANSLATION_FAILED';
-
-			const englishComment = knownTranslations['en'];
-
 			// check again, another bot may have commented in the mean time.
 			for await (const page of this.issue.getComments()) {
 				for (const comment of page) {
@@ -143,6 +128,26 @@ export class LanguageSpecificLabeler {
 					}
 				}
 			}
+
+			if (this.needsMoreInfoLabel) await this.issue.addLabel(this.needsMoreInfoLabel);
+			const englishComment = knownTranslations['en'];
+			if (language === 'en') {
+				// Contents could be a mix of en and other languages, no need to translate but leave a comment for the user
+				await this.issue.postComment(`${englishComment}\n<!-- translation_requested_comment -->`);
+				return;
+			}
+
+			const label = this.translatorRequestedLabelPrefix + commonNames[language];
+			if (!(await this.issue.repoHasLabel(label))) {
+				safeLog('Globally creating label ' + label);
+				await this.issue.createLabel(label, this.translatorRequestedLabelColor, '');
+			}
+			await this.issue.addLabel(label);
+
+			const targetLanguageComment =
+				knownTranslations[language] ??
+				(await this.translate(baseString, language)) ??
+				'ERR_TRANSLATION_FAILED';
 
 			await this.issue.postComment(
 				`${targetLanguageComment}\n\n---\n${englishComment}\n<!-- translation_requested_comment -->`,
