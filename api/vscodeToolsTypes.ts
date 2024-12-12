@@ -20,11 +20,10 @@ export enum Role {
 }
 
 // Note: referened by triage bot to find triagers who are not "NOT_AVAILABLE", please make updates there too :)
-// https://github.com/microsoft/vscode-github-triage-actions/blob/c53b3637cd694df982b4a6a048c75ae16500ba1b/classifier-deep/apply/apply-labels/index.ts#L34-L41
+// https://github.com/microsoft/vscode-tools/blob/main/src/common/src/team.ts#L21
 export enum Availability {
 	FULL = 1,
 	HALF,
-	OPTIONAL,
 	NOT_AVAILABLE,
 }
 
