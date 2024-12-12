@@ -111,7 +111,7 @@ export class LanguageSpecificLabeler {
 		}
 
 		const language = (await this.detectLanguage(translationChunk))?.toLowerCase();
-
+		safeLog('Detected language:', language ?? 'undefined');
 		if (!language || language === 'en') {
 			const languagelabel = issue.labels.find((label) =>
 				label.startsWith(this.translatorRequestedLabelPrefix),
