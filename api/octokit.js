@@ -153,7 +153,7 @@ class OctoKit {
         }
     }
     async readConfig(configPath, configRepo) {
-        (0, utils_1.safeLog)('Reading config at ' + configPath);
+        (0, utils_1.safeLog)(`Reading config at ${configPath} from ${configRepo !== null && configRepo !== void 0 ? configRepo : this.params.repo}`);
         const repoPath = `.github/${configPath}.json`;
         try {
             const data = (await this.octokit.rest.repos.getContent({

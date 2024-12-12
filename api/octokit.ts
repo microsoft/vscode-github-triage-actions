@@ -173,7 +173,7 @@ export class OctoKit implements GitHub {
 	}
 
 	async readConfig(configPath: string, configRepo?: string): Promise<any> {
-		safeLog('Reading config at ' + configPath);
+		safeLog(`Reading config at ${configPath} from ${configRepo ?? this.params.repo}`);
 		const repoPath = `.github/${configPath}.json`;
 		try {
 			const data = (
