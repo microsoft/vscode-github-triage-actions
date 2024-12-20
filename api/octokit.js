@@ -214,8 +214,10 @@ class OctoKit {
             return undefined;
         }
         if (isEndGame && possibleMilestones.length > 1) {
+            // TODO: Bhavya undo this for Jan 2025.
+            // https://github.com/microsoft/vscode-engineering/issues/971
             // If we are in endgame, return the next milestone.
-            return possibleMilestones[1].number;
+            // return possibleMilestones[1].number;
         }
         return possibleMilestones[0].number;
     }
