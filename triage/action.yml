@@ -1,0 +1,35 @@
+name: New Issue Triager
+description: Triage new issues to one of the assignees from the provided list
+inputs:
+  token:
+    description: 'GitHub token with issue, comment, and label read/write permissions'
+  app_id:
+    description: GitHub App ID
+    required: true
+  app_installation_id:
+    description: GitHub App Installation ID
+    required: true
+  app_private_key:
+    description: GitHub App Private Key
+    required: true
+  owner:
+    description: Repository owner
+    required: true
+  repo:
+    description: Repository name
+    required: true
+  issue_number:
+    description: Issue number
+    required: true
+  event:
+    description: Event name for a triggered action. Otherwise, this is obtained from the GitHub context.
+    required: true
+  action:
+    description: Action name for a triggered action. Otherwise, this is obtained from the GitHub context.
+    required: true
+  assignees:
+    description: Pipe-separated list of assignees to triage new issues to
+    required: true
+runs:
+  using: 'node20'
+  main: 'index.js'
