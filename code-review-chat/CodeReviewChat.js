@@ -263,7 +263,7 @@ class CodeReviewChat extends Chatter {
                     owner: this.options.payload.owner,
                     repo: this.options.payload.repo,
                     issue_number: this.pullRequestNumber,
-                    body: '/AzurePipelines run',
+                    body: 'This PR originates from a fork. If the changes appear safe, you can trigger the pipeline by commenting `/AzurePipelines run`.',
                 });
             })());
         }
