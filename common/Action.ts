@@ -253,9 +253,29 @@ export async function getAuthenticationToken(): Promise<string> {
 	const installationId = getInput('app_installation_id');
 	const privateKey = getInput('app_private_key');
 	if (appId && installationId && privateKey) {
-		const appAuth = createAppAuth({ appId, installationId, privateKey });
-		return (await appAuth({ type: 'installation' })).token;
-	} else {
-		throw Error('Input required: app_id, app_installation_id, app_private_key');
+		const maxAttempts = 3;
+		let attempts = 0;
+
+		while (attempts < maxAttempts) {
+			try {
+				const appAuth = createAppAuth({ appId, installationId, privateKey });
+				return (await appAuth({ type: 'installation' })).token;
+			} catch (error: any) {
+				if (error.response && error.response.status === 504) {
+					attempts++;
+					const delay = Math.pow(2, attempts) * 1000; // Exponential backoff
+					safeLog(
+						`Attempt ${attempts} failed with 504 error. Retrying in ${delay / 1000} seconds.`,
+					);
+					if (attempts >= maxAttempts) {
+						throw new Error('Max retry attempts reached. Please try again later');
+					}
+					await new Promise((resolve) => setTimeout(resolve, delay));
+				} else {
+					throw error;
+				}
+			}
+		}
 	}
+	throw Error('Failed to get authentication token');
 }

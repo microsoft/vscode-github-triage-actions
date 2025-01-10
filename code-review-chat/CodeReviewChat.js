@@ -206,7 +206,13 @@ class CodeReviewChat extends Chatter {
             (0, utils_1.safeLog)('PR is on a non-main or release branch, ignoring');
             return;
         }
-        const isEndGame = (_a = (await (0, utils_1.isInsiderFrozen)())) !== null && _a !== void 0 ? _a : false;
+        let isEndGame = false;
+        try {
+            isEndGame = (_a = (await (0, utils_1.isInsiderFrozen)())) !== null && _a !== void 0 ? _a : false;
+        }
+        catch (error) {
+            (0, utils_1.safeLog)(`Error determining if insider is frozen: ${error.message}`);
+        }
         // This is an external PR which already received one review and is just awaiting a second
         const data = await this.issue.getIssue();
         if (this._externalContributorPR) {

@@ -81,7 +81,7 @@ export function createPRObject(pullRequestFromApi: any): PR {
 }
 
 class Chatter {
-	constructor(protected slackToken: string, protected notificationChannelID: string) { }
+	constructor(protected slackToken: string, protected notificationChannelID: string) {}
 
 	async getChat(): Promise<{ client: WebClient; channel: string }> {
 		const web = new WebClient(this.slackToken);
@@ -282,7 +282,13 @@ export class CodeReviewChat extends Chatter {
 			return;
 		}
 
-		const isEndGame = (await isInsiderFrozen()) ?? false;
+		let isEndGame = false;
+		try {
+			isEndGame = (await isInsiderFrozen()) ?? false;
+		} catch (error) {
+			safeLog(`Error determining if insider is frozen: ${(error as Error).message}`);
+		}
+
 		// This is an external PR which already received one review and is just awaiting a second
 		const data = await this.issue.getIssue();
 		if (this._externalContributorPR) {
