@@ -24,6 +24,8 @@ class NeedsMoreInfoCloser {
         for await (const page of this.github.query({ q: query })) {
             for (const issue of page) {
                 const hydrated = await issue.getIssue();
+                if (!hydrated)
+                    continue;
                 const lastCommentIterator = await issue.getComments(true).next();
                 if (lastCommentIterator.done) {
                     throw Error('Unexpected comment data');

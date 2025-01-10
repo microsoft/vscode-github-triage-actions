@@ -215,6 +215,8 @@ class CodeReviewChat extends Chatter {
         }
         // This is an external PR which already received one review and is just awaiting a second
         const data = await this.issue.getIssue();
+        if (!data)
+            return;
         if (this._externalContributorPR) {
             const externalTasks = [];
             const currentMilestone = await this.issue.getCurrentRepoMilestone(isEndGame);
@@ -284,8 +286,11 @@ async function getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner,
         owner,
         repo,
     });
+    const pr = await ghIssue.getIssue();
+    if (!pr)
+        return [];
     // Get author of PR
-    const author = (await ghIssue.getIssue()).author.name;
+    const author = pr.author.name;
     // Get timestamp of last commit
     const lastCommitTimestamp = (_c = (_b = (_a = (await octokit.pulls.listCommits({
         pull_number: prNumber,
@@ -330,7 +335,10 @@ async function getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner,
 exports.getTeamMemberReviews = getTeamMemberReviews;
 async function meetsReviewThreshold(octokit, teamMembers, prNumber, repo, owner, ghIssue) {
     // Get author of PR
-    const author = (await ghIssue.getIssue()).author.name;
+    const pr = await ghIssue.getIssue();
+    if (!pr)
+        return false;
+    const author = pr.author.name;
     const teamMemberReviews = await getTeamMemberReviews(octokit, teamMembers, prNumber, repo, owner, ghIssue);
     // While more expensive to convert from Array -> Set -> Array, we want to ensure the same name isn't double counted if a user has multiple reviews
     const reviewerNames = Array.from(new Set(teamMemberReviews === null || teamMemberReviews === void 0 ? void 0 : teamMemberReviews.map((r) => { var _a, _b; return (_b = (_a = r.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : 'Unknown'; })));

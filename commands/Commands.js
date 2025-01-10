@@ -100,6 +100,8 @@ class Commands {
     }
     async run() {
         const issue = await this.github.getIssue();
+        if (!issue)
+            return;
         return Promise.all(this.config.map((command) => this.perform(command, issue)));
     }
 }

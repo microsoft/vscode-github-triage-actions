@@ -30,6 +30,8 @@ export class FeatureRequestQueryer {
 		for await (const page of this.github.query({ q: query })) {
 			for (const issue of page) {
 				const issueData = await issue.getIssue();
+				if (!issueData) continue;
+
 				if (
 					issueData.open &&
 					issueData.milestone?.milestoneId === this.config.milestones.candidateID &&
@@ -48,6 +50,8 @@ export class FeatureRequestQueryer {
 
 	private async actOn(issue: GitHubIssue): Promise<void> {
 		const issueData = await issue.getIssue();
+		if (!issueData) return;
+
 		if (!issueData.reactions) throw Error('No reaction data in issue ' + JSON.stringify(issueData));
 
 		if (
@@ -122,6 +126,7 @@ export class FeatureRequestOnLabel {
 		await new Promise((resolve) => setTimeout(resolve, this.delay * 1000));
 
 		const issue = await this.github.getIssue();
+		if (!issue) return;
 
 		if (
 			!issue.open ||
@@ -141,6 +146,8 @@ export class FeatureRequestOnMilestone {
 
 	async run(): Promise<void> {
 		const issue = await this.github.getIssue();
+		if (!issue) return;
+
 		if (issue.open && issue.milestone?.milestoneId === this.milestone) {
 			await this.github.postComment(CREATE_MARKER + '\n' + this.comment);
 		}

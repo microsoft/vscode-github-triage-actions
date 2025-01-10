@@ -291,6 +291,7 @@ export class CodeReviewChat extends Chatter {
 
 		// This is an external PR which already received one review and is just awaiting a second
 		const data = await this.issue.getIssue();
+		if (!data) return;
 		if (this._externalContributorPR) {
 			const externalTasks = [];
 			const currentMilestone = await this.issue.getCurrentRepoMilestone(isEndGame);
@@ -387,8 +388,11 @@ export async function getTeamMemberReviews(
 		owner,
 		repo,
 	});
+
+	const pr = await ghIssue.getIssue();
+	if (!pr) return [];
 	// Get author of PR
-	const author = (await ghIssue.getIssue()).author.name;
+	const author = pr.author.name;
 	// Get timestamp of last commit
 	const lastCommitTimestamp = (
 		await octokit.pulls.listCommits({
@@ -446,7 +450,9 @@ export async function meetsReviewThreshold(
 	ghIssue: GitHubIssue | OctoKitIssue,
 ) {
 	// Get author of PR
-	const author = (await ghIssue.getIssue()).author.name;
+	const pr = await ghIssue.getIssue();
+	if (!pr) return false;
+	const author = pr.author.name;
 	const teamMemberReviews = await getTeamMemberReviews(
 		octokit,
 		teamMembers,

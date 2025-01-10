@@ -14,6 +14,7 @@ class IssueTriageAction extends Action {
 	private async triage(issue: OctoKitIssue) {
 		try {
 			const githubIssue = await issue.getIssue();
+			if (!githubIssue) return;
 
 			// check to see that issue is not already assigned and that it does not have the triage-needed label
 			if (githubIssue.assignees.length > 0 || githubIssue.labels.length > 0) {

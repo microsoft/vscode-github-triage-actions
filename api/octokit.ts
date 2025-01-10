@@ -326,21 +326,30 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			await this.octokit.rest.issues.unlock({ ...this.params, issue_number: this.issueData.number });
 	}
 
-	async getIssue(): Promise<Issue> {
+	async getIssue(): Promise<Issue | undefined> {
 		if (isIssue(this.issueData)) {
 			safeLog('Got issue data from query result ' + this.issueData.number);
 			return this.issueData;
 		}
 
 		safeLog('Fetching issue ' + this.issueData.number);
-		const issue = (
-			await this.octokit.rest.issues.get({
-				...this.params,
-				issue_number: this.issueData.number,
-				mediaType: { previews: ['squirrel-girl'] },
-			})
-		).data;
-		return (this.issueData = this.octokitIssueToIssue(issue));
+		try {
+			const issue = (
+				await this.octokit.rest.issues.get({
+					...this.params,
+					issue_number: this.issueData.number,
+					mediaType: { previews: ['squirrel-girl'] },
+				})
+			).data;
+			return (this.issueData = this.octokitIssueToIssue(issue));
+		} catch (err) {
+			const statusError = err as RequestError;
+			if (statusError.status === 404) {
+				safeLog('Issue not found');
+				return;
+			}
+			throw err;
+		}
 	}
 
 	async postComment(body: string): Promise<void> {
@@ -380,7 +389,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 			...this.params,
 			issue_number: this.issueData.number,
 			per_page: 100,
-			...(last ? { per_page: 1, page: (await this.getIssue()).numComments } : {}),
+			...(last ? { per_page: 1, page: (await this.getIssue())?.numComments } : {}),
 		});
 
 		for await (const page of response) {
@@ -465,7 +474,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 		}
 		alreadyChecked.push(this.issueData.number);
 
-		if ((await this.getIssue()).open) {
+		if ((await this.getIssue())?.open) {
 			return;
 		}
 
@@ -534,7 +543,7 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 				}).getClosingInfo(alreadyChecked);
 
 				if (closed) {
-					if (Math.abs(closed.timestamp - ((await this.getIssue()).closedAt ?? 0)) < 5000) {
+					if (Math.abs(closed.timestamp - ((await this.getIssue())?.closedAt ?? 0)) < 5000) {
 						closingCommit = closed;
 						break;
 					}

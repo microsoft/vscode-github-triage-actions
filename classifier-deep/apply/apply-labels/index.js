@@ -47,6 +47,8 @@ class ApplyLabels extends Action_1.Action {
                 }
             };
             const issueData = await issue.getIssue();
+            if (!issueData)
+                continue;
             if (issueData.labels.includes('invalid')) {
                 (0, utils_1.safeLog)(`issue ${labeling.number} is invalid, skipping`);
                 continue;

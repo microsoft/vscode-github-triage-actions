@@ -107,6 +107,8 @@ class CodeReviewChatAction extends Action_1.Action {
         }
         // Get the issue data
         const issueData = await issue.getIssue();
+        if (!issueData)
+            return;
         // If there are multiple assignees and the issue has the 'triage-needed' label
         if (issueData.assignees.length > 1 && issueData.labels.includes('triage-needed')) {
             // Get the username of the assigner of the first assignee

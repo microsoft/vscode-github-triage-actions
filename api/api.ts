@@ -31,7 +31,7 @@ export interface GitHub {
 }
 
 export interface GitHubIssue extends GitHub {
-	getIssue(): Promise<Issue>;
+	getIssue(): Promise<Issue | undefined>;
 
 	postComment(body: string): Promise<void>;
 	deleteComment(id: number): Promise<void>;

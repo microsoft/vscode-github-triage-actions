@@ -36,6 +36,7 @@ class ApplyLabels extends Action {
 		for (const labeling of labelings) {
 			const issue = new OctoKitIssue(token, { owner, repo }, { number: labeling.number });
 			const issueData = await issue.getIssue();
+			if (!issueData) continue;
 
 			if (!debug && issueData.assignee) {
 				safeLog('skipping, already assigned to: ', issueData.assignee);

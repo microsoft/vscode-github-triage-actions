@@ -15,6 +15,8 @@ class IssueTriageAction extends Action_1.Action {
     async triage(issue) {
         try {
             const githubIssue = await issue.getIssue();
+            if (!githubIssue)
+                return;
             // check to see that issue is not already assigned and that it does not have the triage-needed label
             if (githubIssue.assignees.length > 0 || githubIssue.labels.length > 0) {
                 return;

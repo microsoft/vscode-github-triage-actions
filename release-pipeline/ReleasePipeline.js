@@ -20,6 +20,8 @@ class ReleasePipeline {
         for await (const page of this.github.query({ q: query })) {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
+                if (!issueData)
+                    continue;
                 if (issueData.labels.includes(this.notYetReleasedLabel) && issueData.open === false) {
                     await this.update(issue, latestRelease);
                     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -60,20 +62,23 @@ class ReleasePipeline {
             await issue.removeLabel(this.insidersReleasedLabel);
             await issue.addLabel(this.notYetReleasedLabel);
         }
-        else if ((await issue.getIssue()).labels.includes(this.notYetReleasedLabel)) {
-            await issue.removeLabel(this.notYetReleasedLabel);
-            await this.commentUnableToFindCommitMessage(issue);
+        else {
+            const ghIssue = await issue.getIssue();
+            if (ghIssue && ghIssue.labels.includes(this.notYetReleasedLabel)) {
+                await issue.removeLabel(this.notYetReleasedLabel);
+                await this.commentUnableToFindCommitMessage(issue);
+            }
         }
     }
 }
 exports.ReleasePipeline = ReleasePipeline;
 const enrollIssue = async (issue, notYetReleasedLabel) => {
-    var _a;
+    var _a, _b;
     const closingHash = (_a = (await issue.getClosingInfo())) === null || _a === void 0 ? void 0 : _a.hash;
     if (closingHash) {
         await issue.addLabel(notYetReleasedLabel);
         // Get the milestone linked to the current release and set it if the issue doesn't have one
-        const releaseMilestone = (await issue.getIssue()).milestone
+        const releaseMilestone = ((_b = (await issue.getIssue())) === null || _b === void 0 ? void 0 : _b.milestone)
             ? undefined
             : await issue.getCurrentRepoMilestone();
         if (releaseMilestone !== undefined) {

@@ -29,6 +29,7 @@ class FetchIssues extends Action {
 		for await (const page of github.query({ q: query })) {
 			for (const issue of page) {
 				const issueData = await issue.getIssue();
+				if (!issueData) continue;
 				const cleansed = normalizeIssue(issueData);
 				data.push({ number: issueData.number, contents: `${cleansed.title}\n\n${cleansed.body}` });
 			}

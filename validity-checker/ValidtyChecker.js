@@ -34,6 +34,8 @@ class ValidtyChecker {
     }
     async run() {
         const issue = await this.github.getIssue();
+        if (!issue)
+            return;
         (0, utils_1.safeLog)(`Checking issue validty for #${issue.number}...`);
         const hasKeyword = keywords.some((keyword) => issue.title.includes(keyword) || issue.body.includes(keyword));
         const isBadAuthor = issue.author.name === 'ghost';

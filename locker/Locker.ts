@@ -32,6 +32,7 @@ export class Locker {
 		for await (const page of this.github.query({ q: query, per_page: 50 })) {
 			page.map(async (issue) => {
 				const hydrated = await issue.getIssue();
+				if (!hydrated) return;
 
 				if (
 					!hydrated.locked &&

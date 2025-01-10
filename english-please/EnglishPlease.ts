@@ -19,6 +19,8 @@ export class EnglishPleaseLabler {
 
 	async run(): Promise<boolean> {
 		const issue = await this.issue.getIssue();
+		if (!issue) return false;
+
 		const { body, title } = normalizeIssue(issue);
 		const translationChunk = `${title} ${body}`;
 
@@ -99,6 +101,8 @@ export class LanguageSpecificLabeler {
 
 	async run() {
 		const issue = await this.issue.getIssue();
+		if (!issue) return;
+
 		const { body, title } = normalizeIssue(issue);
 		const translationChunk = `${title} ${body}`;
 

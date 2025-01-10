@@ -35,6 +35,8 @@ class FetchIssues extends Action_1.Action {
         for await (const page of github.query({ q: query })) {
             for (const issue of page) {
                 const issueData = await issue.getIssue();
+                if (!issueData)
+                    continue;
                 // Probably spam. Tagged for later review
                 if (issueData.author.name === 'ghost') {
                     (0, utils_1.safeLog)(`Tagging issue  #${issueData.number} as invalid`);
@@ -64,6 +66,8 @@ class FetchIssues extends Action_1.Action {
                                 const linkedIssueData = await github
                                     .getIssueByNumber(+linkedIssue)
                                     .getIssue();
+                                if (!linkedIssueData)
+                                    continue;
                                 const normalized = (0, utils_1.normalizeIssue)(linkedIssueData);
                                 additionalInfo = `\n\n${normalized.title}\n\n${normalized.body}`;
                                 const linkedIssueAssignee = linkedIssueData.assignees[0];

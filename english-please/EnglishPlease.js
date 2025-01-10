@@ -15,6 +15,8 @@ class EnglishPleaseLabler {
     }
     async run() {
         const issue = await this.issue.getIssue();
+        if (!issue)
+            return false;
         const { body, title } = (0, utils_1.normalizeIssue)(issue);
         const translationChunk = `${title} ${body}`;
         const nonenglishChunk = translationChunk.replace(usKeyboardChars, '').replace(emojiChars, '');
@@ -86,6 +88,8 @@ class LanguageSpecificLabeler {
     async run() {
         var _a, _b, _c;
         const issue = await this.issue.getIssue();
+        if (!issue)
+            return;
         const { body, title } = (0, utils_1.normalizeIssue)(issue);
         const translationChunk = `${title} ${body}`;
         for await (const page of this.issue.getComments()) {

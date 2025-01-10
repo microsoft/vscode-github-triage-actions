@@ -29,6 +29,8 @@ class AuthorVerifiedLabeler {
     }
     async run() {
         const issue = await this.github.getIssue();
+        if (!issue)
+            return;
         if (!issue.open &&
             issue.labels.includes(this.authorVerificationRequestedLabel) &&
             issue.labels.includes(this.releasedLabel)) {

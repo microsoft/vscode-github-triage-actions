@@ -33,6 +33,7 @@ export class AuthorVerifiedLabeler {
 
 	async run(): Promise<void> {
 		const issue = await this.github.getIssue();
+		if (!issue) return;
 
 		if (
 			!issue.open &&
