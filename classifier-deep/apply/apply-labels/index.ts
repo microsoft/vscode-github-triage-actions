@@ -163,6 +163,24 @@ class ApplyLabels extends Action {
 					safeLog('Acquired list of available triagers');
 					const available = triagers;
 					if (available) {
+						// Check if the issue has any cc'ed users and assign them if they are available
+						const issueBody = issueData.body;
+						const ccMatches = (issueBody.match(/@(\w+)/g) || []).map((match) =>
+							match.replace('@', ''),
+						);
+
+						for (const ccMatch of ccMatches) {
+							if (available.includes(ccMatch)) {
+								safeLog("assigning cc'ed user", ccMatch);
+								await issue.addAssignee(ccMatch);
+								performedAssignment = true;
+							}
+						}
+
+						if (performedAssignment) {
+							continue;
+						}
+
 						// Shuffle the array
 						for (let i = available.length - 1; i > 0; i--) {
 							const j = Math.floor(Math.random() * (i + 1));
