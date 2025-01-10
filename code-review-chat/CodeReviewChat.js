@@ -256,6 +256,17 @@ class CodeReviewChat extends Chatter {
             (0, utils_1.safeLog)(message);
             await this.postMessage(message);
         })());
+        // Trigger build for forked PRs by adding a comment
+        if (pr.fork) {
+            tasks.push((async () => {
+                await this.octokit.issues.createComment({
+                    owner: this.options.payload.owner,
+                    repo: this.options.payload.repo,
+                    issue_number: this.pullRequestNumber,
+                    body: '/AzurePipelines run',
+                });
+            })());
+        }
         await Promise.all(tasks);
     }
 }
