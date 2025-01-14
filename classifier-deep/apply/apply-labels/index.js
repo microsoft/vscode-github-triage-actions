@@ -34,6 +34,8 @@ class ApplyLabels extends Action_1.Action {
         const config = await github.readConfig((0, utils_1.getRequiredInput)('configPath'));
         const token = await (0, Action_1.getAuthenticationToken)();
         const labelings = JSON.parse((0, fs_1.readFileSync)((0, path_1.join)(__dirname, '../issue_labels.json'), { encoding: 'utf8' }));
+        const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager();
+        const triagers = await vscodeToolsAPI.getTriagerGitHubIds();
         for (const labeling of labelings) {
             const issue = new octokit_1.OctoKitIssue(token, { owner, repo }, { number: labeling.number });
             const potentialAssignees = [];
@@ -60,6 +62,20 @@ class ApplyLabels extends Action_1.Action {
             const allLabelsAllowed = issueData.labels.every((issueLabel) => allowLabels.some((allowedLabel) => issueLabel.includes(allowedLabel)));
             if (!debug && (issueData.assignee || !allLabelsAllowed)) {
                 (0, utils_1.safeLog)('skipping');
+                continue;
+            }
+            // Check if the issue has any cc'ed users and assign them if they are available
+            const issueBody = issueData.body;
+            const ccMatches = (issueBody.match(/@(\w+)/g) || []).map((match) => match.replace('@', ''));
+            let performedAssignment = false;
+            for (const ccMatch of ccMatches) {
+                if (triagers.includes(ccMatch)) {
+                    (0, utils_1.safeLog)("assigning cc'ed user", ccMatch);
+                    performedAssignment = true;
+                    await issue.addAssignee(ccMatch);
+                }
+            }
+            if (performedAssignment) {
                 continue;
             }
             (0, utils_1.safeLog)('not skipping', JSON.stringify({
@@ -108,7 +124,6 @@ class ApplyLabels extends Action_1.Action {
                     await addAssignee(category);
                 }
             }
-            let performedAssignment = false;
             if (potentialAssignees.length && !debug) {
                 for (const assignee of potentialAssignees) {
                     const hasBeenAssigned = await issue.getAssigner(assignee).catch(() => undefined);
@@ -122,24 +137,8 @@ class ApplyLabels extends Action_1.Action {
             if (!performedAssignment) {
                 (0, utils_1.safeLog)('could not find assignee, picking a random one...');
                 try {
-                    const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager();
-                    const triagers = await vscodeToolsAPI.getTriagerGitHubIds();
-                    (0, utils_1.safeLog)('Acquired list of available triagers');
                     const available = triagers;
                     if (available) {
-                        // Check if the issue has any cc'ed users and assign them if they are available
-                        const issueBody = issueData.body;
-                        const ccMatches = (issueBody.match(/@(\w+)/g) || []).map((match) => match.replace('@', ''));
-                        for (const ccMatch of ccMatches) {
-                            if (available.includes(ccMatch)) {
-                                (0, utils_1.safeLog)("assigning cc'ed user", ccMatch);
-                                await issue.addAssignee(ccMatch);
-                                performedAssignment = true;
-                            }
-                        }
-                        if (performedAssignment) {
-                            continue;
-                        }
                         // Shuffle the array
                         for (let i = available.length - 1; i > 0; i--) {
                             const j = Math.floor(Math.random() * (i + 1));
