@@ -241,10 +241,13 @@ export class OctoKit implements GitHub {
 		}
 
 		if (isEndGame && possibleMilestones.length > 1) {
-			// TODO: Bhavya undo this for Jan 2025.
-			// https://github.com/microsoft/vscode-engineering/issues/971
-			// If we are in endgame, return the next milestone.
-			// return possibleMilestones[1].number;
+			const timeDiff =
+				new Date(possibleMilestones[0].due_on ?? currentDate).getTime() - currentDate.getTime();
+			const daysDiff = timeDiff / (1000 * 3600 * 24);
+			// If the milestone is less than 14 days away, use the next milestone
+			if (daysDiff < 14) {
+				return possibleMilestones[1].number;
+			}
 		}
 
 		return possibleMilestones[0].number;
