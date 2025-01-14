@@ -364,7 +364,7 @@ export class CodeReviewChat extends Chatter {
 						owner: this.options.payload.owner,
 						repo: this.options.payload.repo,
 						issue_number: this.pullRequestNumber,
-						body: 'This PR originates from a fork. If the changes appear safe, you can trigger the pipeline by commenting `/AzurePipelines run`.',
+						body: '⚠️ This PR originates from a fork. Due to security restrictions, pipelines from forks are no longer triggered automatically. [Learn more](https://learn.microsoft.com/en-us/azure/devops/pipelines/repos/github?view=azure-devops&tabs=yaml#comment-triggers).\n\nIf the changes appear safe, you can manually trigger the pipeline by commenting `/AzurePipelines run`.',
 					});
 				})(),
 			);
