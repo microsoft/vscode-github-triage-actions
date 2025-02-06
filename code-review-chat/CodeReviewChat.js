@@ -22,7 +22,9 @@ function createPRObject(pullRequestFromApi) {
         headBranchName: (_b = pullRequestFromApi.head.ref) !== null && _b !== void 0 ? _b : '',
         title: pullRequestFromApi.title,
         headLabel: ((_c = pullRequestFromApi.head.repo) === null || _c === void 0 ? void 0 : _c.full_name) || '',
-        fork: ((_d = pullRequestFromApi.head.repo) === null || _d === void 0 ? void 0 : _d.fork) || false,
+        fork: (((_d = pullRequestFromApi.head.repo) === null || _d === void 0 ? void 0 : _d.fork) &&
+            pullRequestFromApi.head.repo.full_name != pullRequestFromApi.base.repo.full_name) ||
+            false,
     };
     return pr;
 }

@@ -75,7 +75,10 @@ export function createPRObject(pullRequestFromApi: any): PR {
 		headBranchName: pullRequestFromApi.head.ref ?? '',
 		title: pullRequestFromApi.title,
 		headLabel: pullRequestFromApi.head.repo?.full_name || '',
-		fork: pullRequestFromApi.head.repo?.fork || false,
+		fork:
+			(pullRequestFromApi.head.repo?.fork &&
+				pullRequestFromApi.head.repo.full_name != pullRequestFromApi.base.repo.full_name) ||
+			false,
 	};
 	return pr;
 }
