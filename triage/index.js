@@ -25,10 +25,10 @@ class IssueTriageAction extends Action_1.Action {
                 if (githubIssue.assignees.length === 0) {
                     const link = (0, core_1.getInput)('workingAreasLink');
                     if (link) {
-                        await issue.postComment(`Hi ${githubIssue.author.name}. As a member of the team, you can help us triage this issue by referring to ${link}`);
+                        await issue.postComment(`Hi @${githubIssue.author.name}. As a member of the team, you can help us triage this issue by referring to ${link}`);
                     }
                     else {
-                        await issue.postComment(`Hi ${githubIssue.author.name}. You can help us triage this issue by assigning it to the appropriate person.`);
+                        await issue.postComment(`Hi @${githubIssue.author.name}. You can help us triage this issue by assigning it to the appropriate person.`);
                     }
                 }
                 (0, utils_1.safeLog)('Author is a team member, skipping triaging', githubIssue.author.name);
