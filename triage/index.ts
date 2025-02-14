@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OctoKitIssue } from '../api/octokit';
+import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { VSCodeToolsAPIManager } from '../api/vscodeTools';
-import { Action } from '../common/Action';
-import { getRequiredInput, safeLog } from '../common/utils';
+import { Action, getAuthenticationToken } from '../common/Action';
+import { daysAgoToHumanReadbleDate, getRequiredInput, safeLog } from '../common/utils';
 
 class IssueTriageAction extends Action {
 	id = 'IssueTriageAction';
@@ -65,6 +65,27 @@ class IssueTriageAction extends Action {
 		// wait 30 seconds before triaging
 		await new Promise((resolve) => setTimeout(resolve, 30000));
 		await this.triage(issue);
+	}
+
+	protected override async onTriggered(_octokit: OctoKit): Promise<void> {
+		const owner = getRequiredInput('owner');
+		const repo = getRequiredInput('repo');
+		const token = await getAuthenticationToken();
+
+		const staleIssues = _octokit.query({
+			q: `is:issue is:open -commenter:>1 no:assignee updated:<${daysAgoToHumanReadbleDate(7)}`,
+		});
+
+		// Loop through issues which are not assigned and have no activity from except the author
+		for await (const page of staleIssues) {
+			for (const issueData of page) {
+				const issue = await issueData.getIssue();
+				if (!issue) continue;
+				const octokitIssue = new OctoKitIssue(token, { owner, repo }, { number: issue?.number });
+				await this.triage(octokitIssue);
+			}
+		}
+		safeLog('Completed triaging stale issues.');
 	}
 }
 

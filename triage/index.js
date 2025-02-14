@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const octokit_1 = require("../api/octokit");
 const vscodeTools_1 = require("../api/vscodeTools");
 const Action_1 = require("../common/Action");
 const utils_1 = require("../common/utils");
@@ -61,6 +62,25 @@ class IssueTriageAction extends Action_1.Action {
         // wait 30 seconds before triaging
         await new Promise((resolve) => setTimeout(resolve, 30000));
         await this.triage(issue);
+    }
+    async onTriggered(_octokit) {
+        const owner = (0, utils_1.getRequiredInput)('owner');
+        const repo = (0, utils_1.getRequiredInput)('repo');
+        const token = await (0, Action_1.getAuthenticationToken)();
+        const staleIssues = _octokit.query({
+            q: `is:issue is:open -commenter:>1 no:assignee updated:<${(0, utils_1.daysAgoToHumanReadbleDate)(7)}`,
+        });
+        // Loop through issues which are not assigned and have no activity from except the author
+        for await (const page of staleIssues) {
+            for (const issueData of page) {
+                const issue = await issueData.getIssue();
+                if (!issue)
+                    continue;
+                const octokitIssue = new octokit_1.OctoKitIssue(token, { owner, repo }, { number: issue === null || issue === void 0 ? void 0 : issue.number });
+                await this.triage(octokitIssue);
+            }
+        }
+        (0, utils_1.safeLog)('Completed triaging stale issues.');
     }
 }
 new IssueTriageAction().run(); // eslint-disable-line
