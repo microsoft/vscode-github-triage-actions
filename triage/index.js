@@ -23,8 +23,8 @@ class IssueTriageAction extends Action_1.Action {
                 (0, utils_1.safeLog)('Author is a team member, skipping triaging', githubIssue.author.name);
                 return;
             }
-            // check to see that issue is not already assigned and that it does not have the triage-needed label
-            if (githubIssue.assignees.length > 0 || githubIssue.labels.length > 0) {
+            // check to see that issue is not already assigned
+            if (githubIssue.assignees.length > 0) {
                 return;
             }
             await issue.addLabel('triage-needed');
