@@ -20,16 +20,19 @@ inputs:
     required: true
   issue_number:
     description: Issue number
-    required: true
+    required: false
   event:
     description: Event name for a triggered action. Otherwise, this is obtained from the GitHub context.
-    required: true
+    required: false
   action:
     description: Action name for a triggered action. Otherwise, this is obtained from the GitHub context.
-    required: true
+    required: false
   assignees:
     description: Pipe-separated list of assignees to triage new issues to
-    required: true
+    required: false
+  workingAreasLink:
+    description: Link to the working areas document
+    required: false
 runs:
   using: 'node20'
   main: 'index.js'
