@@ -24,11 +24,11 @@ class IssueTriageAction extends Action {
 					const link = getInput('workingAreasLink');
 					if (link) {
 						await issue.postComment(
-							`Hi ${githubIssue.author.name}. As a member of the team, you can help us triage this issue by referring to ${link}`,
+							`Hi @${githubIssue.author.name}. As a member of the team, you can help us triage this issue by referring to ${link}`,
 						);
 					} else {
 						await issue.postComment(
-							`Hi ${githubIssue.author.name}. You can help us triage this issue by assigning it to the appropriate person.`,
+							`Hi @${githubIssue.author.name}. You can help us triage this issue by assigning it to the appropriate person.`,
 						);
 					}
 				}
