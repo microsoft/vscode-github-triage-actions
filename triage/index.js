@@ -4,6 +4,7 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
+const core_1 = require("@actions/core");
 const octokit_1 = require("../api/octokit");
 const vscodeTools_1 = require("../api/vscodeTools");
 const Action_1 = require("../common/Action");
@@ -13,14 +14,23 @@ class IssueTriageAction extends Action_1.Action {
         super(...arguments);
         this.id = 'IssueTriageAction';
     }
-    async triage(issue) {
+    async triage(issue, skipTeamCheck = false) {
         try {
             const githubIssue = await issue.getIssue();
             if (!githubIssue)
                 return;
             const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager();
             const teamMembers = new Set((await vscodeToolsAPI.getTeamMembers()).map((t) => t.id));
-            if (teamMembers.has(githubIssue.author.name)) {
+            if (!skipTeamCheck && teamMembers.has(githubIssue.author.name)) {
+                if (githubIssue.assignees.length === 0) {
+                    const link = (0, core_1.getInput)('workingAreasLink');
+                    if (link) {
+                        await issue.postComment(`Hi ${githubIssue.author.name}. As a member of the team, you can help us triage this issue by referring to ${link}`);
+                    }
+                    else {
+                        await issue.postComment(`Hi ${githubIssue.author.name}. You can help us triage this issue by assigning it to the appropriate person.`);
+                    }
+                }
                 (0, utils_1.safeLog)('Author is a team member, skipping triaging', githubIssue.author.name);
                 return;
             }
@@ -59,8 +69,8 @@ class IssueTriageAction extends Action_1.Action {
         }
     }
     async onOpened(issue) {
-        // wait 30 seconds before triaging
-        await new Promise((resolve) => setTimeout(resolve, 30000));
+        // wait 1 minute before triaging
+        await new Promise((resolve) => setTimeout(resolve, 60000));
         await this.triage(issue);
     }
     async onTriggered(_octokit) {
@@ -68,7 +78,7 @@ class IssueTriageAction extends Action_1.Action {
         const repo = (0, utils_1.getRequiredInput)('repo');
         const token = await (0, Action_1.getAuthenticationToken)();
         const staleIssues = _octokit.query({
-            q: `is:issue is:open -commenter:>1 no:assignee updated:<${(0, utils_1.daysAgoToHumanReadbleDate)(7)}`,
+            q: `is:issue is:open no:assignee no:label updated:<${(0, utils_1.daysAgoToHumanReadbleDate)(7)}`,
         });
         // Loop through issues which are not assigned and have no activity from except the author
         for await (const page of staleIssues) {
@@ -77,7 +87,7 @@ class IssueTriageAction extends Action_1.Action {
                 if (!issue)
                     continue;
                 const octokitIssue = new octokit_1.OctoKitIssue(token, { owner, repo }, { number: issue === null || issue === void 0 ? void 0 : issue.number });
-                await this.triage(octokitIssue);
+                await this.triage(octokitIssue, true);
             }
         }
         (0, utils_1.safeLog)('Completed triaging stale issues.');

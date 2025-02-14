@@ -30,6 +30,9 @@ inputs:
   assignees:
     description: Pipe-separated list of assignees to triage new issues to
     required: false
+  workingAreasLink:
+    description: Link to the working areas document
+    required: false
 runs:
   using: 'node20'
   main: 'index.js'
