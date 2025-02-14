@@ -89,7 +89,7 @@ class IssueTriageAction extends Action {
 			q: `is:issue is:open no:assignee no:label updated:<${daysAgoToHumanReadbleDate(7)}`,
 		});
 
-		// Loop through issues which are not assigned and have no activity from except the author
+		// Loop through issues which are not assigned and no labels and updated more than 7 days ago
 		for await (const page of staleIssues) {
 			for (const issueData of page) {
 				const issue = await issueData.getIssue();
