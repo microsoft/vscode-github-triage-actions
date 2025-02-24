@@ -17,7 +17,7 @@ class IssueTriageAction extends Action_1.Action {
     async triage(issue, skipTeamCheck = false) {
         try {
             const githubIssue = await issue.getIssue();
-            if (!githubIssue)
+            if (!githubIssue || githubIssue.labels.includes('testplan-item'))
                 return;
             const vscodeToolsAPI = new vscodeTools_1.VSCodeToolsAPIManager();
             const teamMembers = new Set((await vscodeToolsAPI.getTeamMembers()).map((t) => t.id));

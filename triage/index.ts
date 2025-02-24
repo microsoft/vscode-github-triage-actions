@@ -15,8 +15,7 @@ class IssueTriageAction extends Action {
 	private async triage(issue: OctoKitIssue, skipTeamCheck = false): Promise<void> {
 		try {
 			const githubIssue = await issue.getIssue();
-			if (!githubIssue) return;
-
+			if (!githubIssue || githubIssue.labels.includes('testplan-item')) return;
 			const vscodeToolsAPI = new VSCodeToolsAPIManager();
 			const teamMembers = new Set((await vscodeToolsAPI.getTeamMembers()).map((t) => t.id));
 			if (!skipTeamCheck && teamMembers.has(githubIssue.author.name)) {
