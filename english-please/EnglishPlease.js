@@ -29,13 +29,14 @@ class EnglishPleaseLabler {
 }
 exports.EnglishPleaseLabler = EnglishPleaseLabler;
 class LanguageSpecificLabeler {
-    constructor(issue, translatorRequestedLabelPrefix, translatorRequestedLabelColor, englishPleaseLabel, needsMoreInfoLabel, cognitiveServicesAPIKey) {
+    constructor(issue, translatorRequestedLabelPrefix, translatorRequestedLabelColor, englishPleaseLabel, needsMoreInfoLabel, cognitiveServicesAPIKey, shouldLeaveEnComment) {
         this.issue = issue;
         this.translatorRequestedLabelPrefix = translatorRequestedLabelPrefix;
         this.translatorRequestedLabelColor = translatorRequestedLabelColor;
         this.englishPleaseLabel = englishPleaseLabel;
         this.needsMoreInfoLabel = needsMoreInfoLabel;
         this.cognitiveServicesAPIKey = cognitiveServicesAPIKey;
+        this.shouldLeaveEnComment = shouldLeaveEnComment;
     }
     async detectLanguage(chunk) {
         var _a, _b;
@@ -107,6 +108,9 @@ class LanguageSpecificLabeler {
                 await this.issue.removeLabel(languagelabel);
             await this.issue.removeLabel(this.englishPleaseLabel);
             await this.issue.removeLabel(this.needsMoreInfoLabel);
+            if (this.shouldLeaveEnComment) {
+                await this.issue.postComment(`${translation_data_json_1.baseString}\n<!-- translation_requested_comment -->`);
+            }
         }
         else if (language) {
             const label = this.translatorRequestedLabelPrefix + commonNames[language];

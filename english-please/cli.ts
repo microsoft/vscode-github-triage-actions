@@ -1,6 +1,6 @@
 import * as yargs from 'yargs';
-import { LanguageSpecificLabeler } from './EnglishPlease';
 import { OctoKitIssue } from '../api/octokit';
+import { LanguageSpecificLabeler } from './EnglishPlease';
 
 const argv = yargs
 	.option('token', {
@@ -48,6 +48,7 @@ const main = async () => {
 		'*english-please',
 		'info-needed',
 		args.key,
+		false,
 	).run();
 };
 

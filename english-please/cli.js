@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const yargs = require("yargs");
-const EnglishPlease_1 = require("./EnglishPlease");
 const octokit_1 = require("../api/octokit");
+const EnglishPlease_1 = require("./EnglishPlease");
 const argv = yargs
     .option('token', {
     alias: 't',
@@ -40,7 +40,7 @@ const main = async () => {
     // Check if it's a promise
     const args = await argv;
     const [, owner, repo] = /(.*)\/(.*)/.exec(args.repo);
-    await new EnglishPlease_1.LanguageSpecificLabeler(new octokit_1.OctoKitIssue(args.token, { repo, owner }, { number: args.number }, { readonly: !args.write }), 'translation-required-', 'c29cff', '*english-please', 'info-needed', args.key).run();
+    await new EnglishPlease_1.LanguageSpecificLabeler(new octokit_1.OctoKitIssue(args.token, { repo, owner }, { number: args.number }, { readonly: !args.write }), 'translation-required-', 'c29cff', '*english-please', 'info-needed', args.key, false).run();
 };
 main().catch(console.error);
 //# sourceMappingURL=cli.js.map
