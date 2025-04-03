@@ -16,15 +16,15 @@ class EnglishPlease extends Action_1.Action {
     async onOpened(issue) {
         await new EnglishPlease_1.EnglishPleaseLabler(issue, nonEnglishLabel).run();
     }
-    async doLanguageSpecific(issue) {
-        await new EnglishPlease_1.LanguageSpecificLabeler(issue, translatorRequestedLabelPrefix, translatorRequestedLabelColor, nonEnglishLabel, needsMoreInfoLabel, cognitiveServicesAPIKey).run();
+    async doLanguageSpecific(issue, shouldLeaveEnComment = false) {
+        await new EnglishPlease_1.LanguageSpecificLabeler(issue, translatorRequestedLabelPrefix, translatorRequestedLabelColor, nonEnglishLabel, needsMoreInfoLabel, cognitiveServicesAPIKey, shouldLeaveEnComment).run();
     }
     async onEdited(issue) {
         await this.doLanguageSpecific(issue);
     }
     async onLabeled(issue, label) {
         if (label == nonEnglishLabel)
-            await this.doLanguageSpecific(issue);
+            await this.doLanguageSpecific(issue, true /* shouldLeaveEnComment */);
     }
 }
 new EnglishPlease().run(); // eslint-disable-line

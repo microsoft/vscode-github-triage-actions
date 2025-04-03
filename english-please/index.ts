@@ -16,7 +16,7 @@ class EnglishPlease extends Action {
 		await new EnglishPleaseLabler(issue, nonEnglishLabel).run();
 	}
 
-	async doLanguageSpecific(issue: OctoKitIssue) {
+	async doLanguageSpecific(issue: OctoKitIssue, shouldLeaveEnComment = false) {
 		await new LanguageSpecificLabeler(
 			issue,
 			translatorRequestedLabelPrefix,
@@ -24,6 +24,7 @@ class EnglishPlease extends Action {
 			nonEnglishLabel,
 			needsMoreInfoLabel,
 			cognitiveServicesAPIKey,
+			shouldLeaveEnComment,
 		).run();
 	}
 
@@ -31,8 +32,7 @@ class EnglishPlease extends Action {
 		await this.doLanguageSpecific(issue);
 	}
 	async onLabeled(issue: OctoKitIssue, label: string) {
-		if (label == nonEnglishLabel) await this.doLanguageSpecific(issue);
+		if (label == nonEnglishLabel) await this.doLanguageSpecific(issue, true /* shouldLeaveEnComment */);
 	}
 }
-
-new EnglishPlease().run() // eslint-disable-line
+new EnglishPlease().run(); // eslint-disable-line
