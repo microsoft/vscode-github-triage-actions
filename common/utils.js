@@ -47,10 +47,36 @@ const normalizeIssue = (issue) => {
     };
 };
 exports.normalizeIssue = normalizeIssue;
-const loadLatestRelease = async (quality) => (await axios_1.default.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`)).data;
+const loadLatestRelease = async (quality) => {
+    return retryWithExponentialBackoff(async () => {
+        return (await axios_1.default.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`))
+            .data;
+    });
+};
 exports.loadLatestRelease = loadLatestRelease;
-const isInsiderFrozen = async () => { var _a; return (_a = (await axios_1.default.get(`https://update.code.visualstudio.com/api/quality/insider/`)).data) === null || _a === void 0 ? void 0 : _a.frozen; };
+const isInsiderFrozen = async () => {
+    return retryWithExponentialBackoff(async () => {
+        var _a;
+        return (_a = (await axios_1.default.get(`https://update.code.visualstudio.com/api/quality/insider/`)).data) === null || _a === void 0 ? void 0 : _a.frozen;
+    });
+};
 exports.isInsiderFrozen = isInsiderFrozen;
+const retryWithExponentialBackoff = async (fn, maxAttempts = 3) => {
+    let attempts = 0;
+    while (attempts < maxAttempts) {
+        try {
+            return await fn();
+        }
+        catch (error) {
+            attempts++;
+            const delay = Math.pow(2, attempts) * 1000; // Exponential backoff
+            const reason = (error === null || error === void 0 ? void 0 : error.message) || (error === null || error === void 0 ? void 0 : error.toString());
+            (0, exports.safeLog)(`Attempt ${attempts} failed: ${reason}. Retrying in ${delay / 1000}s...`);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+    }
+    throw new Error('Failed after maximum retry attempts');
+};
 const daysAgoToTimestamp = (days) => +new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 exports.daysAgoToTimestamp = daysAgoToTimestamp;
 const daysAgoToHumanReadbleDate = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().replace(/\.\d{3}\w$/, '');
