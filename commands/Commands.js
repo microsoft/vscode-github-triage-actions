@@ -84,7 +84,7 @@ class Commands {
         if (command.action === 'close') {
             tasks.push(this.github.closeIssue((_c = command.reason) !== null && _c !== void 0 ? _c : 'completed'));
         }
-        if (command.comment && (command.action !== 'close' || issue.open)) {
+        if (command.comment && (command.action !== 'close' || issue.open) && !issue.locked) {
             tasks.push(this.github.postComment(this.hydrate(command.comment, issue)));
         }
         if (command.addLabel) {
