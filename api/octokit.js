@@ -311,7 +311,8 @@ class OctoKitIssue extends OctoKit {
                 (0, utils_1.safeLog)('Issue not found');
                 return;
             }
-            throw err;
+            (0, utils_1.safeLog)('Error fetching issue:', String(err));
+            return;
         }
     }
     async postComment(body) {

@@ -351,7 +351,8 @@ export class OctoKitIssue extends OctoKit implements GitHubIssue {
 				safeLog('Issue not found');
 				return;
 			}
-			throw err;
+			safeLog('Error fetching issue:', String(err));
+			return;
 		}
 	}
 
