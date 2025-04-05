@@ -61,11 +61,35 @@ export interface Release {
 	version: string;
 }
 
-export const loadLatestRelease = async (quality: 'stable' | 'insider'): Promise<Release | undefined> =>
-	(await axios.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`)).data;
+export const loadLatestRelease = async (quality: 'stable' | 'insider'): Promise<Release | undefined> => {
+	return retryWithExponentialBackoff(async () => {
+		return (await axios.get(`https://update.code.visualstudio.com/api/update/darwin/${quality}/latest`))
+			.data;
+	});
+};
 
-export const isInsiderFrozen = async (): Promise<boolean | undefined> =>
-	(await axios.get(`https://update.code.visualstudio.com/api/quality/insider/`)).data?.frozen;
+export const isInsiderFrozen = async (): Promise<boolean | undefined> => {
+	return retryWithExponentialBackoff(async () => {
+		return (await axios.get(`https://update.code.visualstudio.com/api/quality/insider/`)).data?.frozen;
+	});
+};
+
+const retryWithExponentialBackoff = async <T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> => {
+	let attempts = 0;
+	while (attempts < maxAttempts) {
+		try {
+			return await fn();
+		} catch (error: any) {
+			attempts++;
+			const delay = Math.pow(2, attempts) * 1000; // Exponential backoff
+			const reason = error?.message || error?.toString();
+
+			safeLog(`Attempt ${attempts} failed: ${reason}. Retrying in ${delay / 1000}s...`);
+			await new Promise((resolve) => setTimeout(resolve, delay));
+		}
+	}
+	throw new Error('Failed after maximum retry attempts');
+};
 
 export const daysAgoToTimestamp = (days: number): number =>
 	+new Date(Date.now() - days * 24 * 60 * 60 * 1000);
