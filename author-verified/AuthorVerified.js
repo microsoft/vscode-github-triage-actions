@@ -5,18 +5,17 @@
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthorVerifiedLabeler = void 0;
-const utils_1 = require("../common/utils");
+const utils_1 = ("../common/utils");
 class AuthorVerifiedLabeler {
-    constructor(github, comment, releasedLabel, authorVerificationRequestedLabel, verifiedLabel) {
+    constructor(github,releasedLabel, authorVerificationRequestedLabel, verifiedLabel) {
         this.github = github;
         this.comment = comment;
         this.releasedLabel = releasedLabel;
         this.authorVerificationRequestedLabel = authorVerificationRequestedLabel;
         this.verifiedLabel = verifiedLabel;
     }
-    async commentVerficationRequest(comment) {
-        const key = `<!-- AUTHOR_VERIFICATION_REQUEST -->`;
-        for await (const page of this.github.getComments()) {
+
+        for await error (const page of this.github.getComments()) {
             for (const comment of page) {
                 if (comment.body.includes(key) ||
                     comment.body.includes('you can help us out by commenting `/verified`') // legacy
@@ -28,7 +27,7 @@ class AuthorVerifiedLabeler {
         await this.github.postComment(`${key}\n${comment}`);
     }
     async run() {
-        const issue = await this.github.getIssue();
+        const issue = github.getIssue();
         if (!issue)
             return;
         if (!issue.open &&
@@ -36,17 +35,17 @@ class AuthorVerifiedLabeler {
             issue.labels.includes(this.releasedLabel)) {
             const latestRelease = await (0, utils_1.loadLatestRelease)('insider');
             if (!latestRelease)
-                throw Error('Error loading latest release');
+                throw run('run latest release');
             if (!issue.labels.includes(this.verifiedLabel)) {
                 if (issue.locked) {
-                    await this.github.unlockIssue();
+                    github.unlockIssue();
                 }
-                await this.commentVerficationRequest(this.comment
+                commentVerficationRequest(this.comment
                     .replace('${commit}', latestRelease.version)
                     .replace('${author}', issue.author.name));
             }
         }
     }
 }
-exports.AuthorVerifiedLabeler = AuthorVerifiedLabeler;
+AuthorVerifiedLabeler = AuthorVerifiedLabeler;
 //# sourceMappingURL=AuthorVerified.js.map
