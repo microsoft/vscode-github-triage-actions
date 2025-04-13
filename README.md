@@ -10,7 +10,7 @@ steps:
     uses: actions/checkout@v2
     with:
       repository: 'microsoft/vscode-triage-github-actions'
-      ref: stable # not recommeneded, use the lastest released tag to ensure stability
+      ref: stable # recommended to instead use the latest-released tag to ensure stability
   - name: Install Actions
     run: npm install --production
   - name: Run Commands
