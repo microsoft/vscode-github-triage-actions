@@ -4,7 +4,6 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Availability = void 0;
 const fs_1 = require("fs");
 const path_1 = require("path");
 const octokit_1 = require("../../../api/octokit");
@@ -15,15 +14,6 @@ const allowLabels = ((0, utils_1.getInput)('allowLabels') || '').split('|');
 const debug = !!(0, utils_1.getInput)('__debug');
 const repo = (0, utils_1.getRequiredInput)('repo');
 const owner = (0, utils_1.getRequiredInput)('owner');
-// Do not modify.
-// Copied from https://github.com/microsoft/vscode-tools/blob/91715fe00caab042b4aab5ed41d0402b0ae2393b/src/common/endgame.ts#L11-L16
-var Availability;
-(function (Availability) {
-    Availability[Availability["FULL"] = 1] = "FULL";
-    Availability[Availability["HALF"] = 2] = "HALF";
-    Availability[Availability["OPTIONAL"] = 3] = "OPTIONAL";
-    Availability[Availability["NOT_AVAILABLE"] = 4] = "NOT_AVAILABLE";
-})(Availability = exports.Availability || (exports.Availability = {}));
 class ApplyLabels extends Action_1.Action {
     constructor() {
         super(...arguments);
@@ -43,6 +33,9 @@ class ApplyLabels extends Action_1.Action {
                 var _a;
                 if ((_a = config.vacation) === null || _a === void 0 ? void 0 : _a.includes(assignee)) {
                     (0, utils_1.safeLog)('not assigning ', assignee, 'becuase they are on vacation');
+                }
+                else if (!triagers.includes(assignee)) {
+                    (0, utils_1.safeLog)('not assigning ', assignee, 'because they are not available for triaging');
                 }
                 else {
                     potentialAssignees.push(assignee);
