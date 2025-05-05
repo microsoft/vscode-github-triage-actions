@@ -28,15 +28,6 @@ type ClassifierConfig = {
 type Labeling = { confident: boolean; category: string; confidence: number };
 type LabelingsFile = { number: number; area: Labeling; assignee: Labeling }[];
 
-// Do not modify.
-// Copied from https://github.com/microsoft/vscode-tools/blob/91715fe00caab042b4aab5ed41d0402b0ae2393b/src/common/endgame.ts#L11-L16
-export enum Availability {
-	FULL = 1,
-	HALF,
-	OPTIONAL,
-	NOT_AVAILABLE,
-}
-
 class ApplyLabels extends Action {
 	id = 'Classifier-Deep/Apply/ApplyLabels';
 
@@ -57,6 +48,8 @@ class ApplyLabels extends Action {
 			const addAssignee = async (assignee: string) => {
 				if (config.vacation?.includes(assignee)) {
 					safeLog('not assigning ', assignee, 'becuase they are on vacation');
+				} else if (!triagers.includes(assignee)) {
+					safeLog('not assigning ', assignee, 'because they are not available for triaging');
 				} else {
 					potentialAssignees.push(assignee);
 				}
