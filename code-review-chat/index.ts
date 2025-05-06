@@ -162,12 +162,6 @@ class CodeReviewChatAction extends Action {
 		).data;
 
 		const pr = createPRObject(prFromApi);
-		const draft = pr.draft || false;
-		if (draft) {
-			safeLog('PR is draft, ignoring');
-			return;
-		}
-
 		const octokitIssue = new OctoKitIssue(auth, { owner, repo }, { number: pr_number });
 		switch (action) {
 			case 'opened':
