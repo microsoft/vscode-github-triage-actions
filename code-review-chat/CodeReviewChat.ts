@@ -10,7 +10,7 @@ import { OctoKitIssue } from '../api/octokit';
 import { VSCodeToolsAPIManager } from '../api/vscodeTools';
 import { isInsiderFrozen, safeLog } from '../common/utils';
 
-interface PR {
+export interface PR {
 	number: number;
 	body: string;
 	additions: number;
@@ -30,6 +30,11 @@ interface PR {
 	title: string;
 	headLabel: string;
 	fork: boolean;
+	state: 'open' | 'closed';
+	user: {
+		login: string;
+		type: string;
+	};
 }
 
 // Some slack typings since the API isn't the best in terms of typings
@@ -79,6 +84,8 @@ export function createPRObject(pullRequestFromApi: any): PR {
 			(pullRequestFromApi.head.repo?.fork &&
 				pullRequestFromApi.head.repo.full_name != pullRequestFromApi.base.repo.full_name) ||
 			false,
+		state: pullRequestFromApi.state,
+		user: { login: pullRequestFromApi.user.login, type: pullRequestFromApi.user.type },
 	};
 	return pr;
 }

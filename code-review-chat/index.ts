@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { PayloadRepository, WebhookPayload } from '@actions/github/lib/interfaces';
 import { Octokit } from '@octokit/rest';
 import { OctoKitIssue } from '../api/octokit';
 import { VSCodeToolsAPIManager } from '../api/vscodeTools';
@@ -15,6 +14,7 @@ import {
 	createPRObject,
 	getTeamMemberReviews,
 	meetsReviewThreshold,
+	PR,
 } from './CodeReviewChat';
 
 const slackToken = getRequiredInput('slack_token');
@@ -24,51 +24,28 @@ const channelId = getRequiredInput('notification_channel_id');
 class CodeReviewChatAction extends Action {
 	id = 'CodeReviewChat';
 
-	private async closedOrDraftHandler(_issue: OctoKitIssue, payload: WebhookPayload) {
-		if (!payload.pull_request || !payload.repository || !payload.pull_request.html_url) {
-			throw Error('expected payload to contain pull request url');
-		}
-		await new CodeReviewChatDeleter(
-			slackToken,
-			elevatedUserToken,
-			channelId,
-			payload.pull_request.html_url,
-		).run();
+	private async closedOrDraftHandler(_issue: OctoKitIssue, pr: PR) {
+		await new CodeReviewChatDeleter(slackToken, elevatedUserToken, channelId, pr.url).run();
 	}
 
-	protected override async onClosed(_issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
-		await this.closedOrDraftHandler(_issue, payload);
+	protected override async onClosed(_issue: OctoKitIssue, pr: PR): Promise<void> {
+		await this.closedOrDraftHandler(_issue, pr);
 	}
 
-	protected override async onConvertedToDraft(
-		_issue: OctoKitIssue,
-		payload: WebhookPayload,
-	): Promise<void> {
-		await this.closedOrDraftHandler(_issue, payload);
+	protected override async onConvertedToDraft(_issue: OctoKitIssue, pr: PR): Promise<void> {
+		await this.closedOrDraftHandler(_issue, pr);
 	}
 
-	protected override async onOpened(issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
-		if (!payload.pull_request || !payload.repository) {
-			throw Error('expected payload to contain pull request and repository');
-		}
-
+	protected override async onOpened(issue: OctoKitIssue, pr: PR): Promise<void> {
 		const auth = await this.getToken();
 		const github = new Octokit({ auth });
 
 		await new Promise((resolve) => setTimeout(resolve, 1 * 60 * 1000));
 
-		await this.executeCodeReviewChat(github, issue, payload, false);
+		await this.executeCodeReviewChat(github, issue, pr, false);
 	}
 
-	private async executeCodeReviewChat(
-		github: Octokit,
-		issue: OctoKitIssue,
-		payload: WebhookPayload,
-		external: boolean,
-	) {
-		if (!payload.pull_request || !payload.repository) {
-			throw Error('expected payload to contain pull request and repository');
-		}
+	private async executeCodeReviewChat(github: Octokit, issue: OctoKitIssue, pr: PR, external: boolean) {
 		return new CodeReviewChat(
 			github,
 			new VSCodeToolsAPIManager(),
@@ -77,15 +54,15 @@ class CodeReviewChatAction extends Action {
 				slackToken,
 				codereviewChannelId: channelId,
 				payload: {
-					owner: payload.repository.owner.login,
-					repo: payload.repository.name,
-					repo_url: payload.repository.html_url,
-					repo_full_name: payload.repository.full_name ?? payload.repository.name,
+					owner: issue.repoOwner,
+					repo: issue.repoName,
+					repo_url: pr.url,
+					repo_full_name: `${issue.repoOwner}/${issue.repoName}`,
 					// https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#pull_request
-					pr: createPRObject(payload.pull_request),
+					pr: pr,
 				},
 			},
-			payload.pull_request.number,
+			pr.number,
 			external,
 		).run();
 	}
@@ -93,12 +70,8 @@ class CodeReviewChatAction extends Action {
 	/**
 	 * TODO @lramos15 Extend support possibly to the base action
 	 */
-	private async onSubmitReview(issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
-		if (!payload.pull_request || !payload.repository) {
-			throw Error('expected payload to contain pull request url');
-		}
-
-		if (payload.pull_request.state === 'closed') {
+	private async onSubmitReview(issue: OctoKitIssue, pr: PR): Promise<void> {
+		if (pr.state === 'closed') {
 			// PR was merged and a review was submitted after merge. Skip posting message
 			safeLog(`PR was already merged. Skipping posting message`);
 			return;
@@ -111,29 +84,29 @@ class CodeReviewChatAction extends Action {
 		const meetsThreshold = await meetsReviewThreshold(
 			github,
 			teamMembers,
-			payload.pull_request.number,
-			payload.repository.name,
-			payload.repository.owner.login,
+			pr.number,
+			issue.repoName,
+			issue.repoOwner,
 			issue,
 		);
 		// Only delete this message if the review threshold has been met
 		if (meetsThreshold) {
-			safeLog(`Review threshold met, deleting ${payload.pull_request.html_url}}`);
-			await this.closedOrDraftHandler(issue, payload);
+			safeLog(`Review threshold met, deleting ${pr.url}}`);
+			await this.closedOrDraftHandler(issue, pr);
 		}
 
 		// TODO @lramos15, possibly move more of this into CodeReviewChat.ts to keep index smal
 
 		// Check if the PR author is in the team
-		const author = payload.pull_request.user.login;
-		if (!teamMembers.has(author) && payload.pull_request.user?.type !== 'Bot') {
+		const author = pr.user.login;
+		if (!teamMembers.has(author) && pr.user.type !== 'Bot') {
 			safeLog('PR author is not in the team, checking if they need to be posted for another review');
 			const teamMemberReviews = await getTeamMemberReviews(
 				github,
 				teamMembers,
-				payload.pull_request.number,
-				payload.repository.name,
-				payload.repository.owner.login,
+				pr.number,
+				issue.repoName,
+				issue.repoOwner,
 				issue,
 				true /* isExternalPR */,
 			);
@@ -145,18 +118,13 @@ class CodeReviewChatAction extends Action {
 			});
 			if (approvingReviews && approvingReviews.length === 1) {
 				safeLog(`External PR with one review received, posting to receive a second`);
-				await this.executeCodeReviewChat(github, issue, payload, true);
+				await this.executeCodeReviewChat(github, issue, pr, true);
 			}
 		}
 	}
 
 	// Handles the event when a review is assigned to a pull request
-	private async onAssignedReview(issue: OctoKitIssue, payload: WebhookPayload): Promise<void> {
-		// Ensure the payload contains pull request and repository information
-		if (!payload.pull_request || !payload.repository) {
-			throw Error('expected payload to contain pull request url');
-		}
-
+	private async onAssignedReview(issue: OctoKitIssue): Promise<void> {
 		// Get the issue data
 		const issueData = await issue.getIssue();
 		if (!issueData) return;
@@ -177,39 +145,43 @@ class CodeReviewChatAction extends Action {
 	}
 
 	protected override async onTriggered() {
-		// This function is only called during a manual workspace dispatch event
-		// caused by a webhook, so we know to expect some inputs.
+		const auth = await this.getToken();
+		const github = new Octokit({ auth });
+
+		const owner = getRequiredInput('owner');
+		const repo = getRequiredInput('repo');
 		const action = getRequiredInput('action');
-		const pull_request = JSON.parse(getRequiredInput('pull_request'));
-		const draft = pull_request.draft || false;
+
+		const pr_number: number = parseInt(getRequiredInput('pr_number'));
+		const prFromApi = (
+			await github.pulls.get({
+				pull_number: pr_number,
+				owner,
+				repo,
+			})
+		).data;
+
+		const pr = createPRObject(prFromApi);
+		const draft = pr.draft || false;
 		if (draft) {
 			safeLog('PR is draft, ignoring');
 			return;
 		}
 
-		const repository: PayloadRepository = JSON.parse(getRequiredInput('repository'));
-		const pr_number: number = parseInt(getRequiredInput('pr_number'));
-		const auth = await this.getToken();
-		const octokitIssue = new OctoKitIssue(
-			auth,
-			{ owner: repository.owner.login, repo: repository.name },
-			{ number: pr_number },
-		);
-
-		const payload: WebhookPayload = { repository, pull_request };
+		const octokitIssue = new OctoKitIssue(auth, { owner, repo }, { number: pr_number });
 		switch (action) {
 			case 'opened':
 			case 'ready_for_review':
-				await this.onOpened(octokitIssue, payload);
+				await this.onOpened(octokitIssue, pr);
 				break;
 			case 'submitted':
-				await this.onSubmitReview(octokitIssue, payload);
+				await this.onSubmitReview(octokitIssue, pr);
 				break;
 			case 'closed':
-				await this.onClosed(octokitIssue, payload);
+				await this.onClosed(octokitIssue, pr);
 				break;
 			case 'converted_to_draft':
-				await this.onConvertedToDraft(octokitIssue, payload);
+				await this.onConvertedToDraft(octokitIssue, pr);
 				break;
 			// These are part of the webhook chain, let's no-op but allow the CI to pass
 			case 'dismissed':
@@ -217,7 +189,7 @@ class CodeReviewChatAction extends Action {
 			case 'reopened':
 				break;
 			case 'assigned':
-				await this.onAssignedReview(octokitIssue, payload);
+				await this.onAssignedReview(octokitIssue);
 				break;
 			default:
 				throw Error(`Unknown action: ${action}`);

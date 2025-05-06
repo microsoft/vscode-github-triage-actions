@@ -25,6 +25,8 @@ function createPRObject(pullRequestFromApi) {
         fork: (((_d = pullRequestFromApi.head.repo) === null || _d === void 0 ? void 0 : _d.fork) &&
             pullRequestFromApi.head.repo.full_name != pullRequestFromApi.base.repo.full_name) ||
             false,
+        state: pullRequestFromApi.state,
+        user: { login: pullRequestFromApi.user.login, type: pullRequestFromApi.user.type },
     };
     return pr;
 }
