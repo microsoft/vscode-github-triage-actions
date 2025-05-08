@@ -91,7 +91,7 @@ export function createPRObject(pullRequestFromApi: any): PR {
 }
 
 class Chatter {
-	constructor(protected slackToken: string, protected notificationChannelID: string) {}
+	constructor(protected slackToken: string, protected notificationChannelID: string) { }
 
 	async getChat(): Promise<{ client: WebClient; channel: string }> {
 		const web = new WebClient(this.slackToken);
@@ -251,7 +251,7 @@ export class CodeReviewChat extends Chatter {
 		const githubUrl = `${pr.url}/files`;
 		const vscodeDevUrl = pr.url.replace('https://', 'https://insiders.vscode.dev/');
 
-		const externalPrefix = this._externalContributorPR ? '⚠️[EXTERNAL]⚠️ ' : '';
+		const externalPrefix = this._externalContributorPR ? '_*EXTERNAL*_ ⚠️ ' : '';
 		const message = `${externalPrefix}*${cleanTitle}* by _${pr.owner}_${repoMessage} \`${diffMessage}\` <${githubUrl}|Review (GH)> | <${vscodeDevUrl}|Review (VSCode)>`;
 		return message;
 	}
