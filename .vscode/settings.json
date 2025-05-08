@@ -17,7 +17,7 @@
 	"[yaml]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode",
 		"editor.formatOnSave": true
-	  },
+	},
 	"eslint.format.enable": true,
 	"files.exclude": {
 		"node_modules": true,
@@ -31,4 +31,7 @@
 	"python.linting.enabled": true,
 	"python.linting.pylintEnabled": true,
 	"explorer.fileNesting.expand": false,
+	"git.branchProtection": [
+		"stable"
+	],
 }
