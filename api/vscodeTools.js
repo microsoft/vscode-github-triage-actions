@@ -31,6 +31,7 @@ class VSCodeToolsAPIManager {
     async fetchDataFromAPI(url) {
         const response = await this.serviceClient.sendRequest({ url, method: 'GET' });
         // TODO @lramos15 Fix this as throwing is not the best way to handle errors
+        console.log(`response : ${response.bodyAsText}`);
         if (!response.bodyAsText) {
             throw new Error('No body in response');
         }
