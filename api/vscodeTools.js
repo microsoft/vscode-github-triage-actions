@@ -29,6 +29,7 @@ class VSCodeToolsAPIManager {
         return teamMembers.find((member) => member.id === gitHubId);
     }
     async fetchDataFromAPI(url) {
+        console.log(`Fetching data from API: ${url}`);
         const response = await this.serviceClient.sendRequest({ url, method: 'GET' });
         // TODO @lramos15 Fix this as throwing is not the best way to handle errors
         console.log(`response : ${response.bodyAsText}`);
