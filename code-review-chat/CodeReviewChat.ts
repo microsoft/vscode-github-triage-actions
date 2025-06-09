@@ -216,6 +216,27 @@ export class CodeReviewChat extends Chatter {
 	private async postMessage(message: string) {
 		const { client, channel } = await this.getChat();
 
+		const response = await client.conversations.history({
+			channel,
+			limit: 20,
+		});
+
+		if (!response.ok || !response.messages) {
+			throw Error('Error getting channel history');
+		}
+
+		const messages = response.messages as SlackMessage[];
+		// Check if the PR URL already exists in recent messages to avoid duplicates
+		const prUrlToCheck = this.options.payload.pr.url;
+		const existingMessage = messages.find(
+			(message) => message.text.includes(prUrlToCheck) && !message.subtype, // Ignore deleted or special messages
+		);
+
+		if (existingMessage) {
+			safeLog(`Message for PR ${prUrlToCheck} already exists in the channel, skipping posting`);
+			return;
+		}
+
 		await client.chat.postMessage({
 			text: message,
 			channel,
@@ -424,7 +445,7 @@ export async function getTeamMemberReviews(
 		if (review.user.name === author || review.user.login === author) {
 			continue;
 		}
-		if (review.state === 'COMMENTED') {
+		if (review.state === 'COMMENTED' || review.state === 'DISMISSED') {
 			continue;
 		}
 		const isTeamMember = teamMembers.has(review.user.login);
