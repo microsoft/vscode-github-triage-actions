@@ -144,6 +144,23 @@ class CodeReviewChatAction extends Action {
 		}
 	}
 
+	private async onDismissedReview(issue: OctoKitIssue, pr: PR): Promise<void> {
+		if (pr.state === 'closed') {
+			// PR was merged and a review was submitted after merge. Skip posting message
+			safeLog(`PR was already merged. Skipping posting message`);
+			return;
+		}
+
+		await this.executeCodeReviewChat(
+			new Octokit({ auth: await this.getToken() }),
+			issue,
+			pr,
+			false /* external */,
+		);
+
+		safeLog('Review dismissed, no action taken');
+	}
+
 	protected override async onTriggered() {
 		const auth = await this.getToken();
 		const github = new Octokit({ auth });
@@ -179,6 +196,8 @@ class CodeReviewChatAction extends Action {
 				break;
 			// These are part of the webhook chain, let's no-op but allow the CI to pass
 			case 'dismissed':
+				await this.onDismissedReview(octokitIssue, pr);
+				break;
 			case 'synchronize':
 			case 'reopened':
 				break;
