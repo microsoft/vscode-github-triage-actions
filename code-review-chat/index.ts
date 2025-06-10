@@ -133,9 +133,11 @@ class CodeReviewChatAction extends Action {
 		if (issueData.assignees.length > 1 && issueData.labels.includes('triage-needed')) {
 			// Get the username of the assigner of the first assignee
 			const assigner = await issue.getAssigner(issueData.assignees[0]);
+			const toolsAPI = new VSCodeToolsAPIManager();
 
-			// If the assigner is not the bot itself
-			if (assigner !== getRequiredInput('botName')) {
+			const teamMember = await toolsAPI.getTeamMemberFromGitHubId(assigner);
+			// If the assigner is a team member, remove the 'triage-needed' label
+			if (teamMember) {
 				// Log the assigner and remove the 'triage-needed' label
 				safeLog(`Assigner: ${assigner}`);
 				await issue.removeLabel('triage-needed');
