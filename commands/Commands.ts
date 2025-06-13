@@ -11,7 +11,7 @@ import { safeLog } from '../common/utils';
 export type Command =
 	& { name: string }
 	& ({ type: 'comment'; allowUsers?: string[] } | { type: 'label', regex?: string })
-	& { action?: 'close', reason?: 'not_planned' | 'completed' }
+	& { action?: 'close', reason?: 'not_planned' | 'completed' | 'duplicate' }
 	& Partial<{ comment: string; addLabel: string; removeLabel: string, assign: string[] }>
 	& Partial<{ requireLabel: string; disallowLabel: string }>
 /* eslint-enable */
