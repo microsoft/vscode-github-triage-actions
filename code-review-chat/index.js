@@ -154,6 +154,8 @@ class CodeReviewChatAction extends Action_1.Action {
             case 'assigned':
                 await this.onAssignedReview(octokitIssue);
                 break;
+            case 'create': // ref created, noop
+                break;
             default:
                 throw Error(`Unknown action: ${action}`);
         }
