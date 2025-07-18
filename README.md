@@ -1,4 +1,7 @@
-# VS Code's Issue Triage GitHub Actions
+# [ARCHIVED] VS Code's Issue Triage GitHub Actions
+
+> **Note**
+> This repository is archived and no longer maintained. It will no longer be in development.
 
 We host our [GitHub Actions](https://help.github.com/en/actions) for triaging issues here.
 
